@@ -16,6 +16,12 @@ function havingOf(trigger) {
 // → { when: "start" | "end", trigger, kind: "reaction" | "free action" }, or null.
 export function turnTrigger(item) {
     const type = item?.system?.actionType?.value;
+    // (A passive feat that acts at the start or end of the character's turn, "At the start of each of your turns, you gain an additional
+    // reaction …", "At the end of your turn, reduce your frightened …": its sentence; the loop, 2026-10-30.)
+    if (type === "passive") {
+        const sentence = /(?:^|[.!?]\s+)(At the (start|beginning|end) of (?:each of )?your turns?\b[^.]*\.)/i.exec(plainOf(item?.system?.description?.value ?? ""));
+        return sentence ? { when: sentence[2].toLowerCase() === "end" ? "end" : "start", trigger: sentence[1], kind: "passive" } : null;
+    }
     if (!["reaction", "free"].includes(type)) return null;
     const found = /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
     if (!found) return null;
