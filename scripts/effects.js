@@ -15,7 +15,12 @@ export async function applyFeatEffect(item, plan) {
     const old = actor.itemTypes.effect.filter((each) => ours(each) && (each.flags[MODULE_ID].effect.source === item.sourceId || each.flags[MODULE_ID].effect.item === item.id || (effect.stance && each.flags[MODULE_ID].effect.stance)));
     if (old.length) await actor.deleteEmbeddedDocuments("Item", old.map((each) => each.id));
     // (A toggled passive's Effect, on: posting it again turns it off.)
-    if (plan.toggle && old.length) return null;
+    // (Its chat line, on and off, as PF2e-linked toggles have; 2026-10-30 Foundry test.)
+    const say = (line) => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>` });
+    if (plan.toggle && old.length) {
+        await say(`Effect: ${escape(effect.name)} ends on ${escape(actor.name)}.`);
+        return null;
+    }
     const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
     const [created] = await actor.createEmbeddedDocuments("Item", [{
         name: `${effect.stance ? "Stance" : "Effect"}: ${effect.name}`,
@@ -32,6 +37,7 @@ export async function applyFeatEffect(item, plan) {
             level: { value: Number(actor.level) || 1 }
         }
     }]);
+    if (plan.toggle && created) await say(`Effect: ${escape(effect.name)} on ${escape(actor.name)}.`);
     return created ?? null;
 }
 

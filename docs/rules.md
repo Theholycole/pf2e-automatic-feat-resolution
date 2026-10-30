@@ -103,6 +103,10 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
 - **Foundry test** (2026-10-30, eeb6c8f): Formation Training on and off (AC and Fortitude +1 and back), Lost in the Crowd, Terrifying
   Mien, Phenom's Verve, Hydration (its Dehydrated Effect, for when you go without water), Root Magic on a target and the GM's whisper
   with none, Toughness doing nothing new: all passed, every name-form link found, no console errors.
+- **Foundry test, hand-written** (2026-10-30, f629eec): Shadow Master (resistance and Reflex twice), Daredevil's Gambit (AC +2, to turn
+  start), Glyph Expert (+2 to AC, saves, Perception, Thievery), Reading the Signs, Advanced Vials (physical 4 at level 8), Tough Tumbler
+  (to turn end): all on and off, no rule-element warnings. Two fixes: they posted no chat line (now "Effect: X on / ends on …", as the
+  PF2e-linked ones do), and Emboldened's +1 never applied, its two Will modifiers sharing one slug (now two slugs).
 
 ### Looked at, not batched
 

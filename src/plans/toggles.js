@@ -3,7 +3,7 @@
 // puts it on the character, posting it again takes it off. What the rules can't tell apart (which creature, which trap) is a note.
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
-const bonus = (selector, value, type = "circumstance", predicate) => ({ key: "FlatModifier", selector, type, value, ...(predicate ? { predicate } : {}) });
+const bonus = (selector, value, type = "circumstance", predicate, slug) => ({ key: "FlatModifier", selector, type, value, ...(predicate ? { predicate } : {}), ...(slug ? { slug } : {}) });
 const ROUND = { value: 1, unit: "rounds", expiry: "turn-start", sustained: false };
 const THIS_TURN = { value: 0, unit: "rounds", expiry: "turn-end", sustained: false };
 
@@ -30,7 +30,8 @@ export default [
     },
     {
         uuid: pf2e("uYhaIKxlvGj4YNCc"), name: "Emboldened with Glorious Purpose",
-        toggle: { rules: [bonus("will", 1, "status", [{ not: { or: ["item:trait:emotion", "item:trait:fear"] } }]), bonus("will", 2, "status", [{ or: ["item:trait:emotion", "item:trait:fear"] }])] },
+        // (Two slugs: with one, the label's, the second replaced the first; 2026-10-30 Foundry test.)
+        toggle: { rules: [bonus("will", 1, "status", [{ not: { or: ["item:trait:emotion", "item:trait:fear"] } }], "emboldened"), bonus("will", 2, "status", [{ or: ["item:trait:emotion", "item:trait:fear"] }], "emboldened-emotion")] },
         notes: ["Until your next daily preparations: post it again then. Your once-each rerolls (a Will save, an attack roll, the blessed skill's check) are yours to call."]
     },
     {
