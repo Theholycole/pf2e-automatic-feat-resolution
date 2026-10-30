@@ -307,8 +307,9 @@ creature, or the action also has a check, an area, a Strike or a spell.
 ## Heals past a choice or a trigger (2026-10-30, the loop)
 
 - `src/plans/affects-3.js`, affect entries: Rekindled Light (heals your level, wounded +1), Restore the Mind (2 + double your level),
-  Valkyrie's Charge (80 to each ally within 30 feet), Drink from the Chalice (a sip's temporary Hit Points, your level, at least 3,
-  to the end of the next turn), Spirit's Sacrifice (twice your level). The other choice (the chalice's drain, Restore the Mind's
+  Valkyrie's Charge (80 to each ally within 30 feet), Spirit's Sacrifice (twice your level). Drink from the Chalice's sip is PF2e's own
+  Effect (a `linked` entry): the card's temporary Hit Points lasted 1 round from a turn's start, not to the end of your next turn.
+  Foundry test (effb7e1): the heals, wounded and Valkyrie's Charge's allies in range (not the one 40 feet off) all passed. The other choice (the chalice's drain, Restore the Mind's
   bonus) and what can't be applied (not dying, not knocked out) are notes.
 
 ## Tested in Foundry (2026-10-30)

@@ -3,7 +3,6 @@
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const action = (id) => `Compendium.pf2e.actionspf2e.Item.${id}`;
-const rounds = (value, expiry = "turn-start") => ({ mode: "fixed", value, unit: "rounds", expiry, anchor: "effect-start" });
 const wounded = { kind: "condition", slug: "wounded", value: 1, duration: null, stack: { by: 1 } };
 
 export default [
@@ -22,10 +21,12 @@ export default [
         affect: { target: "each ally within 30 feet", effects: [{ kind: "heal", formula: "80" }] },
         notes: ["The squadmates in your banner's aura. One unconscious at 0 can Stand and pick up its weapons; each can then Stride up to twice its Speed toward an enemy and Strike it as a reaction."]
     },
+    // (PF2e's own Effect for the sip, its temporary Hit Points to the end of your next turn: the 1-round card left them a turn short;
+    // 2026-10-30 Foundry test.)
     {
         uuid: action("D91jQs0wleU5ml4K"), name: "Drink from the Chalice",
-        affect: { target: "1 ally", effects: [{ kind: "temp-hp", formula: "max(3,@actor.level)", duration: rounds(1, "turn-end") }] },
-        notes: ["A sip, for you or an adjacent ally. To drain it instead: 3 Hit Points per level healed, by hand (once until it refills)."]
+        linked: { effect: "Compendium.pf2e.feat-effects.Item.gjxSQgN3MopLxM35", label: "Effect: Drink from the Chalice", recipients: "target", target: "1 ally" },
+        notes: ["A sip, for you or an adjacent ally (target yourself for you). To drain it instead: 3 Hit Points per level healed, by hand (once until it refills)."]
     },
     {
         uuid: pf2e("ONUvHtEccDmNEcVu"), name: "Spirit's Sacrifice",
