@@ -26,8 +26,9 @@ import checks2 from "./checks-2.js";
 import affects2 from "./affects-2.js";
 import passiveEffects from "./passive-effects.js";
 import toggles from "./toggles.js";
+import linkedEffects from "./linked-effects.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles, linkedEffects];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
@@ -61,6 +62,20 @@ export function handStrike(item, entry, base = null) {
     if (entry.by) plan.by = entry.by;
     if (!plan.onHit.save) plan.notes = (plan.notes ?? []).map((note) => (note === "The save on a hit is on its card." ? "No class DC was found for the save on a hit: call for it by hand." : note));
     return plan;
+}
+
+// A linked entry → the linked-Effect plan (src/compiler/linked-effect.js) for its Effect. entry.linked: { effect, recipients, target, within }.
+export function handLinked(item, entry) {
+    const linked = entry.linked;
+    const type = item.system?.actionType?.value;
+    return {
+        source: sourceFor(item),
+        activation: { time: type === "action" || !type ? actionsOf(item) : type, traits: [...(item.system?.traits?.value ?? [])] },
+        targeting: { target: linked.target ?? null, range: linked.within && linked.recipients === "target" ? `${linked.within} feet` : null, area: null },
+        trigger: { event: "use" },
+        resolution: { kind: "effect", applications: [{ kind: "native-spell-effect", uuid: linked.effect, label: linked.label ?? (linked.effect.split(".").at(-1).startsWith("Effect") ? linked.effect.split(".").at(-1) : `Effect: ${entry.name}`), recipients: linked.recipients }] },
+        notes: [...(entry.notes ?? [])]
+    };
 }
 
 const actionsOf = (item) => (item.system?.actionType?.value === "free" ? "free" : String(Number(item.system?.actions?.value) || 1));

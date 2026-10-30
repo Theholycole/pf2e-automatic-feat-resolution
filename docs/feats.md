@@ -270,6 +270,18 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Foundry test (2026-10-30).** Against a Phantasmal Protagonist (illusion trait, level 4, DC 24): 19 vs DC 24, a failure, which still counteracts rank 2 at rank 6; whispered to the GM only. Fixed after it: the record of checked illusions used keys with dots, which Foundry's flags nest, so it rolled again on every move (keys are dot-free now); an Effect's spell was read from the compendium index, which has no traits (now the whole spell); the Invisible condition is read; templates aren't read separately (they're regions in Foundry 14).
 - **Secret.** Whispered to the GMs only. Nothing changes on the map: what the creature sees through is the GM's to describe. Each viewer keeps the illusions it checked (`flags["pf2e-automatic-feat-resolution"].truesightChecked`). Setting: "Truesight counteract checks", on by default.
 
+## Linked Effects by hand (2026-10-30, the loop)
+
+- **What:** 17 actions whose result is an Effect linked in their text, that the linked-Effect reader leaves because they do something
+  else too (a Stride, a Mythic Point, a light) or say who gets it in their own words. `src/plans/linked-effects.js`, `linked` entries:
+  the same plan the reader makes (`handLinked`), the rest a note.
+- **On the character:** Augment Senses, Plane-Stepping Dash, Crystal Luminescence, Offer Story, Spiral Sworn, Conduct Energy.
+- **On the target:** Rend Armor, Glimpse Vulnerability, Steel Yourself!, Overdrive Ally (30 feet), Bless Ally, Preparatory Cremation,
+  Warding Protection, Off-Handed Insult.
+- **On you and allies:** Indomitable Spirit and Channeled Protection (adjacent), Unbreaking Castle (your allies).
+- **Left:** actions linking several Effects or giving a choice (Raise the Walls' "one ally of your choice" with you, Roll the Bones of
+  Fate), and those whose Effect follows a check. Count: 2,672 of 4,826 left.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed

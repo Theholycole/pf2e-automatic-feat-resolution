@@ -12,7 +12,7 @@ import { linkedEffect } from "./linked-effect.js";
 import { otherHeal } from "./other-heal.js";
 import { spellLike } from "./spell-like.js";
 import { regainPoint } from "./regain-point.js";
-import { handAct, handAffect, handEntry, handStrike } from "../plans/index.js";
+import { handAct, handAffect, handEntry, handLinked, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
 export { characterStrike } from "./strikes.js";
@@ -35,6 +35,8 @@ export function compileFeat(item, options = {}) {
     // by posting the feat; 2026-10-30, docs/rules.md, "Toggled Effects".)
     // (A passive with PF2e's own Effect for its moment: that Effect, on and off the same way.)
     if (hand?.passiveEffect) return { builtin: "passive-effect", effect: hand.passiveEffect.effect, who: hand.passiveEffect.who, notes: hand.notes ?? [] };
+    // (An action's linked Effect the reader leaves, by hand: as the reader's; src/plans/linked-effects.js.)
+    if (hand?.linked) return handLinked(item, hand);
     if (hand?.toggle) return { builtin: "feat-effect", toggle: true, effect: { name: item.name, rules: hand.toggle.rules, duration: hand.toggle.duration ?? { value: -1, unit: "unlimited", expiry: null, sustained: false }, stance: false }, notes: hand.notes ?? [] };
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;

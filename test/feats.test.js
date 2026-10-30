@@ -566,3 +566,14 @@ test("toggled Effects: a passive's PF2e Effect, on the character or its target",
     const leak = compileFeat(passive("Channel Essence Leak", "Compendium.pf2e-team-plus-magic.items.Item.zaJ0087w6EoqKyDp"), { dcs: DCS });
     assert.equal(leak.effect, "Compendium.pf2e-team-plus-magic.misc.Item.ehRD6fl2IfuURuaM");
 });
+
+test("linked Effects by hand: an action's Effect the reader leaves, on the character, its target or its allies", async () => {
+    const action = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Stride once.</p>" }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
+    const dash = compileFeat(action("Plane-Stepping Dash", "Compendium.pf2e.feats-srd.Item.s6C5jtru8j0sONa6"), { dcs: DCS });
+    assert.deepEqual(dash.resolution.applications[0], { kind: "native-spell-effect", uuid: "Compendium.pf2e.feat-effects.Item.Effect: Plane-Stepping Dash", label: "Effect: Plane-Stepping Dash", recipients: "self" });
+    const spirit = compileFeat(action("Indomitable Spirit", "Compendium.pf2e.feats-srd.Item.v84501yLBubHlGPz"), { dcs: DCS });
+    assert.equal(spirit.resolution.applications[0].recipients, "allies-in-area");
+    assert.equal(spirit.targeting.target, "you and each ally within 5 feet");
+    const overdrive = compileFeat(action("Overdrive Ally", "Compendium.pf2e.feats-srd.Item.NBvhmNqneeok7ZOr"), { dcs: DCS });
+    assert.equal(overdrive.targeting.range, "30 feet");
+});
