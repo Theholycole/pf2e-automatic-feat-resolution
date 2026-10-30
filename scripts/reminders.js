@@ -6,6 +6,7 @@ import { asksForSave, eventTrigger, eventsOf, ownStrikeEvents, ownUseTrigger, pr
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const SETTING = "turnReminders";
+const PASSIVE = "passiveReminders";
 
 export function registerReminderSetting() {
     game.settings.register(MODULE_ID, SETTING, {
@@ -16,7 +17,20 @@ export function registerReminderSetting() {
         type: Boolean,
         default: true
     });
+    // (Passive feats that say when they apply, "Whenever you critically succeed on a Strike, …": the loop, 2026-10-30. Their own switch, as
+    // they come more often.)
+    game.settings.register(MODULE_ID, PASSIVE, {
+        name: "Reminders for passive feats too",
+        hint: "Also whisper passive feats that say when they apply (\"Whenever you critically succeed on a Strike, …\", \"At the start of each of your turns, you gain an additional reaction …\").",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: true
+    });
 }
+
+// (Without the passive feats when that setting is off.)
+const shown = (due) => (game.settings.get(MODULE_ID, PASSIVE) ? due : due.filter(({ read }) => read?.kind !== "passive"));
 
 const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character]);
 
@@ -26,7 +40,7 @@ async function remind(combatant, when) {
     const items = [...actor.itemTypes.feat, ...actor.itemTypes.action];
     // (Slice 9: dying at the turn's start, its recovery check to come.)
     const dying = when === "start" && actor.hasCondition?.("dying") ? items.map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-recovery") : [];
-    const due = [...turnReminders(items, when, (slug) => !!actor.hasCondition?.(slug)), ...dying];
+    const due = shown([...turnReminders(items, when, (slug) => !!actor.hasCondition?.(slug)), ...dying]);
     if (!due.length) return;
     const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
     const lines = due.map(({ item, read }) => `<li>@UUID[${item.uuid}]{${escape(item.name)}} (${read.kind}): ${escape(read.trigger)}</li>`).join("");
@@ -58,7 +72,9 @@ const isUse = (message) => {
     return !type || type === "spell-cast";
 };
 
-async function whisper(actor, heading, due) {
+async function whisper(actor, heading, all) {
+    const due = shown(all);
+    if (!due.length) return;
     const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
     const lines = due.map(({ item, read }) => `<li>@UUID[${item.uuid}]{${escape(item.name)}} (${read.kind}): ${escape(read.trigger)}</li>`).join("");
     await ChatMessage.create({ content: `<p>${heading} You may be able to use:</p><ul>${lines}</ul>`, speaker: ChatMessage.getSpeaker({ actor }), whisper: owners, flags: { [MODULE_ID]: { reminder: "event" } } });
