@@ -88,6 +88,12 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **Live** (`scripts/reminders.js`), in an encounter only: when a non-character's token moves and starts or ends in range of a character of another disposition; and when a non-character's action or spell is posted whose traits include the ones named.
 - **Measured:** 7 options (Not So Fast!, Shoving Sweep, Hunting Snag, Opportune Throw, Reflexive Courage, Distracting Explosion, Back Off!). PF2e's own Reactive Strike and its kin were already counted handled.
 
+## Hand-picked: the core classes' feats (2026-10-30, Cole's choice after the loop)
+
+- **How** (`src/plans/`): a feat the readers don't take gets an entry by its compendium UUID, written from its text: `strike` (what differs from a plain Strike, merged into the strike-activity builtin: Strikes, Strides, ranged or melee, off-guard, a hit's conditions, push or follow-up action) or `text` (its rules in plain words with PF2e's tags, so the readers fill the character's numbers). `compileFeat` looks there first. What a feat does that the card can't play goes to the GM as notes when it's used.
+- **Fighter** (14): Brutish Shove, Dragging Strike, Slam Down, Parting Shot, Quick Reversal, Rebounding Toss, Dashing Strike and others. Lunge, Dual-Handed Assault, Advantageous Assault, Dazing Blow and Agile Shield Grip already have PF2e's own rules.
+- **Rogue, ranger, barbarian, monk** (22): Resounding Blow, Mage Hunter, Disarming Assault, Knockback Strike, Wave Dashes Rocks, Blazing Streak, Time Dilation Cascade and others. Saves at the class DC (Felling Shot, Silencing Strike, Master Strike) the readers already take with the character's own DC.
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.

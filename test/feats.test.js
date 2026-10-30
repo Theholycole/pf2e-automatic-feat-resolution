@@ -213,3 +213,17 @@ test("a reaction used before the character's own roll: a reminder before the sav
     assert.equal(preRollTrigger(reaction("Your ally is about to roll a saving throw.")), null);
     assert.ok(asksForSave('<a class="inline-check" data-pf2-check="reflex" data-pf2-dc="25">'));
 });
+
+test("a feat with a hand-written plan: the plan, by the item's compendium source", async () => {
+    const { PLAN_BATCHES } = await import("../src/plans/index.js");
+    const uuids = PLAN_BATCHES.flat().map((entry) => entry.uuid);
+    assert.equal(new Set(uuids).size, uuids.length, "each feat once");
+    const item = { ...feat("Brutish Shove", "<p>Make a Strike with a two-handed melee weapon. …</p>", 1), sourceId: "Compendium.pf2e.feats-srd.Item.gt9pvIicabSOe6pB" };
+    const plan = compileFeat(item, { dcs: DCS });
+    assert.equal(plan.builtin, "strike-activity");
+    assert.equal(plan.melee, true);
+    assert.equal(plan.onHit.push, 5);
+    assert.equal(plan.onHit.conditions[0].slug, "off-guard");
+    const resounding = compileFeat({ ...feat("Resounding Blow", "<p>…</p>"), sourceId: "Compendium.pf2e.feats-srd.Item.9kY9B5WgtEleOicn" }, { dcs: DCS });
+    assert.equal(resounding.onHit.critical[0].duration.unit, "minutes");
+});

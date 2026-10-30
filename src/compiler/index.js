@@ -8,6 +8,7 @@ import { characterStrike } from "./strikes.js";
 import { asUsed } from "./used.js";
 import { selfHeal } from "./self-heal.js";
 import { selfEffect } from "./self-effect.js";
+import { handEntry, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
 export { characterStrike } from "./strikes.js";
@@ -17,7 +18,10 @@ export { characterStrike } from "./strikes.js";
 export function compileFeat(item, options = {}) {
     const { dcs, ...abilityOptions } = options;
     if (!dcs) return null;
-    const filled = withCharacterDCs(item, dcs);
+    // (A plan written by hand for this feat, src/plans/: first.)
+    const hand = handEntry(item);
+    if (hand?.strike) return handStrike(item, hand);
+    const filled = withCharacterDCs(hand?.text ? withText(item, hand.text) : item, dcs);
     const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? selfEffect(filled, dcs);
     if (plan) return plan;
     // (Slice 3: a reaction or free action, its effect as the player uses it; its trigger and time kept on the plan.)
