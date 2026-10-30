@@ -41,7 +41,8 @@ function recordTargets(message, _data, _options, userId) {
 
 // A character's feat or action: its card when it reads into a save, a check or healing on its targets, or a Strike feat's (its hit's
 // results when the player's Strike hits). Its other readings (a PF2e Effect, a builtin) only with the world setting (D2).
-const CARD_KINDS = new Set(["save", "check", "healing"]);
+// (Slice 13: "effect", one of PF2e's own Effects the feat links, on the character, its target or its allies.)
+const CARD_KINDS = new Set(["save", "check", "healing", "effect"]);
 const SETTING = "featCards";
 function registerSetting() {
     game.settings.register(MODULE_ID, SETTING, {
@@ -50,7 +51,7 @@ function registerSetting() {
         scope: "world",
         config: true,
         type: String,
-        choices: { checks: "Saves, checks, healing and Strike feats", all: "Also Effects and the other readings" },
+        choices: { checks: "Saves, checks, healing, Strike feats and the PF2e Effects feats link", all: "Also the other readings" },
         default: "checks"
     });
 }
@@ -87,6 +88,8 @@ async function cardForFeat(message) {
         }));
         if (around.length) return play(item, plan, sourceToken, new Set(around));
     }
+    // ("You and your allies", Defiant Banner: the character with the GM's targets.)
+    if (/^you and\b/i.test(plan.targeting?.target ?? "") && source) targets.push(source);
     return play(item, plan, sourceToken, new Set(targets));
 }
 

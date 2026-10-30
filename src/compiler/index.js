@@ -8,6 +8,7 @@ import { characterStrike } from "./strikes.js";
 import { asUsed } from "./used.js";
 import { selfHeal } from "./self-heal.js";
 import { selfEffect } from "./self-effect.js";
+import { linkedEffect } from "./linked-effect.js";
 import { handAct, handAffect, handEntry, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
@@ -25,7 +26,7 @@ export function compileFeat(item, options = {}) {
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
-    const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? selfEffect(filled, dcs);
+    const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? selfEffect(filled, dcs);
     // (A text entry's notes: what its rewritten text leaves out.)
     if (plan) return hand?.text && hand.notes?.length ? { ...plan, notes: [...(plan.notes ?? []), ...hand.notes] } : plan;
     // (Slice 3: a reaction or free action, its effect as the player uses it; its trigger and time kept on the plan.)

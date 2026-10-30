@@ -294,3 +294,24 @@ test("each enemy within 30 feet: the card finds them itself", async () => {
     assert.equal(inArea(ground, { distance: 5, disposition: -1, sourceDisposition: 1, elevation: 10 }), false, "flying");
     assert.equal(inArea(ground, { distance: 5, disposition: 1, sourceDisposition: 1 }), true, "any creature, allies too");
 });
+
+test("slice 13: an action that grants one of PF2e's own Effects, on the character, its target or its allies", async () => {
+    const { linkedEffect } = await import("../src/compiler/linked-effect.js");
+    const { areaOf, inArea } = await import("../src/compiler/area-targets.js");
+    const action = (name, html, type = "action") => ({ name, type: "feat", system: { description: { value: html }, actionType: { value: type }, actions: { value: 1 }, traits: { value: [] } } });
+    const link = (name) => `<p>@UUID[Compendium.pf2e.feat-effects.Item.abcdefghijklmnop]{Effect: ${name}}</p>`;
+    const self = linkedEffect(action("Ceremony of Protection", `<p>You manipulate your exoskeleton to overlap itself. You gain a +1 circumstance bonus to AC until the start of your next turn.</p>${link("Ceremony of Protection")}`));
+    assert.deepEqual(self.resolution.applications[0], { kind: "native-spell-effect", uuid: "Compendium.pf2e.feat-effects.Item.abcdefghijklmnop", label: "Effect: Ceremony of Protection", recipients: "self" });
+    const ally = linkedEffect(action("Watch Your Back", `<p>You shout a warning to an ally about encroaching foes. Choose a target ally within 60 feet. Until the beginning of your next turn, the target can't be Off-Guard due to flanking.</p>${link("Watch Your Back")}`));
+    assert.equal(ally.resolution.applications[0].recipients, "target");
+    const reroll = linkedEffect(action("Fear No Pain!", `<p><strong>Trigger</strong> An ally within 30 feet fails a save against a mental effect.</p><hr /><p>You have learned to endure pain. When you give them a shout of encouragement, the triggering ally can reroll their failed save with a +2 circumstance bonus.</p>${link("Fear No Pain!")}`, "reaction"));
+    assert.equal(reroll.resolution.applications[0].recipients, "target");
+    const tempo = linkedEffect(action("Fleet Tempo", `<p>You ring a sprightly tone. You and all allies within 30 feet gain a +10-foot status bonus to all Speeds for 1 minute.</p>${link("Fleet Tempo")}`));
+    assert.equal(tempo.targeting.target, "you and each ally within 30 feet");
+    const area = areaOf(tempo.targeting.target);
+    assert.equal(inArea(area, { distance: 0, disposition: 1, sourceDisposition: 1, self: true }), true, "the character too");
+    assert.equal(inArea(area, { distance: 20, disposition: -1, sourceDisposition: 1 }), false, "not a foe");
+    assert.equal(linkedEffect(action("Hot Foot", `<p>You make a Strike against the ground near a target.</p>${link("Hot Foot")}`)), null, "something else to do");
+    assert.equal(linkedEffect(action("Two", `<p>You gain a bonus.</p>${link("A")}<p>@UUID[Compendium.pf2e.feat-effects.Item.zzzzzzzzzzzzzzzz]{Effect: B}</p>`)), null, "two Effects");
+    assert.equal(linkedEffect({ ...action("Own", `<p>You gain a +1 bonus to AC.</p>${link("Own")}`), system: { ...action("Own", `<p>You gain a +1 bonus to AC.</p>${link("Own")}`).system, selfEffect: { uuid: "x" } } }), null, "PF2e's own Use button");
+});

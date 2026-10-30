@@ -100,6 +100,17 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **Saves rewritten** (`saves.js`): a `text` entry can carry notes for what its rewrite leaves out (Fling Head's extra targets, Spirit's Anguish's remnant damage, Pandemonium Eruption's random type, Boulder Roll's push, Sonic Dash's Awakening).
 - **Count** after these: 3,287 of 4,826 still need work. (The count now gives the test character every class's DC, as a character with that class or its archetype has; before, feats with "against:barbarian" and the like weren't read in the count, though they are in play. The count also gives the character every skill's DC and plays the basic actions, as play does. The 161 feats whose PF2e data names their own Effect, applied by PF2e's Use button, are counted as done.)
 
+## Slice 13: actions that grant one of PF2e's own Effects (2026-10-30)
+
+An action, free action or reaction whose one result is an Effect its text links ("You gain a +1 circumstance bonus to AC until the start
+of your next turn. Effect: Ceremony of Protection") gets the ability module's effect card, with Apply (src/compiler/linked-effect.js). Who
+gets it is read from the sentence that grants it: the character ("You gain"), one ally or creature, the GM's target ("Choose a target ally
+within 60 feet", "the triggering ally can reroll", "You grant one creature"), or the character and its allies ("You and all allies within
+30 feet gain", found in range by the card itself; "You and all allies within the aura of your commander's banner", the GM's targets and the
+character). Not when it does anything else (a check, a Strike, movement, a spell, a choice of results), links two Effects, or PF2e already
+applies it from the sheet. The cards setting's default now includes these Effect cards (D12, below).
+- **Measured:** 21 options (Ceremony of Protection, Fleet Tempo, Defiant Banner, Fear No Pain!, Watch Your Back …). Count: 3,261 of 4,826 left.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed
@@ -143,3 +154,5 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 | D9 | 157 options have PF2e's own self-applied Effect (`selfEffect`), which PF2e already offers as a button on the feat's chat card. Should the module apply it on use instead of the button? | Left to PF2e's button. |
 | D10 | A feat read in slice 5 puts the module's Effect on the character as soon as it's used, with no card or button. Should it ask first (a button on the chat card), or apply it as PF2e's own stances do? | Applied on use, whatever the D2 setting. |
 | D11 | Turn reminders (slice 6), attack and damage reminders (slice 7) and own-action reminders (slice 8) before-the-roll reminders (slice 9) condition reminders (slice 10) and foe-movement reminders (slice 11) are whispered to the character's owners and the GM at each turn start or end, or attack or damage roll, where a feat triggers. On by default, or off until a group turns them on? | On by default; a world setting turns them off. |
+- **D12 (slice 13):** the "Cards for characters' feats" default ("checks") now also plays cards that apply a PF2e Effect a feat links. Default:
+  on, since the GM still presses Apply. Alternative: keep them for the "all" choice only.
