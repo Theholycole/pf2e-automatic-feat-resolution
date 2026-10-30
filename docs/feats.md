@@ -397,3 +397,10 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   or become X" (Behold!). Aspects are NPCs, so their cards are the ability module's; 13 of the index's aspect actions read. Foundry test on
   an NPC with the flags set by hand (Foundry Summons, which Teams+ Magic's summon macro needs, isn't in the test copy): Aftershock (DC 25
   basic Reflex, 3d6) and Terrifying Shriek (6d6 mental) pass.
+
+### Round 12 (2026-10-30)
+
+- Checks against your level's DC said in words (src/plans/self-checks.js): Ostentatious Reload, Improvise Admixture, Seasoned Command
+  (hard DC for the ally's level), Fourth Wall Break, Furious Stride (a Fortitude save: the card's check rolls PF2e's save, though its line
+  says "check"), Primal Intonation, Transpose Self. The outcomes are notes. Foundry test (feat 87fd97a): all pass, with the right DCs.
+- Behold! (ability 039b454): DC 25 Will save, Frightened 1 on a failure, then the 1-minute immunity. A target that's immune gets no card.

@@ -73,5 +73,11 @@ export default [
         uuid: "Compendium.pf2e.classfeatures.Item.wYOdTCWQQ6ec8I6b", name: "Advanced Vials (Mutagenist)",
         toggle: { rules: [{ key: "Resistance", type: "physical", value: "floor(@actor.level/2)" }] },
         notes: ["On when you drink one of your field vials, for as long as its effect lasts."]
+    },
+    // (2026-10-30, the loop: resistance 5, +5 at 10th level and every 4 levels after.)
+    {
+        uuid: pf2e("stsCnc8hR6db1Get"), name: "Kinetic Dampening",
+        toggle: { rules: [{ key: "Resistance", type: "physical", value: "5*floor((@actor.level-2)/4)" }], duration: ROUND },
+        notes: ["Awakening: for an extra action, the creatures you choose within 15 feet get it too (by hand); or also resistance to fire, electricity or sonic, your choice."]
     }
 ];
