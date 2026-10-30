@@ -165,6 +165,12 @@ creature, or the action also has a check, an area, a Strike or a spell.
   thrall. Not "When an enemy triggers your champion's reaction, you regain …" (Retributive Focus): only sometimes.
 - Energized Font, Well of Potential, Dissolution's Clarity, Surging Focus, Consume Thrall, Invoke Infernal Focus, Summon Mythic Power, Mythic
   Echo. Count: 2,830 of 4,826 left.
+- **Foundry test (2026-10-30, 7744ee3).** Energized Font took Focus 1 to 2 of 2 and said so; again at 2 of 2 it changed nothing and said
+  the pool was full. Invoke Infernal Focus the same, its doomed a note. A world without mythic rules has no Mythic Points: the line now
+  says so. Instant Recovery rolled PF2e's own 24 healing; Spirit's Absolution healed 8d4, Vital Compound Invocation 21; Waters of
+  Creation found the three creatures within 15 feet (an enemy too, as written) and not the character; Plant Banner gave 12 temporary Hit
+  Points for 1 round to each ally within 30 feet; Frightening Power found only the enemy within 20 feet (DC 24, frightened 4 on a critical
+  failure); Warped Constriction dealt 8 bludgeoning and 2 mental on one basic Will save. No errors.
 
 ## Hand-picked: more checks against a creature (2026-10-30, the loop)
 

@@ -133,7 +133,8 @@ async function regainPoint(item, plan) {
     const next = Number.isFinite(max) ? Math.min(max, value + plan.value) : value + plan.value;
     if (next !== value) await actor.update({ [`${pool.path}.value`]: next });
     const notes = (plan.notes ?? []).map((note) => `<p>${note}</p>`).join("");
-    const said = next === value ? `already has all ${max} ${pool.label}s` : `regains ${next - value} ${pool.label}${next - value === 1 ? "" : "s"} (${next}${Number.isFinite(max) ? ` of ${max}` : ""})`;
+    // (No pool at all, a world without mythic rules: said so, not "all 0"; 2026-10-30 Foundry test.)
+    const said = max === 0 ? `has no ${pool.label}s` : next === value ? `already has all ${max} ${pool.label}s` : `regains ${next - value} ${pool.label}${next - value === 1 ? "" : "s"} (${next}${Number.isFinite(max) ? ` of ${max}` : ""})`;
     return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${item.name}</strong>: ${actor.name} ${said}.</p>${notes}` });
 }
 
