@@ -125,3 +125,55 @@ export function readNotes(item) {
     }
     return notes;
 }
+
+// A reaction or free action whose trigger is one of the character's own rolls (2026-10-30, docs/rules.md, batch 5): "You fail a Will
+// save.", "You critically hit a demon with a Strike.", "You roll initiative." A Note on that roll, for the degrees the trigger names, says
+// the feat can be used now; PF2e has the roll's card on screen at that moment. Not a trigger before the roll ("but you haven't rolled
+// yet", "You're about to …"): a note after it comes too late.
+const DEGREES = [
+    [/^(?:fail or critically fail|fail) (?:at )?/, ["failure", "criticalFailure"]],
+    [/^critically fail (?:at |on )?/, ["criticalFailure"]],
+    [/^(?:succeed|roll a success) (?:at |on )?/, ["success", "criticalSuccess"]],
+    [/^(?:critically succeed|roll a critical success) (?:at |on )?/, ["criticalSuccess"]],
+    [/^roll a critical failure (?:at |on )?/, ["criticalFailure"]],
+    [/^roll a failure (?:at |on )?/, ["failure"]]
+];
+// What's rolled → its selectors (and an action's predicate).
+function rolledSelectors(words) {
+    const text = words.toLowerCase();
+    let match;
+    if ((match = /^(?:an? |your )?((?:fortitude|reflex|will)(?:(?:,| or| and) (?:a )?(?:fortitude|reflex|will))*) (?:save|saving throw)s?\b/.exec(text))) return match[1].split(/,? or |,? and |, /).map((save) => ({ selector: save.replace(/^a /, "") }));
+    if (/^(?:an? |your )?(?:basic )?(?:save|saving throw)s?\b/.test(text)) return [{ selector: "saving-throw" }];
+    if (/^(?:an? |your )?skill checks?\b/.test(text)) return [{ selector: "skill-check" }];
+    if ((match = /^an? (demoralize|feint|grapple|trip|shove|disarm) (?:check|attempt)\b/.exec(text))) return [{ selector: ACTION_STATISTICS[match[1]][0], predicate: [`action:${match[1]}`] }];
+    if ((match = /^an? check to ([a-z ]+?)\b(?: |\.|$)/.exec(text)) && ACTION_STATISTICS[match[1].replace(/\s+/g, "-")]) return ACTION_STATISTICS[match[1].replace(/\s+/g, "-")].map((selector) => ({ selector, predicate: [`action:${match[1].replace(/\s+/g, "-")}`] }));
+    if ((match = /^an? ([a-z]+) check\b/.exec(text)) && Object.values(ACTION_STATISTICS).flat().includes(match[1])) return [{ selector: match[1] }];
+    if (/^(?:an? |your )?(?:melee |ranged )?(?:strike|attack roll)s?\b/.test(text)) return [{ selector: /strike/.test(text) ? "strike-attack-roll" : "attack-roll" }];
+    return null;
+}
+
+export function readTriggerNotes(item) {
+    if (!["reaction", "free"].includes(item?.system?.actionType?.value)) return [];
+    if ((item?.system?.rules ?? []).some((rule) => rule.key === "Note")) return [];
+    const html = String(item?.system?.description?.value ?? "");
+    const found = /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(html);
+    if (!found) return [];
+    const trigger = htmlToPlainText(plainLabels(found[1])).replace(/\s+/g, " ").trim().replace(/\s*Trigger\b.*$/, "").replace(/([^.])$/, "$1.");
+    if (/\bhaven['’]t (?:yet )?rolled|\bhaven['’]t rolled yet|\bbut (?:you )?haven['’]t\b|\babout to\b|\bwould\b/i.test(trigger)) return [];
+    const kind = item.system.actionType.value === "reaction" ? "reaction" : "free action";
+    const note = (selector, predicate, outcome) => ({ key: "Note", selector, ...(predicate ? { predicate } : {}), ...(outcome ? { outcome } : {}), title: "{item|name}", text: `<p><strong>Trigger</strong> ${trigger}</p><p>You can use this ${kind} now.</p>` });
+    if (/^You roll initiative\b/i.test(trigger)) return [note("initiative")];
+    let match;
+    if ((match = /^You (?:roll a )?critical(?:ly)? hit\b/i.exec(trigger))) return [note("strike-attack-roll", null, ["criticalSuccess"])];
+    if ((match = /^You (?:hit|succeed at a (?:melee |ranged )?Strike)\b/i.exec(trigger))) return [note("strike-attack-roll", null, ["success", "criticalSuccess"])];
+    const rest = trigger.replace(/^You /, "");
+    const degree = DEGREES.find(([lead]) => lead.test(rest.toLowerCase()));
+    if (!degree) return [];
+    // ("You fail a skill check or saving throw", "an attack roll or Will save": each roll the trigger names.)
+    const rolled = rest.toLowerCase().replace(degree[0], "");
+    const whole = /^(?:an? |your )?(?:fortitude|reflex|will)(?:,? (?:or|and) (?:a )?(?:fortitude|reflex|will))+ sav/.test(rolled);
+    const parts = whole ? [rolled] : rolled.split(/,? or (?=(?:an? |your )?(?:fortitude|reflex|will|skill|saving|save|attack|melee|ranged|strike)\b)/);
+    const selectors = parts.map((part, index) => rolledSelectors(index ? `a ${part.replace(/^(?:an? |your )/, "")}` : part)).filter(Boolean).flat();
+    if (!selectors.length || !rolledSelectors(parts[0])) return [];
+    return selectors.map(({ selector, predicate }) => note(selector, predicate ?? null, degree[1]));
+}

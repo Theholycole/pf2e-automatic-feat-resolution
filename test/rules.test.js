@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { BATCHES, compendiumUuid, rulesFor } from "../src/rules/index.js";
-import { readRules, sentenceRules, readNotes } from "../src/rules/read.js";
+import { readRules, sentenceRules, readNotes, readTriggerNotes } from "../src/rules/read.js";
 
 // The rule elements the module adds (docs/rules.md): only ones PF2e builds from data alone, that never write back to their own source.
 const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike"]);
@@ -66,4 +66,15 @@ test("a passive about a Strike's degree or initiative: a Note on the attack roll
     const [initiative] = readNotes(passive("<p>When you roll initiative and can see a giant, you can Hunt Prey as a free action.</p>"));
     assert.equal(initiative.selector, "initiative");
     assert.equal(initiative.outcome, undefined);
+});
+
+test("a reaction triggered by the character's own roll: a note on that roll, for the degrees named", () => {
+    const reaction = (trigger) => ({ type: "feat", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>You reroll.</p>` }, rules: [] } });
+    const both = readTriggerNotes(reaction("You fail a Fortitude or Will save."));
+    assert.deepEqual(both.map((rule) => [rule.selector, rule.outcome]), [["fortitude", ["failure", "criticalFailure"]], ["will", ["failure", "criticalFailure"]]]);
+    assert.match(both[0].text, /You can use this reaction now/);
+    assert.deepEqual(readTriggerNotes(reaction("You fail a skill check or saving throw.")).map((rule) => rule.selector), ["skill-check", "saving-throw"]);
+    assert.deepEqual(readTriggerNotes(reaction("You succeed at a Demoralize check.")).map((rule) => rule.predicate), [["action:demoralize"]]);
+    assert.equal(readTriggerNotes(reaction("You roll initiative."))[0].selector, "initiative");
+    assert.deepEqual(readTriggerNotes(reaction("You attempt a saving throw against a magical effect, but you haven't rolled yet.")), [], "before the roll");
 });

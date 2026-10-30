@@ -58,6 +58,12 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
 - The same reader, for a passive about a Strike's degree ("When you critically hit with a butterfly sword, …", "If you hit your hunted prey with a ranged weapon, …", "When you make a ranged Strike, …"): a Note on `strike-attack-roll` with the degrees named. And "When you roll initiative, …": a Note on `initiative`. A sentence that leans on the one before ("such a foe", "in this way") brings its paragraph.
 - By hand: Leave an Opening's first sentence, "When you hit hard enough", is flavour; its Note is for the critical hit its rule names.
 
+### Batch 5 (2026-10-30): 52 options, "use it now" on the roll that triggers it
+
+- A reaction or free action whose trigger is the character's own roll ("You fail a Will save.", "You fail a skill check or saving throw.", "You critically hit a demon with a Strike.", "You succeed at a Demoralize check.", "You roll initiative.") gets a Note on that roll, for the degrees the trigger names: its trigger, and that the feat can be used now. Read by `readTriggerNotes` in `src/rules/read.js` and reviewed.
+  - The trigger's other conditions ("against a mental effect", "with a slashing weapon") are in the note's words, for the player to judge; the note doesn't test them.
+  - Not a trigger before the roll ("but you haven't rolled yet", "You're about to roll initiative"): a note on the roll's card comes too late for those. They wait for a prompt before the roll.
+
 ### Looked at, not batched
 
 - **Stances:** 99 of the 117 stances already have PF2e's own Effect. Most of the other 18 change terrain, cover or allies rather than numbers on the character, so they stay notes for the GM.
