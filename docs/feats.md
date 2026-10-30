@@ -155,6 +155,13 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Foundry test, companions (2026-10-30).** A level 8 summoner (spell DC 24) and Beast eidolon owned by one player: the master was found by ownership and every save was DC 24. Primal Roar found each enemy within 30 feet itself; Constricting Hold from the summoner's sheet came from the eidolon's token at 12 bludgeoning (level 8 + Str 4). Fixed after it: Dragon Breath rolls the eidolon's chosen type (`flags.pf2e.rulesSelections.dragonBreathDamage`), and Drain Life's save deals its half-level void damage. Dragon Breath's cone still hits the GM's targets, as any template does.
 - **Left.** Underling actions (Teams+ adventures) are an NPC's, for the ability module. Eidolon's Trample and Field of Roots deal a Strike's damage the card can't name; Flowing Engulf, Unspeakable Demonstration and Inhibiting Excretion are lasting areas.
 
+## Spell-like feats (2026-10-30, Cole's choice)
+
+- **What.** An action, reaction or free action that is a spell: "This has the effects of a 2nd-rank Web spell using your class or spell DC, whichever is higher" (Webslinger), "You cast Enlarge" (Ka Stone Ritual), "the 3-action version of Heal". `src/compiler/spell-like.js` reads the spell, its rank ("Nth-rank", or "heightened to half your level rounded up") and the DC it names (class, spell, or the higher of the two). With no DC named, it uses the higher of the character's class and spell DCs, and the card says so.
+- **How it plays.** The spell module's `api.castFromItem` casts it through PF2e from a temporary innate entry with that DC, on the player's targets, and the spell module's own card resolves it (scripts/main.js, `castSpellLike`). A spell named in the text by name ("…spells-srd.Item.Web") is looked up in its pack. Without the spell module, nothing is cast.
+- **Not read.** Passives (their "you can cast" changes another casting or is the spell module's granted spell), triggers and requirements ("You cast Spellsurge"), sentences starting "When", "If" or "While", spells "at will" for a while, a spell after a check (Unwind Death), two spells to choose from, and feats with PF2e's own Effect.
+- 22 feats, among them Webslinger, True Senses, Rat Form, Bat Form, Animal Rage, Dire Growth, Quaking Stomp, Reactive Transformation and Glass Skin.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed

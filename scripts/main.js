@@ -12,6 +12,8 @@ import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnU
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
 
+const SPELL_MODULE = "pf2e-automatic-spell-resolution";
+const spellApi = () => (game.modules.get(SPELL_MODULE)?.active ? game.modules.get(SPELL_MODULE).api ?? null : null);
 const abilityApi = () => (game.modules.get(ABILITY_MODULE)?.active ? game.modules.get(ABILITY_MODULE).api ?? null : null);
 const isActiveGM = () => game.users.activeGM?.isSelf ?? game.user.isGM;
 
@@ -79,6 +81,7 @@ async function cardForFeat(message) {
     if (!play) return warnOnce();
     const sourceToken = (item === posted ? message.token : null) ?? item.actor.getActiveTokens(true, true)[0] ?? null;
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
+    if (plan?.builtin === "spell-like") return castSpellLike(item, plan, sourceToken, message);
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
     if (!(plan.resolution && CARD_KINDS.has(plan.resolution.kind)) && !allCards()) return;
     // (Damage still naming something the feat's roll data doesn't hold: PF2e's own card, not a wrong roll; D3.)
@@ -112,6 +115,23 @@ function edgeDistance(source, token) {
     const centers = canvas.grid.measurePath([source.center, token.center]).distance;
     const sizes = ((Math.max(source.document.width, 1) - 1) + (Math.max(token.document.width, 1) - 1)) / 2;
     return Math.max(0, centers - sizes * canvas.grid.distance);
+}
+
+// (2026-10-30, "Spell-like feats": Webslinger's 2nd-rank Web at the character's DC, cast through PF2e by the spell module, whose card resolves
+// it. Its UUID by name in the text ("…Item.Web") is the pack's entry of that name.)
+async function castSpellLike(item, plan, sourceToken, message) {
+    const cast = spellApi()?.castFromItem;
+    if (!cast) return;
+    let uuid = plan.spell.uuid;
+    const parts = /^Compendium\.([\w-]+)\.([\w-]+)\.Item\.(.+)$/.exec(uuid);
+    if (parts && !/^[A-Za-z0-9]{16}$/.test(parts[3])) {
+        const entry = game.packs.get(`${parts[1]}.${parts[2]}`)?.index?.getName?.(parts[3]);
+        if (!entry) return;
+        uuid = `Compendium.${parts[1]}.${parts[2]}.Item.${entry._id}`;
+    }
+    const recorded = (message.getFlag?.(MODULE_ID, "targets") ?? []).map((each) => fromUuidSync(each)).filter(Boolean).map((token) => token.object ?? token);
+    await cast({ actor: item.actor, token: sourceToken, spell: uuid, rank: plan.rank, dc: plan.dc, targets: recorded.length ? recorded : null,
+        item: { name: item.name, uuid: item.uuid, img: item.img }, ...(plan.actions ? { actions: plan.actions } : {}) });
 }
 
 let warned = false;

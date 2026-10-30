@@ -420,3 +420,20 @@ test("companions: eidolon actions by hand", async () => {
     assert.equal(eventTrigger(reaction("Redistribute", "An enemy's Strike against your eidolon is a critical hit.")).event, "critical-hit");
     assert.equal(eventTrigger(reaction("Anatomy", "An enemy adjacent to your eidolon deals damage to your eidolon", { type: "character", traits: new Set(["human"]) })), null, "on the summoner's sheet, as written");
 });
+
+test("spell-like feats: the spell, its rank and the character's DC", async () => {
+    const { spellLike } = await import("../src/compiler/spell-like.js");
+    const dcs = { level: 8, class: 25, spell: 27 };
+    const feat = (html, type = "action") => ({ name: "Test", type: "feat", system: { description: { value: html }, actionType: { value: type }, actions: { value: 2 }, traits: { value: [] } } });
+    const web = spellLike(feat("<p>This has the effects of a 2nd-rank @UUID[Compendium.pf2e.spells-srd.Item.Web] spell using your class or spell DC, whichever is higher.</p>"), dcs);
+    assert.deepEqual([web.spell.name, web.rank, web.dc], ["Web", 2, 27]);
+    const stomp = spellLike(feat("<p>You gain the effects of the @UUID[Compendium.pf2e.spells-srd.Item.Earthquake]{earthquake} spell, using your class DC.</p>"), dcs);
+    assert.deepEqual([stomp.spell.name, stomp.rank, stomp.dc], ["earthquake", null, 25]);
+    const heal = spellLike(feat("<p>You cast the 3-action version of @UUID[Compendium.pf2e.spells-srd.Item.Heal], heightened to a rank equal to half your level rounded up.</p>"), dcs);
+    assert.deepEqual([heal.actions, heal.rank], [3, 4]);
+    assert.equal(spellLike(feat("<p><strong>Trigger</strong> You cast @UUID[Compendium.pf2e.spells-srd.Item.Spellsurge].</p><hr /><p>Allies gain a bonus.</p>", "free"), dcs), null, "its trigger");
+    assert.equal(spellLike(feat("<p>When one of you casts the @UUID[Compendium.pf2e.spells-srd.Item.Shield] spell, the other gains +1.</p>"), dcs), null, "a condition");
+    assert.equal(spellLike(feat("<p>You can cast @UUID[Compendium.pf2e.spells-srd.Item.Invoke] at will.</p>"), dcs), null, "at will");
+    assert.equal(spellLike(feat("<p>Attempt a @Check[crafting|dc:40] check. If you succeed, the target returns with the effects of @UUID[Compendium.pf2e.spells-srd.Item.Raise Dead].</p>"), dcs), null, "after a check");
+    assert.equal(spellLike(feat("<p>You can cast @UUID[Compendium.pf2e.spells-srd.Item.Heal] once per day.</p>", "passive"), dcs), null, "a passive");
+});
