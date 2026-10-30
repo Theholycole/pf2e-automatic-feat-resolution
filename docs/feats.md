@@ -279,6 +279,9 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **On the target:** Rend Armor, Glimpse Vulnerability, Steel Yourself!, Overdrive Ally (30 feet), Bless Ally, Preparatory Cremation,
   Warding Protection, Off-Handed Insult.
 - **On you and allies:** Indomitable Spirit and Channeled Protection (adjacent), Unbreaking Castle (your allies).
+- **More (12):** Fluttering Distraction (on the attacker), Lesson of the Splintered Aegis, Snap Out of It! (Marshal), Spin Tale (60 feet),
+  Share Eldritch Energy (on the ally); Educate Allies and Resounding Finale (your allies); Stymie the Gods, Blanket Defense, Secure Convoy,
+  Spirit Squire, Hongali Support Benefit (on you).
 - **Left:** actions linking several Effects or giving a choice (Raise the Walls' "one ally of your choice" with you, Roll the Bones of
   Fate), and those whose Effect follows a check. Count: 2,672 of 4,826 left.
 - **Foundry test** (2026-10-30): cards and targets right at first, but no Effect went on: PF2e's texts link these by name, and the
