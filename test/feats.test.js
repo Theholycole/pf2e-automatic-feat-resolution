@@ -387,6 +387,8 @@ test("companions: an eidolon's master, its DCs and its words", async () => {
     assert.equal(withMasterDCs({ spell: 19, byClass: {}, byTradition: {} }, { spell: 26, byClass: {}, byTradition: {} }).spell, 19, "a familiar's own first");
     assert.equal(eidolonWords("Your eidolon Strikes a living enemy. If your eidolon has a creature grabbed, your eidolon's reach"), "You Strike a living enemy. If you have a creature grabbed, your reach");
     assert.equal(namedDCs("the target must attempt a @Check[fortitude|options:damaging-effect] save against your spell DC"), "the target must attempt a @Check[fortitude|options:damaging-effect|against:spell] save against your spell DC");
+    assert.equal(namedDCs("Each enemy must attempt a Will saving throw against the higher of your class DC or spell DC."), "Each enemy must attempt a @Check[will|against:class-spell] save.");
+    assert.equal(namedDCs("Attempt an Athletics check against the foe's Fortitude DC."), "Attempt a @Check[athletics|against:fortitude] check against the target's Fortitude DC.");
     assert.equal(namedDCs("a @Check[reflex|basic|against:spell] save against your spell DC"), "a @Check[reflex|basic|against:spell] save against your spell DC", "already has one");
     const hold = { name: "Constricting Hold", actor: summoner, system: { traits: { value: ["eidolon", "evolution", "summoner"] } } };
     assert.equal(actingItem(hold, { actors, users }).actor, eidolon, "the summoner's evolution feat is the eidolon's");

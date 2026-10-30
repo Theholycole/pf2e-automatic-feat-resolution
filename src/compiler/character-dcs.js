@@ -196,8 +196,17 @@ export function inReaderWords(html) {
 // A save tag PF2e leaves with no DC at all, its DC said in the words after it: an eidolon's Drain Life, "@Check[fortitude|options:…] save
 // against your spell DC" (2026-10-30, "Companions") → "@Check[fortitude|options:…|against:spell] save against your spell DC".
 const UNTAGGED = /@Check\[((?:fortitude|reflex|will)(?:\|(?![^\]]*\b(?:dc|against):)[^\]]*)?)\](\{[^}]*\})?( (?:basic )?(?:saving throw|save),? against your (spell|class) DC)/gi;
+// A save or check said in words with no tag at all (2026-10-30, the loop): "Each creature in the area must attempt a basic saving throw
+// against the higher of your class DC or spell DC" with its save named, "Attempt an Athletics check against the foe's Fortitude DC" → the
+// tags the readers know.
+const WHOSE = "(?:the higher of your class DC or spell DC|your class DC or spell DC, whichever is higher|your class or spell DC, whichever is higher|your (class|spell) DC)";
+const WORDED_SAVE = new RegExp(`\\b(attempts?|must attempt) an? (basic )?(Fortitude|Reflex|Will) (?:saving throw|save) against ${WHOSE}`, "g");
+const SKILLS = "Acrobatics|Arcana|Athletics|Crafting|Deception|Diplomacy|Intimidation|Medicine|Nature|Occultism|Performance|Religion|Society|Stealth|Survival|Thievery|Perception";
+const WORDED_CHECK = new RegExp(`\\b([Aa]ttempt|[Mm]ake|[Rr]oll) an? (${SKILLS}) check against (?:the |a |an |its |their |that )?(?:target's |foe's |enemy's |creature's |opponent's )?(Fortitude|Reflex|Will|Perception) DC`, "g");
 export function namedDCs(html) {
-    return String(html).replace(UNTAGGED, (_all, inner, label = "", words, which) => `@Check[${inner}|against:${which.toLowerCase()}]${label}${words}`);
+    return String(html).replace(UNTAGGED, (_all, inner, label = "", words, which) => `@Check[${inner}|against:${which.toLowerCase()}]${label}${words}`)
+        .replace(WORDED_SAVE, (_all, verb, basic, save, which) => `${verb} a @Check[${save.toLowerCase()}|against:${which ? which.toLowerCase() : "class-spell"}${basic ? "|basic" : ""}] save`)
+        .replace(WORDED_CHECK, (_all, verb, skill, defense) => `${verb} a @Check[${skill.toLowerCase()}|against:${defense.toLowerCase()}] check against the target's ${defense} DC`);
 }
 
 export function withCharacterDCs(item, dcs) {
