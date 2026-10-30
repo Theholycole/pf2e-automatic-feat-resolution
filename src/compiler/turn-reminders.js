@@ -24,7 +24,8 @@ export function turnTrigger(item) {
     // (2026-10-30 Foundry test: "You start your turn with the Frightened condition", "…, and you're Grabbed or Restrained" — only while
     // it has one of them: having.)
     if (/^(?:Your turn (?:begins|starts)|You (?:start|begin) your turn|The start of your turn)\b/i.test(trigger)) return { when: "start", trigger, kind, ...havingOf(trigger) };
-    if (/^(?:Your turn ends|You end your turn|The end of your turn)\b/i.test(trigger)) return { when: "end", trigger, kind };
+    // ("Your turn would end", "You complete the last action on your turn", "You're airborne at the end of your turn": the loop, 2026-10-30.)
+    if (/^(?:Your turn ends|You end your turn|The end of your turn|Your turn would end|You complete the last action on your turn)\b|\bat the end of your turn\.$/i.test(trigger)) return { when: "end", trigger, kind };
     return null;
 }
 
