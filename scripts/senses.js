@@ -40,6 +40,13 @@ function modeClasses() {
     };
     return {
         precise: (sense) => class extends All {
+            // (Drawn as seen, with no outline: 2026-10-30 Foundry test, it had seeAll's pale knockout.)
+            static getDetectionFilter() {
+                return null;
+            }
+            getDetectionFilter() {
+                return null;
+            }
             _canDetect(visionSource, target) {
                 return canDetect(sense).call(this, visionSource, target);
             }
@@ -87,7 +94,19 @@ export function wrapDetectionModes() {
     if (typeof original !== "function") return;
     const add = function () {
         if (!enabled() || !CREATURES.has(this.actor?.type)) return;
-        for (const mode of senseModes(sensesOf(this.actor))) {
+        // (Tried in order: sight first, then the precise senses, then the imprecise, then PF2e's hearing and the rest. Hearing first, unlimited,
+        // outlined everything before the module's senses were asked; 2026-10-30 Foundry test.)
+        const modes = senseModes(sensesOf(this.actor)).sort((one, two) => Number(two.precise) - Number(one.precise));
+        if (modes.length && this.detectionModes && !Array.isArray(this.detectionModes)) {
+            const sight = ["lightPerception", "basicSight"];
+            const before = Object.fromEntries(Object.entries(this.detectionModes).filter(([id]) => sight.includes(id)));
+            const after = Object.fromEntries(Object.entries(this.detectionModes).filter(([id]) => !sight.includes(id)));
+            this.detectionModes = before;
+            for (const mode of modes) if (CONFIG.Canvas.detectionModes[mode.id]) this.detectionModes[mode.id] = { enabled: true, range: mode.range };
+            Object.assign(this.detectionModes, after);
+            return;
+        }
+        for (const mode of modes) {
             if (!CONFIG.Canvas.detectionModes[mode.id]) continue;
             const entry = { enabled: true, range: mode.range };
             if (Array.isArray(this.detectionModes)) {

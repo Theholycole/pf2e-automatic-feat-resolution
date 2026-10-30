@@ -172,6 +172,7 @@ creature, or the action also has a check, an area, a Strike or a spell.
   - Lifesense and bloodsense: living creatures. Spiritsense: living or undead. Thoughtsense: not mindless, through walls.
 - **Left to PF2e or with nothing to show.** Darkvision, greater darkvision, see invisibility and tremorsense (PF2e's own); low-light vision (a token already sees in dim light; concealment is the rules'); truesight (it sees through illusions, not darkness or invisibility); magicsense (magic, not creatures).
 - **Setting.** "Senses on tokens", on by default.
+- **Foundry test (2026-10-30).** The modes were on the token at their ranges, survived updates and reloads, and the setting removed them at once. Echolocation found creatures within 40 feet and nothing while deafened; scent within 30; lifesense skipped an undead skeleton; thoughtsense reached through a wall and skipped the mindless skeleton. PF2e's darkvision and tremorsense were unchanged. Fixed after it: PF2e's hearing (unlimited range) came first and outlined everything before the module's senses were asked, so the modes now go right after sight, precise ones first; and a precise sense drew seeAll's pale outline, so it now draws the creature as seen.
 
 ## Sense regions (2026-10-30, Cole: "regions that enable or disable senses? Wavesense only works in water. Hearing should not work through areas where no sound can pass")
 
