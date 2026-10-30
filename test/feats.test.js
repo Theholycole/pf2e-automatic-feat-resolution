@@ -304,9 +304,6 @@ test("fixes from the Foundry test: Tail Spin's success, Mask of Fear only while 
     assert.equal(turnReminders([mask], "start", () => false).length, 0);
     assert.equal(turnReminders([mask], "start", (slug) => slug === "frightened").length, 1);
 
-    const dive = compileFeat(action("Death Dive", "Compendium.pf2e.feats-srd.Item.BKdKyftmphU9n3Wq", "<p>Dive.</p>", ["archetype"]), { dcs });
-    assert.equal(dive.by, "companion", "the mount's Strike");
-    assert.equal(dive.onHit.conditions[0].slug, "prone");
     const { eventTrigger } = await import("../src/compiler/event-reminders.js");
     assert.deepEqual(eventTrigger(reaction("A creature with the animal, beast, elemental, fey, fungus, or plant trait attacks you, and you can see the attacker.")).by, ["animal", "beast", "elemental", "fey", "fungus", "plant"]);
 
@@ -411,6 +408,9 @@ test("companions: eidolon actions by hand", async () => {
     const furious = compileFeat(action("Furious", null, "<p>Your eidolon makes a melee Strike. This counts as two attacks when calculating your multiple attack penalty.</p>"), { dcs });
     assert.equal(furious.builtin, "strike-activity");
     assert.equal(furious.countsAs, 2);    const { eventTrigger } = await import("../src/compiler/event-reminders.js");
+    const dive = compileFeat(action("Death Dive", "Compendium.pf2e.feats-srd.Item.BKdKyftmphU9n3Wq", "<p>Dive.</p>", ["archetype"]), { dcs });
+    assert.equal(dive.by, "companion", "the mount's Strike");
+    assert.equal(dive.onHit.conditions[0].slug, "prone");
     const reaction = (name, trigger, actor) => ({ name, actor, system: { description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` }, actionType: { value: "reaction" }, traits: { value: ["eidolon"] } } });
     assert.equal(eventTrigger(reaction("Anatomy", "An enemy adjacent to your eidolon deals damage to your eidolon")).event, "damaged");
     assert.equal(eventTrigger(reaction("Redistribute", "An enemy's Strike against your eidolon is a critical hit.")).event, "critical-hit");
