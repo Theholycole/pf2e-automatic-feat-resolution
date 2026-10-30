@@ -68,6 +68,15 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
 
 - Batch 5's reader, for "You successfully Grapple a creature …", "You successfully Demoralize an enemy.", "You successfully Recall Knowledge to identify …": the action named first, with its statistic and roll option, on a success.
 
+### Batch 7 (2026-10-30, Cole's choice "Passive bonuses as rule elements"): 8 options
+
+- **The survey.** 271 passives still needing work mention a bonus, penalty, resistance, immunity or proficiency. Only these say it
+  outright; the rest hang on a moment, a choice, an ally, an aura or a companion (see below).
+- Proficiencies (`ActiveEffectLike` upgrade, as PF2e's Martial Experience and Brilliant Crafter): Eagle Eye (master in Perception),
+  Alchemical Power, Runic Expertise and Expert Kinetic Control (expert in that class DC; PF2e's impulse attacks follow the kineticist's),
+  Teams+'s Fourth Facet (Keeper) and (Wanderer) (master in simple weapons and unarmed attacks).
+- +2 circumstance to Stealth to Conceal an Object (`action:conceal-an-object`): Reflective Pocket, Spirit Sheath.
+
 ### Looked at, not batched
 
 - **Stances:** 99 of the 117 stances already have PF2e's own Effect. Most of the other 18 change terrain, cover or allies rather than numbers on the character, so they stay notes for the GM.

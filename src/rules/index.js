@@ -7,6 +7,7 @@ import batch03 from "./batch-03.js";
 import batch04 from "./batch-04.js";
 import batch05 from "./batch-05.js";
 import batch06 from "./batch-06.js";
+import batch07 from "./batch-07.js";
 import { selectorOf } from "./read.js";
 
 // PF2e's pack folders (the repository's) → its compendium names.
@@ -17,7 +18,7 @@ export function compendiumUuid(module, pack, id) {
     return `Compendium.${module}.${name}.Item.${id}`;
 }
 
-export const BATCHES = [batch01, batch02, batch03, batch04, batch05, batch06];
+export const BATCHES = [batch01, batch02, batch03, batch04, batch05, batch06, batch07];
 const BY_UUID = new Map(BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 // The item's source in a compendium: PF2e's sourceId, Foundry's _stats.compendiumSource, or the older core flag.
