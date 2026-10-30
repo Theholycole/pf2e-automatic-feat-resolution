@@ -226,4 +226,7 @@ test("a feat with a hand-written plan: the plan, by the item's compendium source
     assert.equal(plan.onHit.conditions[0].slug, "off-guard");
     const resounding = compileFeat({ ...feat("Resounding Blow", "<p>…</p>"), sourceId: "Compendium.pf2e.feats-srd.Item.9kY9B5WgtEleOicn" }, { dcs: DCS });
     assert.equal(resounding.onHit.critical[0].duration.unit, "minutes");
+    const phalanx = compileFeat({ ...feat("Phalanx Breaker", "<p>…</p>", 2), sourceId: "Compendium.pf2e.feats-srd.Item.BkEOwv3SRtefczpO" }, { dcs: DCS });
+    assert.equal(phalanx.strike, "ranged");
+    assert.equal(phalanx.onHit.criticalPush, 20);
 });

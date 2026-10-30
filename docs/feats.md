@@ -93,6 +93,8 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **How** (`src/plans/`): a feat the readers don't take gets an entry by its compendium UUID, written from its text: `strike` (what differs from a plain Strike, merged into the strike-activity builtin: Strikes, Strides, ranged or melee, off-guard, a hit's conditions, push or follow-up action) or `text` (its rules in plain words with PF2e's tags, so the readers fill the character's numbers). `compileFeat` looks there first. What a feat does that the card can't play goes to the GM as notes when it's used.
 - **Fighter** (14): Brutish Shove, Dragging Strike, Slam Down, Parting Shot, Quick Reversal, Rebounding Toss, Dashing Strike and others. Lunge, Dual-Handed Assault, Advantageous Assault, Dazing Blow and Agile Shield Grip already have PF2e's own rules.
 - **Rogue, ranger, barbarian, monk** (22): Resounding Blow, Mage Hunter, Disarming Assault, Knockback Strike, Wave Dashes Rocks, Blazing Streak, Time Dilation Cascade and others. Saves at the class DC (Felling Shot, Silencing Strike, Master Strike) the readers already take with the character's own DC.
+- **Swashbuckler, gunslinger, guardian, magus, champion** (37, `tactical.js`): Phalanx Breaker (push 10, 20 on a critical hit), Shoulder Check, Belly Flop, Weakening Assault, Shield Wallop, Drifter's Juke, Triggerbrand Blitz, Spell Swipe and others. A save after the hit that the readers missed (Stunning Finisher, Ring Their Bell, Bloody Denial) is a note naming the save for now.
+- **Count** after these: 3,795 of 4,826 still need work.
 
 ## Measured (2026-10-30, after slice 4)
 

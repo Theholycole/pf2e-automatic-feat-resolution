@@ -6,8 +6,9 @@
 import { sourceOf } from "../rules/index.js";
 import fighter from "./fighter.js";
 import martial from "./martial.js";
+import tactical from "./tactical.js";
 
-export const PLAN_BATCHES = [fighter, martial];
+export const PLAN_BATCHES = [fighter, martial, tactical];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
