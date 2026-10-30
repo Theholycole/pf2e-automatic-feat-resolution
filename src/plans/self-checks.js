@@ -52,5 +52,42 @@ export default [
         uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.f7DtQ9kQ02gAuqyr", name: "Call of the Ancestor",
         selfCheck: { statistic: "perception", outcomes: both({ nativeEffects: [{ uuid: "Compendium.pf2e-team-plus-barbarians.misc.Item.NQvBAbJB8uUlmntt", label: "Effect: Call of the Ancestor" }] }) },
         notes: ["+1 on a success, +2 on a critical success: your next attack roll with your vestige weapon this turn."]
+        },
+    // (2026-10-30, the loop: checks against your level's DC whose results are said in words: the card rolls it, the notes say what each
+    // degree does.)
+    {
+        uuid: pf2e("KU6nyh8DyQ7NoRQj"), name: "Ostentatious Reload",
+        selfCheck: { statistic: "performance", adjustment: -2 },
+        notes: ["Critical success: Interact to reload up to two firearms you're wielding. Success: reload one. Failure: drop one firearm and a round in your space. Critical failure: drop both and two rounds."]
+    },
+    {
+        uuid: pf2e("H6SL2F11nlMfqCQC"), name: "Improvise Admixture",
+        selfCheck: { statistic: "crafting" },
+        notes: ["You regain 3 versatile vials on a critical success, 2 on a success, 1 on a failure, none on a critical failure (up to your maximum, by hand). The GM can set a different DC."]
+    },
+    {
+        uuid: pf2e("c2hPWQ4zdc4CnrnZ"), name: "Seasoned Command",
+        selfCheck: { statistic: "diplomacy", level: "target", adjustment: 2, target: "1 ally", range: "30 feet" },
+        notes: ["Diplomacy or Intimidation. It counts as preparing to Aid the ally. On a success you gain an extra reaction, only to Aid that ally (with a +1 circumstance bonus on a critical success). The ally is then immune for 1 minute."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-items.Item.LN2Qg1siq5AGhzuL", name: "Fourth Wall Break",
+        selfCheck: { statistic: "deception", adjustment: 2 },
+        notes: ["Make a statement about your situation to the GM. On a success the GM usually grants a +2 status bonus to your next check related to it (+4 on a critical success), or more at their discretion."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-barbarians.misc.Item.nzWQSM585O3arVtW", name: "Furious Stride",
+        selfCheck: { statistic: "fortitude", adjustment: 5 },
+        notes: ["Your next Stride gains the rage trait. Critical success: +10 feet to its Speed; success: +5 feet. Failure: after it, a -5-foot status penalty to Speed for 1 round (-10 feet on a critical failure)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.BU4kBFIaEFmDQiad", name: "Primal Intonation",
+        selfCheck: { statistic: "nature" },
+        notes: ["With no animals around you fail. Critical success: an animal at least 6 levels lower than you comes, helpful; success: friendly. Critical failure: a hostile animal appears."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.OtbrIcEF7da4lDFK", name: "Transpose Self",
+        selfCheck: { statistic: "arcana" },
+        notes: ["With obstacles, creatures or difficult terrain in the way the DC is very hard (+5, by hand). Success: teleport up to 15 feet within line of sight; not again for 1 hour. Critical failure: you take force damage equal to your level; not again for 1 day."]
     }
 ];
