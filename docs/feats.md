@@ -404,3 +404,11 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   (hard DC for the ally's level), Fourth Wall Break, Furious Stride (a Fortitude save: the card's check rolls PF2e's save, though its line
   says "check"), Primal Intonation, Transpose Self. The outcomes are notes. Foundry test (feat 87fd97a): all pass, with the right DCs.
 - Behold! (ability 039b454): DC 25 Will save, Frightened 1 on a failure, then the 1-minute immunity. A target that's immune gets no card.
+
+### Round 13 (2026-10-30)
+
+- Linked Effects (feat b72c2c2): Benevolent Spirit Deck, Sanctify Armament (PF2e asks which weapon), Rise Up!, Emergency Medical
+  Assistance, Face Your Fears, Guide the Timeline (PF2e asks Fortune or Misfortune), Comfort of Struggle and Spiritual Memories (Teams+,
+  each asks its choice): all pass.
+- Kinetic Dampening's Effect came on with no resistance: PF2e reads "@actor.level-2" as the path "actor.level-2". A rule's formula needs
+  spaces around a minus after a path ("@actor.level - 2").
