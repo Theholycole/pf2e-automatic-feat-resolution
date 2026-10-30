@@ -519,3 +519,13 @@ test("a Focus or Mythic Point back", () => {
     assert.deepEqual(infernal.notes, ["Then increase the value of your doomed condition by 1."]);
     assert.equal(compileFeat(action("<p>When an enemy triggers your champion's reaction, you regain 1 Focus Point.</p>", "free"), { dcs: DCS }), null, "only sometimes");
 });
+
+test("spell-like feats: a spell in italics, its UUID without .Item., and a spell only paid for", () => {
+    const action = (html) => ({ name: "Cast", type: "feat", system: { description: { value: html }, actionType: { value: "action" }, actions: { value: 2 }, traits: { value: [] }, rules: [] } });
+    const calamity = compileFeat(action("<p>You cast <em>@UUID[Compendium.pf2e.spells-srd.kVNo3ga0lwLKPrem]{Summon Elemental Herald}</em> as an innate spell.</p>"), { dcs: DCS });
+    assert.equal(calamity.builtin, "spell-like");
+    assert.equal(calamity.spell.uuid, "Compendium.pf2e.spells-srd.Item.kVNo3ga0lwLKPrem");
+    const believer = compileFeat(action("<p>Once per hour, you can cast @UUID[Compendium.pf2e.spells-srd.Item.MMCQsh12TPaDdPbV]{Sacred Form} as an innate divine spell with a rank equal to half your level rounded up.</p>"), { dcs: DCS });
+    assert.equal(believer.rank, 4);
+    assert.equal(compileFeat(action("<p>You manifest your armaments; you can spend 1 Mythic Point to also gain the effects of the @UUID[Compendium.pf2e.spells-srd.Item.wzctak6BxOW8xvFV]{Enlarge} spell.</p>"), { dcs: DCS }), null);
+});
