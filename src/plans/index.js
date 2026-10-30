@@ -28,8 +28,9 @@ import passiveEffects from "./passive-effects.js";
 import toggles from "./toggles.js";
 import linkedEffects from "./linked-effects.js";
 import selfChecks from "./self-checks.js";
+import affects3 from "./affects-3.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;

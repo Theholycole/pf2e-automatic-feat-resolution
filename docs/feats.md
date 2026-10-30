@@ -304,6 +304,13 @@ creature, or the action also has a check, an area, a Strike or a spell.
   stance) entered the stance, PF2e's aura giving its Effect to allies inside; a failure applied nothing. Helpful Tinkering (DC 26) put
   its Effect on the ally once the GM picked the weapon in PF2e's prompt, which Apply waits on (now said in its note).
 
+## Heals past a choice or a trigger (2026-10-30, the loop)
+
+- `src/plans/affects-3.js`, affect entries: Rekindled Light (heals your level, wounded +1), Restore the Mind (2 + double your level),
+  Valkyrie's Charge (80 to each ally within 30 feet), Drink from the Chalice (a sip's temporary Hit Points, your level, at least 3,
+  to the end of the next turn), Spirit's Sacrifice (twice your level). The other choice (the chalice's drain, Restore the Mind's
+  bonus) and what can't be applied (not dying, not knocked out) are notes.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed
