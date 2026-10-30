@@ -193,3 +193,14 @@ test("a reaction triggered by the character's own action or spell: matched to th
     assert.ok(usesTrigger(ownUseTrigger(free("You Shield Block a melee Strike made with a held weapon.")), "Shield Block", "action"));
     assert.equal(ownUseTrigger(free("You use an action or cast a spell with the teleportation trait.")), null);
 });
+
+test("a reaction used before the character's own roll: a reminder before the save, initiative or recovery check", async () => {
+    const { preRollTrigger, asksForSave } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ name: "X", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>You roll twice.</p>` } } });
+    assert.equal(preRollTrigger(reaction("You attempt a saving throw against a magical effect, but you haven't rolled yet.")).event, "pre-save");
+    assert.equal(preRollTrigger(reaction("You're about to roll initiative.")).event, "pre-initiative");
+    assert.equal(preRollTrigger(reaction("You have the dying condition and are about to attempt a recovery check.")).event, "pre-recovery");
+    assert.equal(preRollTrigger(reaction("You fail a Will save.")), null, "after the roll: a note on it");
+    assert.equal(preRollTrigger(reaction("Your ally is about to roll a saving throw.")), null);
+    assert.ok(asksForSave('<a class="inline-check" data-pf2-check="reflex" data-pf2-dc="25">'));
+});

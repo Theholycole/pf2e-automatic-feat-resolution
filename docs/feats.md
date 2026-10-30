@@ -67,6 +67,15 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **Another creature's spell:** "A creature Casts a Spell that you have prepared" (Counterspell), "An enemy casts a spell that targets you …", "A creature within 30 feet casts a spell." When a spell is posted, each character on the scene whose disposition isn't the caster's (in range, when the trigger gives one) is whispered those feats.
 - **Measured:** 24 options for the character's own use, 19 for another's spell (Counterspell, Recognize Spell, Countercharm, Reactive Spellshift and others).
 
+## Slice 9: reminders before the character's own roll (2026-10-30)
+
+- **The reader** (`preRollTrigger` in `src/compiler/event-reminders.js`): a reaction or free action used before one of the character's rolls, which a note on the roll's card would reach too late: "You attempt a saving throw against a magical effect, but you haven't rolled yet." (before a save), "You're about to roll initiative." (before initiative), "You have the dying condition and are about to attempt a recovery check." (before a recovery check).
+- **Live** (`scripts/reminders.js`):
+  - before a save: when the GM posts a non-character's spell or ability whose card asks for a save (PF2e's inline save link) with characters targeted, each targeted character's owners are whispered its before-the-save feats;
+  - before initiative: when a character joins an encounter without initiative;
+  - before a recovery check: at the start of a dying character's turn, with its other turn reminders.
+- **Measured:** 42 options (Charmed Life, Divine Aegis, Resist Magic, Qi Buffer, Swaggering Initiative, Oracular Warning, Reanimating Spark and others). An area save with no targets set gets no reminder; the trigger's other words are the player's to judge.
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.
@@ -85,4 +94,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 | D8 | What's left (about 4,300 options) is mostly passives (849 "other rule text", 148 conditional bonuses, 65 resistances, 196 daily resources), companions (475) and stances with no Effect (about 60). These don't read into a card: PF2e automates them with rule elements on the feat or an Effect. Should the module ship its own rule elements for them (a compendium of Effects, or rules added to the feat when it's on a character), batch by batch as the ability module did monsters? | Not started. The text readers go on with the long tail meanwhile. |
 | D9 | 157 options have PF2e's own self-applied Effect (`selfEffect`), which PF2e already offers as a button on the feat's chat card. Should the module apply it on use instead of the button? | Left to PF2e's button. |
 | D10 | A feat read in slice 5 puts the module's Effect on the character as soon as it's used, with no card or button. Should it ask first (a button on the chat card), or apply it as PF2e's own stances do? | Applied on use, whatever the D2 setting. |
-| D11 | Turn reminders (slice 6), attack and damage reminders (slice 7) and own-action reminders (slice 8) are whispered to the character's owners and the GM at each turn start or end, or attack or damage roll, where a feat triggers. On by default, or off until a group turns them on? | On by default; a world setting turns them off. |
+| D11 | Turn reminders (slice 6), attack and damage reminders (slice 7) and own-action reminders (slice 8) and before-the-roll reminders (slice 9) are whispered to the character's owners and the GM at each turn start or end, or attack or damage roll, where a feat triggers. On by default, or off until a group turns them on? | On by default; a world setting turns them off. |

@@ -73,3 +73,26 @@ export function usesTrigger(read, itemName, itemType) {
     const name = String(itemName ?? "").toLowerCase().replace(/\s*\([^)]*\)\s*$/, "").trim();
     return read.names.some((each) => name === each || name.startsWith(`${each} `));
 }
+
+// A reaction or free action triggered before one of the character's own rolls (slice 9): "You attempt a saving throw against a magical
+// effect, but you haven't rolled yet.", "You're about to roll initiative.", "You have the dying condition and are about to attempt a recovery
+// check." A note on the roll's card comes too late, so the module reminds before: when a hostile spell or ability with a save is posted
+// with the character targeted, when the character joins an encounter without initiative, and when its turn begins while it's dying.
+export function preRollTrigger(item) {
+    const type = item?.system?.actionType?.value;
+    if (!["reaction", "free"].includes(type)) return null;
+    const found = /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
+    if (!found) return null;
+    const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
+    const kind = type === "reaction" ? "reaction" : "free action";
+    if (!/^You(?:'re| are| would| attempt| have)\b/i.test(trigger) && !/^You and\b/i.test(trigger)) return null;
+    const before = /\babout to (?:roll|attempt)\b|\bwould (?:roll|attempt)\b|\bhaven['’]t (?:yet )?rolled\b/i.test(trigger);
+    if (!before) return null;
+    if (/\binitiative\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
+    if (/\brecovery check\b/i.test(trigger)) return { event: "pre-recovery", trigger, kind };
+    if (/\b(?:saving throws?|saves?)\b/i.test(trigger)) return { event: "pre-save", trigger, kind };
+    return null;
+}
+
+// Whether a posted message's text asks for a save: PF2e's inline save links.
+export const asksForSave = (content) => /data-pf2-check="(?:fortitude|reflex|will)"/.test(String(content ?? ""));

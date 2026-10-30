@@ -2,7 +2,7 @@
 // starting or ending, whispered to its owners and the GM as that turn comes. Nothing is used for them; the player decides.
 
 import { turnReminders } from "../src/compiler/turn-reminders.js";
-import { eventTrigger, eventsOf, ownUseTrigger, usesTrigger } from "../src/compiler/event-reminders.js";
+import { asksForSave, eventTrigger, eventsOf, ownUseTrigger, preRollTrigger, usesTrigger } from "../src/compiler/event-reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const SETTING = "turnReminders";
@@ -23,7 +23,10 @@ const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({
 async function remind(combatant, when) {
     const actor = combatant?.actor;
     if (actor?.type !== "character" || combatant.defeated) return;
-    const due = turnReminders([...actor.itemTypes.feat, ...actor.itemTypes.action], when);
+    const items = [...actor.itemTypes.feat, ...actor.itemTypes.action];
+    // (Slice 9: dying at the turn's start, its recovery check to come.)
+    const dying = when === "start" && actor.hasCondition?.("dying") ? items.map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-recovery") : [];
+    const due = [...turnReminders(items, when), ...dying];
     if (!due.length) return;
     const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
     const lines = due.map(({ item, read }) => `<li>@UUID[${item.uuid}]{${escape(item.name)}} (${read.kind}): ${escape(read.trigger)}</li>`).join("");
@@ -108,4 +111,27 @@ export async function onForeignSpell(message) {
         const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-casts" && (!read.within || (distance !== null && distance <= read.within)));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(caster.name)} casts a spell.`, due);
     }
+}
+
+// Before a save (slice 9): a hostile spell or ability whose card asks for a save, posted by the GM with characters targeted (the GM's
+// own targets, on this client), whispers each of them its feats used before the save ("… but you haven't rolled yet").
+export async function onSaveAsked(message) {
+    if (!game.settings.get(MODULE_ID, SETTING) || !message.author?.isSelf || message.flags?.pf2e?.context?.type || !asksForSave(message.content)) return;
+    const source = message.actor ?? message.token?.actor ?? null;
+    if (!source || source.type === "character") return;
+    for (const token of game.user.targets) {
+        const actor = token.actor;
+        if (actor?.type !== "character") continue;
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-save");
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(source.name)} calls for your save (before you roll it).`, due);
+    }
+}
+
+// Before initiative (slice 9): a character added to an encounter without its initiative yet.
+export async function onJoinEncounter(combatant) {
+    if (!game.settings.get(MODULE_ID, SETTING) || combatant.initiative !== null) return;
+    const actor = combatant.actor;
+    if (actor?.type !== "character") return;
+    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-initiative");
+    if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: an encounter is starting (before you roll initiative).`, due);
 }
