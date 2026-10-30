@@ -2,7 +2,6 @@
 // of maneuvers.js. target "you": the character's own token; "each ally within N feet": every ally in range, found by the card.
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
-const action = (id) => `Compendium.pf2e.actionspf2e.Item.${id}`;
 const rounds = (value, expiry = "turn-start") => ({ mode: "fixed", value, unit: "rounds", expiry, anchor: "effect-start" });
 const minutes = (value) => ({ mode: "fixed", value, unit: "minutes", expiry: "turn-start", anchor: "effect-start" });
 const untilYourTurnEnds = { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" };

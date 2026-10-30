@@ -177,10 +177,12 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.equal(eventTrigger(reaction("Your eidolon would take damage.")), null, "someone else's damage, not an ally's roll the module sees");
     assert.equal(eventTrigger(reaction("One of your allies within 30 feet is targeted by a spell or ability that allows a saving throw.")), null);
     assert.deepEqual(eventsOf("attack-roll", "criticalSuccess"), ["targeted", "hit", "critical-hit"]);
-    assert.deepEqual(eventsOf("attack-roll", "failure"), ["targeted"]);
+    assert.deepEqual(eventsOf("attack-roll", "failure"), ["targeted", "miss"]);
     assert.deepEqual(eventsOf("damage-roll"), ["damaged"]);
     assert.equal(eventTrigger(reaction("A creature within your reach critically fails a Strike against you.")).event, "critical-miss");
-    assert.deepEqual(eventsOf("attack-roll", "criticalFailure"), ["targeted", "critical-miss"]);
+    assert.deepEqual(eventsOf("attack-roll", "criticalFailure"), ["targeted", "miss", "critical-miss"]);
+    assert.equal(eventTrigger(reaction("A creature missed you with a melee attack.")).event, "miss");
+    assert.equal(eventTrigger(reaction("You are struck by a critical hit that deals physical damage.")).event, "critical-hit");
     const frightened = eventTrigger(reaction("An ally within 30 feet would become Frightened, Drained, or Sickened."));
     assert.deepEqual([frightened.event, frightened.conditions, frightened.within], ["ally-condition", ["frightened", "drained", "sickened"], 30]);
     assert.deepEqual(eventTrigger(reaction("You would be reduced to 0 Hit Points but not immediately killed.")).conditions, ["0-hp"]);

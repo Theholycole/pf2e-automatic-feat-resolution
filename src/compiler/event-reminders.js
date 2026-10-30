@@ -52,7 +52,10 @@ export function eventTrigger(item) {
         if (/\b(?:is|are) targeted\b|\btargets (?:an|your|the|one of your) all/i.test(trigger)) return read("ally-targeted");
         return null;
     }
-    if (/\bcritically hits you\b|^You are critically hit\b/i.test(trigger)) return read("critical-hit");
+    if (/\bcritically hits you\b|^You are critically hit\b|^You (?:are struck by|would take|take) a critical hit\b/i.test(trigger)) return read("critical-hit");
+    // ("A creature missed you with a melee attack", "A creature misses you with a ranged attack", "An adjacent creature you can see fails an
+    // attack roll against you": Elude Trouble's, Coursing Weave's; the loop, 2026-10-30.)
+    if (/\bmiss(?:es|ed)? you\b|\bfails an attack roll against you\b/i.test(trigger)) return read("miss");
     if (/\bhits you\b|^You are hit by\b/i.test(trigger)) return read("hit");
     if (/\btargets you\b|^You are (?:the )?target(?:ed)? (?:of|by)\b|\battempts? (?:a Strike|an attack(?: roll)?) against you\b|\battacks you\b|\bmakes an attack(?: roll)? against you\b/i.test(trigger)) return read("targeted");
     if (/(?:^|,\s*)You (?:or your [\w ]+? )?(?:would )?take damage\b|\bwould deal damage to you\b|\bdamages you\b|\bdeals damage to you\b/i.test(trigger) && !/\bfall(?:ing)? damage\b/i.test(trigger)) return read("damaged");
@@ -75,7 +78,7 @@ function conditionsOf(trigger) {
 // damage roll → damaged.
 export function eventsOf(contextType, outcome) {
     if (["attack-roll", "spell-attack-roll"].includes(contextType)) {
-        return ["targeted", ...(["success", "criticalSuccess"].includes(outcome) ? ["hit"] : []), ...(outcome === "criticalSuccess" ? ["critical-hit"] : []), ...(outcome === "criticalFailure" ? ["critical-miss"] : [])];
+        return ["targeted", ...(["success", "criticalSuccess"].includes(outcome) ? ["hit"] : []), ...(outcome === "criticalSuccess" ? ["critical-hit"] : []), ...(["failure", "criticalFailure"].includes(outcome) ? ["miss"] : []), ...(outcome === "criticalFailure" ? ["critical-miss"] : [])];
     }
     if (contextType === "damage-roll") return ["damaged"];
     return [];
