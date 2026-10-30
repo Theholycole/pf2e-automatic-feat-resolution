@@ -27,8 +27,9 @@ import affects2 from "./affects-2.js";
 import passiveEffects from "./passive-effects.js";
 import toggles from "./toggles.js";
 import linkedEffects from "./linked-effects.js";
+import selfChecks from "./self-checks.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles, linkedEffects];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
@@ -123,6 +124,32 @@ export function handAffect(item, entry, dcs = null) {
         targeting: { target: affect.target ?? "1 creature", range: affect.range ?? null, area: null },
         trigger: { event: "use", immunity: null },
         resolution: { kind: "check", check: { roll: "automatic", statistic: "automatic" }, sharedDamage: null, outcomes: { criticalSuccess: NONE(), success: { ...NONE(), effects }, failure: NONE(), criticalFailure: NONE() } },
+        automation: { level: "automatic" },
+        notes: [...(entry.notes ?? [])]
+    };
+}
+
+// The DC for a level (Core Rulebook's table, levels 0 to 25), as "a standard DC of your level" says it.
+const LEVEL_DCS = [14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 34, 35, 36, 38, 39, 40, 42, 44, 46, 48, 50];
+
+// A selfCheck entry → a check card against a DC of the character's level (2026-10-30, docs/feats.md, "Checks against your level's DC"):
+// the character rolls entry.selfCheck.statistic against that DC plus its adjustment ("an easy DC", −2), and each degree's results go on
+// its target ("you" or the player's targets): conditions, and PF2e's Effects linked in the text (nativeEffects). Null without a level.
+export function handSelfCheck(item, entry, dcs = null) {
+    const check = entry.selfCheck;
+    const level = Number(dcs?.level ?? item.actor?.level);
+    if (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length) return null;
+    const row = (degree) => ({ ...NONE(), effects: [...(check.outcomes?.[degree]?.effects ?? [])], ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
+    return {
+        modelVersion: 13,
+        source: sourceFor(item),
+        rank: 1,
+        traits: [...(item.system?.traits?.value ?? [])],
+        activation: { time: actionsOf(item), traits: [] },
+        targeting: { target: check.target ?? "you", range: check.range ?? null, area: null },
+        trigger: { event: "use", immunity: null },
+        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
+            outcomes: { criticalSuccess: row("criticalSuccess"), success: row("success"), failure: row("failure"), criticalFailure: row("criticalFailure") } },
         automation: { level: "automatic" },
         notes: [...(entry.notes ?? [])]
     };

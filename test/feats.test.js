@@ -577,3 +577,14 @@ test("linked Effects by hand: an action's Effect the reader leaves, on the chara
     const overdrive = compileFeat(action("Overdrive Ally", "Compendium.pf2e.feats-srd.Item.NBvhmNqneeok7ZOr"), { dcs: DCS });
     assert.equal(overdrive.targeting.range, "30 feet");
 });
+
+test("checks against your level's DC: the marshal stances roll and enter the stance", async () => {
+    const action = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Attempt a check.</p>" }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
+    const inspiring = compileFeat(action("Inspiring Marshal Stance", "Compendium.pf2e.feats-srd.Item.bvOsJNeI0ewvQsFa"), { dcs: DCS });
+    assert.deepEqual(inspiring.resolution.check, { roll: "skill", statistic: "diplomacy", against: { dc: "fixed", value: 22 } });
+    assert.equal(inspiring.targeting.target, "you");
+    assert.equal(inspiring.resolution.outcomes.success.nativeEffects[0].label, "Stance: Inspiring Marshal Stance");
+    assert.equal(inspiring.resolution.outcomes.failure.nativeEffects, undefined);
+    const tinkering = compileFeat(action("Helpful Tinkering", "Compendium.pf2e.feats-srd.Item.qUSWPWxYF8gfhfHM"), { dcs: DCS });
+    assert.equal(tinkering.resolution.check.against.value, 26);
+});

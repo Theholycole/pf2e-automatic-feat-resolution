@@ -12,7 +12,7 @@ import { linkedEffect } from "./linked-effect.js";
 import { otherHeal } from "./other-heal.js";
 import { spellLike } from "./spell-like.js";
 import { regainPoint } from "./regain-point.js";
-import { handAct, handAffect, handEntry, handLinked, handStrike } from "../plans/index.js";
+import { handAct, handAffect, handEntry, handLinked, handSelfCheck, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
 export { characterStrike } from "./strikes.js";
@@ -31,6 +31,8 @@ export function compileFeat(item, options = {}) {
     const own = !hand?.text && isEidolonItem(item) ? withText(item, eidolonWords(item.system?.description?.value ?? "")) : written;
     const filled = withCharacterDCs(own, dcs);
     if (hand?.affect) return handAffect(item, hand, dcs);
+    // (A check against a DC of the character's level, its results PF2e's Effects: by hand, src/plans/self-checks.js.)
+    if (hand?.selfCheck) return handSelfCheck(item, hand, dcs);
     // (A passive whose bonus holds only in a moment PF2e can't see, "while adjacent to two hobgoblin allies": its Effect, turned on and off
     // by posting the feat; 2026-10-30, docs/rules.md, "Toggled Effects".)
     // (A passive with PF2e's own Effect for its moment: that Effect, on and off the same way.)

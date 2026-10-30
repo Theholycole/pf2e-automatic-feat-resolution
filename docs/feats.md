@@ -287,6 +287,16 @@ creature, or the action also has a check, an area, a Strike or a spell.
   Stepping Dash (Speed 25 → 30), Offer Story (AC and Will +1), Rend Armor (target's AC −2), Overdrive Ally, Indomitable Spirit (you and
   the adjacent ally AC +4 and quickened, the ally 10 feet off not), Glimpse Vulnerability: all passed, no console errors.
 
+## Checks against your level's DC (2026-10-30, the loop)
+
+- **What:** "Attempt a @Check[diplomacy|dc:@self.level|adjustment:-2] check" (an easy DC of your level), whose results are PF2e's Effects
+  linked in the text. `src/plans/self-checks.js`, `selfCheck` entries: the card rolls the check against the level's DC (the Core
+  Rulebook table) plus the adjustment, and each degree's Effects go on the target (`nativeEffects`, the core's check rows; resolved by id
+  before the card, as linked Effects are).
+- **Six:** the marshal stances (Inspiring, Dread, Devrin's Cunning, Strategist), Helpful Tinkering (on the ally), Call of the Ancestor.
+- **Left:** 83 options use a level's DC; most are exploration or downtime (Deep Meditation, Circadian Disciplinarian), or a DC of the
+  *target's* level (Guiding Words, Invincible Army, Commitment to Protection), which a card's fixed DC can't follow.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed

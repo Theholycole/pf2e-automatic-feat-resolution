@@ -95,6 +95,10 @@ async function cardForFeat(message) {
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
     // (An Effect linked by name: by id, which the ability module's card looks up; 2026-10-30 Foundry test, "Effect: Rend Armor wasn't found".)
     if (plan?.resolution?.kind === "effect") plan = { ...plan, resolution: { ...plan.resolution, applications: plan.resolution.applications.map((application) => ({ ...application, uuid: byName(application.uuid) ?? application.uuid })) } };
+    // (And a degree's, a check's results: the marshal stances'.)
+    if (plan?.resolution?.outcomes && Object.values(plan.resolution.outcomes).some((row) => row?.nativeEffects?.length)) {
+        plan = { ...plan, resolution: { ...plan.resolution, outcomes: Object.fromEntries(Object.entries(plan.resolution.outcomes).map(([degree, row]) => [degree, row?.nativeEffects ? { ...row, nativeEffects: row.nativeEffects.map((effect) => ({ ...effect, uuid: byName(effect.uuid) ?? effect.uuid })) } : row])) } };
+    }
     if (plan?.builtin === "spell-like") return castSpellLike(item, plan, sourceToken, message);
     // (The ability module's own reading of "You cast Enlarge", its UUID by id as Foundry has it: the same cast, at the plan's DC or the
     // character's best; 2026-10-30 Foundry test, Dire Growth and Rat Form cast nothing.)
