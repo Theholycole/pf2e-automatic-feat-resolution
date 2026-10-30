@@ -141,6 +141,17 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Measured:** 5 more (Cantorian Restoration, Ease the Burden, Fermenting Liquors, Fish From the Falls' Edge, Searing Restoration; the
   others matched were already read). Count: 3,223 of 4,826 left.
 
+## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
+
+- **How they're built.** PF2e has no actor type for an eidolon or an animal companion. PF2e Companion Compendia makes them "character" actors: an eidolon has the Eidolon class and an ancestry with the eidolon trait, an animal companion has the minion trait. A familiar has its own type, "familiar", and the only link PF2e keeps: `system.master.id`. Neither Companion Compendia nor Summoners+ links an eidolon to its summoner.
+- **The master** (`src/compiler/companion.js`, `findMaster`). The module's own flag first (`flags["pf2e-automatic-feat-resolution"].master`, an actor id). Then a familiar's PF2e link. Otherwise, the one character the same player owns that isn't a companion: a summoner first for an eidolon, then the player's assigned character when they own several. None found: the companion's own DCs, as before.
+- **Its DCs.** An eidolon's "against your spell DC" is the summoner's, always. Another companion uses its master's class or spell DC only where it has none of its own. Its level, attributes and Strikes stay its own.
+- **The summoner's evolution feats.** Constricting Hold or Eidolon's Trample posted from the summoner's sheet plays as the eidolon (`actingItem`): its Strength and Strikes, from its token, when the summoner has exactly one eidolon.
+- **"Your eidolon".** An action with the eidolon trait is read with "Your eidolon makes a melee Strike" as "You make a melee Strike" (`eidolonWords`), so the readers take Furious Strike, Tendril Strike, Piercing Jab and Warpwave Strike as they are. A save tag with no DC followed by "against your spell DC" gets `against:spell` (`namedDCs`): Drain Life.
+- **Familiars** play cards too (their actor type is allowed); reminders stay for characters (eidolons and animal companions are characters, so theirs come).
+- **By hand** (`src/plans/eidolons.js`): Dragon Breath (a 30-foot cone, untyped), Elemental Burst, Swarming Assault, Constricting Hold, Visions of Sin, Incarnate Arrival; Demoralize for Primal Roar (each enemy within 30 feet), Haunting Visage, Be Not Afraid!, Glory Seeker; Strikes for Drain Life (its save on the hit's card), Beast's Charge (two Strides), Whirlwind Maul, Elemental Maelstrom, Surprising Leap.
+- **Left.** Underling actions (Teams+ adventures) are an NPC's, for the ability module. Eidolon's Trample and Field of Roots deal a Strike's damage the card can't name; Flowing Engulf, Unspeakable Demonstration and Inhibiting Excretion are lasting areas.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed

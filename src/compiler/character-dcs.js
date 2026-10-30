@@ -191,10 +191,17 @@ export function inReaderWords(html) {
         .replace(/(@Check\[(?:fortitude|reflex|will)\|[^\]]*\](?:\{[^}]*\})? save), or\b/gi, "$1 or");
 }
 
+// A save tag PF2e leaves with no DC at all, its DC said in the words after it: an eidolon's Drain Life, "@Check[fortitude|options:…] save
+// against your spell DC" (2026-10-30, "Companions") → "@Check[fortitude|options:…|against:spell] save against your spell DC".
+const UNTAGGED = /@Check\[((?:fortitude|reflex|will)(?:\|(?![^\]]*\b(?:dc|against):)[^\]]*)?)\](\{[^}]*\})?( (?:basic )?(?:saving throw|save),? against your (spell|class) DC)/gi;
+export function namedDCs(html) {
+    return String(html).replace(UNTAGGED, (_all, inner, label = "", words, which) => `@Check[${inner}|against:${which.toLowerCase()}]${label}${words}`);
+}
+
 export function withCharacterDCs(item, dcs) {
     const html = item?.system?.description?.value;
     if (!dcs || typeof html !== "string" || !(html.includes("@Check[") || html.includes("@Damage["))) return item;
-    const filled = inReaderWords(fillCharacterNumbers(fillCharacterDCs(html, dcs), dcs, item));
+    const filled = inReaderWords(fillCharacterNumbers(fillCharacterDCs(namedDCs(html), dcs), dcs, item));
     if (filled === html) return item;
     return withText(item, filled);
 }

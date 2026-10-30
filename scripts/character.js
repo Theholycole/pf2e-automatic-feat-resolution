@@ -1,5 +1,6 @@
 // A character's DCs, level and attribute modifiers as its feats' saves and damage name them (2026-10-30, docs/feats.md), read off the live PF2e actor for the compiler's
-// options.dcs (src/compiler/character-dcs.js). Null for anything but a character.
+// options.dcs (src/compiler/character-dcs.js). Null for anything but a character or a familiar.
+import { findMaster, isEidolon, withMasterDCs } from "../src/compiler/companion.js";
 
 const value = (statistic) => {
     const dc = Number(statistic?.dc?.value);
@@ -7,7 +8,18 @@ const value = (statistic) => {
 };
 
 export function characterDCs(actor) {
-    if (actor?.type !== "character") return null;
+    if (!["character", "familiar"].includes(actor?.type)) return null;
+    return companionDCs(actor, ownDCs(actor));
+}
+
+// (2026-10-30, "Companions": an eidolon's, animal companion's or familiar's abilities use its master's spell or class DC.)
+function companionDCs(actor, own) {
+    const master = findMaster(actor, { actors: [...(game.actors ?? [])], users: [...(game.users ?? [])] });
+    if (!master || master === actor) return own;
+    return withMasterDCs(own, ownDCs(master), { eidolon: isEidolon(actor) });
+}
+
+function ownDCs(actor) {
     const byClass = {};
     for (const [slug, statistic] of Object.entries(actor.classDCs ?? {})) {
         const dc = value(statistic);

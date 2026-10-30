@@ -17,12 +17,17 @@ export { characterStrike } from "./strikes.js";
 
 // options.dcs: the character's own DCs, level and attribute modifiers (scripts/character.js); the rest are the ability compiler's
 // (basicActions, actor).
+import { eidolonWords, isEidolonItem } from "./companion.js";
+
 export function compileFeat(item, options = {}) {
     const { dcs, ...abilityOptions } = options;
     if (!dcs) return null;
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
-    const filled = withCharacterDCs(hand?.text ? withText(item, hand.text) : item, dcs);
+    const written = hand?.text ? withText(item, hand.text) : item;
+    // (An eidolon's action, "Your eidolon Strikes": the readers' "You Strike"; 2026-10-30, "Companions".)
+    const own = !hand?.text && isEidolonItem(item) ? withText(item, eidolonWords(item.system?.description?.value ?? "")) : written;
+    const filled = withCharacterDCs(own, dcs);
     if (hand?.affect) return handAffect(item, hand);
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;

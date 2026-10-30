@@ -362,3 +362,50 @@ test("slice 14: an action that heals one other creature", async () => {
     assert.equal(otherHeal(action("Cocoon", "<p>You spin a cocoon. If the cocoon survives, the creature inside regains @Damage[3d8[healing]] Hit Points.</p>")), null, "only sometimes");
     assert.equal(otherHeal(action("Wave", "<p>Each ally within 30 feet regains @Damage[2d8[healing]] Hit Points.</p>")), null, "more than one");
 });
+
+test("companions: an eidolon's master, its DCs and its words", async () => {
+    const { findMaster, withMasterDCs, eidolonWords, actingItem } = await import("../src/compiler/companion.js");
+    const { namedDCs } = await import("../src/compiler/character-dcs.js");
+    const users = [{ id: "gm", isGM: true }, { id: "p1", isGM: false }, { id: "p2", isGM: false }];
+    const summoner = { id: "s", type: "character", class: { slug: "summoner" }, traits: new Set(["human"]), ownership: { p1: 3 } };
+    const fighter = { id: "f", type: "character", class: { slug: "fighter" }, traits: new Set(["elf"]), ownership: { p1: 3 } };
+    const other = { id: "o", type: "character", class: { slug: "summoner" }, traits: new Set([]), ownership: { p2: 3 } };
+    const eidolon = { id: "e", type: "character", class: { slug: "eidolon" }, traits: new Set(["eidolon", "beast"]), ownership: { p1: 3 } };
+    const wolf = { id: "w", type: "character", traits: new Set(["animal", "minion"]), ownership: { p1: 3 } };
+    const familiar = { id: "fa", type: "familiar", system: { master: { id: "o" } }, ownership: { p2: 3 } };
+    const actors = [summoner, fighter, other, eidolon, wolf, familiar];
+    assert.equal(findMaster(eidolon, { actors, users }), summoner, "the player's summoner");
+    assert.equal(findMaster(wolf, { actors, users }), null, "two of the player's characters, neither assigned");
+    assert.equal(findMaster(wolf, { actors, users: [...users.slice(0, 1), { id: "p1", isGM: false, character: fighter }] }), fighter, "the player's own character");
+    assert.equal(findMaster({ ...wolf, flags: { "pf2e-automatic-feat-resolution": { master: "s" } } }, { actors, users }), summoner, "the module's flag");
+    assert.equal(findMaster(familiar, { actors, users }), other, "PF2e's own link");
+    assert.equal(findMaster(fighter, { actors, users }), null, "not a companion");
+    const dcs = withMasterDCs({ class: null, spell: null, byClass: {}, byTradition: {}, level: 8 }, { class: 24, spell: 26, byClass: { summoner: 24 }, byTradition: { primal: 26 }, level: 8 }, { eidolon: true });
+    assert.equal(dcs.spell, 26);
+    assert.equal(dcs.byTradition.primal, 26);
+    assert.equal(withMasterDCs({ spell: 19, byClass: {}, byTradition: {} }, { spell: 26, byClass: {}, byTradition: {} }, { eidolon: true }).spell, 26, "an eidolon's spell DC is the summoner's");
+    assert.equal(withMasterDCs({ spell: 19, byClass: {}, byTradition: {} }, { spell: 26, byClass: {}, byTradition: {} }).spell, 19, "a familiar's own first");
+    assert.equal(eidolonWords("Your eidolon Strikes a living enemy. If your eidolon has a creature grabbed, your eidolon's reach"), "You Strike a living enemy. If you have a creature grabbed, your reach");
+    assert.equal(namedDCs("the target must attempt a @Check[fortitude|options:damaging-effect] save against your spell DC"), "the target must attempt a @Check[fortitude|options:damaging-effect|against:spell] save against your spell DC");
+    assert.equal(namedDCs("a @Check[reflex|basic|against:spell] save against your spell DC"), "a @Check[reflex|basic|against:spell] save against your spell DC", "already has one");
+    const hold = { name: "Constricting Hold", actor: summoner, system: { traits: { value: ["eidolon", "evolution", "summoner"] } } };
+    assert.equal(actingItem(hold, { actors, users }).actor, eidolon, "the summoner's evolution feat is the eidolon's");
+    assert.equal(actingItem({ ...hold, system: { traits: { value: ["summoner"] } } }, { actors, users }).actor, summoner);
+});
+
+test("companions: eidolon actions by hand", () => {
+    const dcs = { level: 8, class: null, spell: 26, byClass: {}, byTradition: {}, statistics: {}, abilities: { str: 4 } };
+    const action = (name, uuid, html, traits = ["eidolon"]) => ({ name, type: "action", sourceId: uuid, system: { description: { value: html }, actionType: { value: "action" }, actions: { value: 2 }, traits: { value: traits }, rules: [] } });
+    const breath = compileFeat(action("Dragon Breath (Eidolon)", "Compendium.pf2e.actionspf2e.Item.Vr3w3t028ZKDg0mO", "<p>Breath.</p>"), { dcs });
+    assert.equal(breath.resolution.check.against.value, 26);
+    assert.equal(breath.targeting.area.type, "cone");
+    const hold = compileFeat(action("Constricting Hold", "Compendium.pf2e.feats-srd.Item.si8FGX2ZRxetdVHp", "<p>Hold.</p>"), { dcs });
+    assert.equal(hold.targeting.target, "the creature you have grabbed");
+    const charge = compileFeat(action("Beast's Charge", "Compendium.pf2e.actionspf2e.Item.cx0juTYewwBmrYWv", "<p>Charge.</p>"), { dcs });
+    assert.equal(charge.builtin, "strike-activity");
+    assert.equal(charge.strides, 2);
+    // Read without a hand plan: "Your eidolon makes a melee Strike" is the readers' "You make a melee Strike".
+    const furious = compileFeat(action("Furious", null, "<p>Your eidolon makes a melee Strike. This counts as two attacks when calculating your multiple attack penalty.</p>"), { dcs });
+    assert.equal(furious.builtin, "strike-activity");
+    assert.equal(furious.countsAs, 2);
+});

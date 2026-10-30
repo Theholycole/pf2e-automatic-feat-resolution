@@ -6,6 +6,7 @@ import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
+import { actingItem } from "../src/compiler/companion.js";
 import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -28,13 +29,15 @@ function compileItem(item) {
     }
 }
 
+// (An eidolon or animal companion is a PF2e character too; a familiar has its own type, 2026-10-30 "Companions".)
+const PLAYS = new Set(["character", "familiar"]);
 const isFeatMessage = (message) => ["action", "feat"].includes(message.flags?.pf2e?.origin?.type) && !message.flags?.pf2e?.context?.type;
 
 // The player's own targets on the message of a character's feat or action, as it's posted (their client: the GM's card needs them).
 function recordTargets(message, _data, _options, userId) {
     if (userId !== game.user.id || !isFeatMessage(message)) return;
     const actor = message.speaker?.actor ? game.actors.get(message.speaker.actor) : null;
-    if (actor?.type !== "character" && message.speakerActor?.type !== "character") return;
+    if (!PLAYS.has(actor?.type) && !PLAYS.has(message.speakerActor?.type)) return;
     const targets = [...game.user.targets].map((token) => token.document?.uuid).filter(Boolean);
     if (targets.length) message.updateSource({ [`flags.${MODULE_ID}.targets`]: targets });
 }
@@ -58,15 +61,17 @@ function registerSetting() {
 const allCards = () => game.settings.get(MODULE_ID, SETTING) === "all";
 async function cardForFeat(message) {
     if (!isFeatMessage(message) || !message.flags.pf2e.origin.uuid) return;
-    const item = await fromUuid(message.flags.pf2e.origin.uuid);
-    if (item?.actor?.type !== "character") return;
+    const posted = await fromUuid(message.flags.pf2e.origin.uuid);
+    if (!PLAYS.has(posted?.actor?.type)) return;
+    // (2026-10-30, "Companions": Constricting Hold on the summoner's sheet is the eidolon's, with its numbers and from its token.)
+    const item = actingItem(posted, { actors: [...game.actors], users: [...game.users] });
     const plan = compileItem(item);
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     const play = abilityApi()?.live?.playAbility;
     // (Warned at the first card, not at ready: the ability module sets its live API only once its basic actions load; 2026-10-30 Foundry test.)
     if (!play) return warnOnce();
-    const sourceToken = message.token ?? item.actor.getActiveTokens(true, true)[0] ?? null;
+    const sourceToken = (item === posted ? message.token : null) ?? item.actor.getActiveTokens(true, true)[0] ?? null;
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
     if (!(plan.resolution && CARD_KINDS.has(plan.resolution.kind)) && !allCards()) return;
