@@ -26,7 +26,8 @@ export function compileFeat(item, options = {}) {
     if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
     const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? selfEffect(filled, dcs);
-    if (plan) return plan;
+    // (A text entry's notes: what its rewritten text leaves out.)
+    if (plan) return hand?.text && hand.notes?.length ? { ...plan, notes: [...(plan.notes ?? []), ...hand.notes] } : plan;
     // (Slice 3: a reaction or free action, its effect as the player uses it; its trigger and time kept on the plan.)
     const used = asUsed(filled);
     const usedPlan = used ? read(used.item, abilityOptions) ?? selfHeal(used.item, dcs) ?? selfEffect(used.item, dcs) : null;
