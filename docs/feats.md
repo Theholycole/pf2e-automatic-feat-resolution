@@ -83,11 +83,11 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **Measured:** 48 options (Dueling Riposte, Aldori Riposte, Reassuring Presence, Avenge in Glory, Commitment to Valor, Cracked Mountain, Unkillable and others).
 
 ## Slice 11: reminders when a foe near the character moves or uses a manipulate, concentrate or move action (2026-10-30)
-- **Allies moving** (the loop, 2026-10-30): "An ally ends a move action adjacent to you", "An ally within your reach uses a move action …", "An adjacent ally moves" (ally-moves: Goblin Scuttle, Shadow Tempo, Synchronous Slither, Don't Let Go, Slingshot Maneuver). A character's token moving reminds the other characters of its side with these feats when the move starts or ends in range, in an encounter. Count: 3,159 of 4,826 left.
 
 - **The reader** (`eventTrigger`, foe-acts): "A creature within your reach leaves a square during a move action it's using", "A creature within 10 feet of you uses a manipulate action or a move action", "A creature within your reach uses a concentrate action", "A creature moves to be within 15 feet of you". "Your reach" is counted as 10 feet, so a 5-foot reach may get a reminder it can't use.
 - **Live** (`scripts/reminders.js`), in an encounter only: when a non-character's token moves and starts or ends in range of a character of another disposition; and when a non-character's action or spell is posted whose traits include the ones named.
 - **Measured:** 7 options (Not So Fast!, Shoving Sweep, Hunting Snag, Opportune Throw, Reflexive Courage, Distracting Explosion, Back Off!). PF2e's own Reactive Strike and its kin were already counted handled.
+- **Allies moving** (the loop, 2026-10-30): "An ally ends a move action adjacent to you", "An ally within your reach uses a move action …", "An adjacent ally moves" (ally-moves: Goblin Scuttle, Shadow Tempo, Synchronous Slither, Don't Let Go, Slingshot Maneuver). A character's token moving reminds the other characters of its side with these feats when the move starts or ends in range, in an encounter. Count: 3,159 of 4,826 left.
 
 ## Hand-picked: the core classes' feats (2026-10-30, Cole's choice after the loop)
 
