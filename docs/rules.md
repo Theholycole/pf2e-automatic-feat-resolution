@@ -97,7 +97,8 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
 - **Hand-written** (`src/plans/toggles.js`, `feat-effect` with `toggle: true`): the same switch with the module's own Effect, its rules
   from the text, for passives with none. Shadow Master (resistance 5 to all but force and ghost touch, Reflex rolled twice), Daredevil's
   Gambit (+2 AC to your next turn), The Harder They Fall (+1 AC and saves, 1 round), Tough Tumbler (+1 AC this turn), Emboldened with
-  Glorious Purpose (+1 status to Will, +2 against emotion and fear), Glyph Expert, Sure Foot, Able Ritualist, Thaumaturgic Ritualist.
+  Glorious Purpose (+1 status to Will, +2 against emotion and fear), Glyph Expert, Sure Foot, Able Ritualist, Thaumaturgic Ritualist,
+  Harrow Ritualist, Macabre Virtuoso, Reading the Signs, Advanced Vials (Mutagenist) (physical resistance half your level).
   What the rules can't tell apart (that creature, that trap) is a note. Choices ("attack rolls or AC") are left out.
 - **Foundry test** (2026-10-30, eeb6c8f): Formation Training on and off (AC and Fortitude +1 and back), Lost in the Crowd, Terrifying
   Mien, Phenom's Verve, Hydration (its Dehydrated Effect, for when you go without water), Root Magic on a target and the GM's whisper

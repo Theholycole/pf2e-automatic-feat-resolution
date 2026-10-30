@@ -52,5 +52,25 @@ export default [
         uuid: pf2e("yMj9WfPctWQC7be2"), name: "Thaumaturgic Ritualist",
         toggle: { rules: [bonus("skill-check", 2)] },
         notes: ["On for the primary checks of a ritual you're casting."]
+    },
+    {
+        uuid: pf2e("JgM1DMPcceeHYhQ8"), name: "Harrow Ritualist",
+        toggle: { rules: [bonus("skill-check", 2, "status")] },
+        notes: ["On for the checks of a ritual you've worked harrow cards into."]
+    },
+    {
+        uuid: pf2e("reoylyGMDPl7H6L5"), name: "Macabre Virtuoso",
+        toggle: { rules: [bonus("skill-check", 2)] },
+        notes: ["On for your primary check as primary caster of a create undead ritual."]
+    },
+    {
+        uuid: pf2e("6VWLyjurMGi33XAT"), name: "Reading the Signs",
+        toggle: { rules: [bonus("skill-check", 2, "status"), bonus("saving-throw", 2, "status", ["item:trait:divination"])] },
+        notes: ["On for a skill check that draws cards or resolves a divination effect (a save against a hostile divination effect counts too)."]
+    },
+    {
+        uuid: "Compendium.pf2e.classfeatures.Item.wYOdTCWQQ6ec8I6b", name: "Advanced Vials (Mutagenist)",
+        toggle: { rules: [{ key: "Resistance", type: "physical", value: "floor(@actor.level/2)" }] },
+        notes: ["On when you drink one of your field vials, for as long as its effect lasts."]
     }
 ];
