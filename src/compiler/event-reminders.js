@@ -4,11 +4,13 @@
 // when PF2e posts the attack or the damage aimed at the character (or an ally in range), the module whispers them the feats they may use
 // (scripts/reminders.js). Nothing is used for them; the player decides, and the trigger's other words are theirs to judge.
 
+import { ownWords } from "./companion.js";
 const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
 // → { event: "critical-hit" | "hit" | "targeted" | "damaged" | "ally-hit" | "ally-targeted" | "ally-damaged" | "foe-casts", within, trigger,
 // kind }, or null.
-export function eventTrigger(item) {
+export function eventTrigger(given) {
+    const item = ownWords(given);
     const type = item?.system?.actionType?.value;
     // (A passive feat that says when it applies, "Whenever you critically succeed on a Strike, …", "When you would become fatigued, …": read
     // the same way, its "When" clause as the trigger; the loop, 2026-10-30.)
@@ -108,7 +110,7 @@ export function eventTrigger(item) {
         if (/\b(?:is|are) targeted\b|\btargets (?:an|your|the|one of your) all/i.test(trigger)) return read("ally-targeted");
         return null;
     }
-    if (/\bcritically hits you\b|^You are critically hit\b|^You (?:are struck by|would take|take) a critical hit\b|^A critical hit deals [^.]*\bdamage to you\b|\bcritically succeeds (?:on|at) (?:a|an) (?:melee |ranged )?(?:Strike|attack(?: roll)?) against you\b/i.test(trigger)) return read("critical-hit");
+    if (/\bcritically hits you\b|^You are critically hit\b|^You (?:are struck by|would take|take) a critical hit\b|^A critical hit deals [^.]*\bdamage to you\b|\bcritically succeeds (?:on|at) (?:a|an) (?:melee |ranged )?(?:Strike|attack(?: roll)?) against you\b|\bStrike against you is a critical hit\b/i.test(trigger)) return read("critical-hit");
     // ("A creature missed you with a melee attack", "A creature misses you with a ranged attack", "An adjacent creature you can see fails an
     // attack roll against you": Elude Trouble's, Coursing Weave's; the loop, 2026-10-30.)
     if (/\bmiss(?:es|ed)? you\b|\bfails an attack roll against you\b/i.test(trigger)) return read("miss");
@@ -157,7 +159,8 @@ export function weaponFits(weapons, options = []) {
 // Strike …", "You enter Tenacious Stance.", "You Cast a Spell using a spell slot.", "You cast summon undead." → { names: the action's or
 // spell's names (lower case), spell: any spell counts, trigger, kind }, or null. Matched against the item of the character's own chat
 // message when it uses one.
-export function ownUseTrigger(item) {
+export function ownUseTrigger(given) {
+    const item = ownWords(given);
     const type = item?.system?.actionType?.value;
     // (A passive feat that changes an action or spell when it's used, "When you use Fervor, …", "Whenever you Cast or Sustain a hex, …":
     // its "When" clause; not a basic move or Interact, which would remind at every step; the loop, 2026-10-30.)
@@ -197,7 +200,8 @@ export function usesTrigger(read, itemName, itemType, itemTraits = []) {
 // effect, but you haven't rolled yet.", "You're about to roll initiative.", "You have the dying condition and are about to attempt a recovery
 // check." A note on the roll's card comes too late, so the module reminds before: when a hostile spell or ability with a save is posted
 // with the character targeted, when the character joins an encounter without initiative, and when its turn begins while it's dying.
-export function preRollTrigger(item) {
+export function preRollTrigger(given) {
+    const item = ownWords(given);
     const type = item?.system?.actionType?.value;
     // (A passive feat that acts as initiative is rolled, Battle Cry's "When you roll initiative, you can yell a mighty battle cry and
     // Demoralize an observed foe as a free action": reminded as the character joins the encounter; 2026-10-30 Foundry test.)

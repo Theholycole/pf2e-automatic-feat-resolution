@@ -2,6 +2,7 @@
 // begins.", "Your turn ends.", "You start your turn with the Frightened condition.", "Your turn begins, and you're Grabbed or Restrained."
 // PF2e has no roll at that moment to put a note on, so the module reminds the character's players when it comes (scripts/reminders.js).
 
+import { ownWords } from "./companion.js";
 const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
 const CONDITIONS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "drained", "dying", "encumbered", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "paralyzed", "persistent-damage", "petrified", "prone", "quickened", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded", "doomed"];
@@ -14,7 +15,8 @@ function havingOf(trigger) {
 }
 
 // → { when: "start" | "end", trigger, kind: "reaction" | "free action" }, or null.
-export function turnTrigger(item) {
+export function turnTrigger(given) {
+    const item = ownWords(given);
     const type = item?.system?.actionType?.value;
     // (A passive feat that acts at the start or end of the character's turn, "At the start of each of your turns, you gain an additional
     // reaction …", "At the end of your turn, reduce your frightened …": its sentence; the loop, 2026-10-30.)

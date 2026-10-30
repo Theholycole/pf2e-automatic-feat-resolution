@@ -4,6 +4,8 @@
 // for one: its own flag (flags["pf2e-automatic-feat-resolution"].master, an actor id), else the one character the same player owns
 // that isn't a companion itself (a summoner first, for an eidolon).
 
+import { withText } from "./character-dcs.js";
+
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const OWNER = 3;
 
@@ -73,9 +75,18 @@ const plural = (verb) => VERBS[verb.toLowerCase()] ?? verb.replace(/(ss|sh|ch|x|
 export function eidolonWords(html) {
     return String(html)
         .replace(/\b([Yy])our eidolon's\b/g, (_all, y) => `${y}our`)
-        .replace(/\b([Yy])our eidolon ((?:then |also |immediately |suddenly )?)(can't|can|must|[a-z]+s)\b/gi,
+        .replace(/(?<!\b(?:to|against|of|by|with|from|near|at|on|than|and) )\b([Yy])our eidolon ((?:then |also |immediately |suddenly )?)(can't|can|must|[a-z]+s)\b/gi,
             (_all, y, adverb, verb) => `${y === "Y" ? "You" : "you"} ${adverb}${plural(verb)}`)
         .replace(/\b([Yy])our eidolon\b/g, (_all, y) => (y === "Y" ? "You" : "you"));
 }
 
 export const isEidolonItem = (item) => (item?.system?.traits?.value ?? []).includes("eidolon");
+
+// The eidolon's own action or reaction in those words, for the reminders' triggers too ("A creature within your eidolon's reach uses a
+// manipulate action" is "within your reach": the eidolon's, as it's the eidolon's token they're measured from). On the summoner's sheet
+// it stays as written.
+export function ownWords(item) {
+    if (!isEidolonItem(item) || (item.actor && !isEidolon(item.actor))) return item;
+    const html = item.system?.description?.value;
+    return typeof html === "string" && /\byour eidolon\b/i.test(html) ? withText(item, eidolonWords(html)) : item;
+}

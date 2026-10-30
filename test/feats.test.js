@@ -393,7 +393,7 @@ test("companions: an eidolon's master, its DCs and its words", async () => {
     assert.equal(actingItem({ ...hold, system: { traits: { value: ["summoner"] } } }, { actors, users }).actor, summoner);
 });
 
-test("companions: eidolon actions by hand", () => {
+test("companions: eidolon actions by hand", async () => {
     const dcs = { level: 8, class: null, spell: 26, byClass: {}, byTradition: {}, statistics: {}, abilities: { str: 4 } };
     const action = (name, uuid, html, traits = ["eidolon"]) => ({ name, type: "action", sourceId: uuid, system: { description: { value: html }, actionType: { value: "action" }, actions: { value: 2 }, traits: { value: traits }, rules: [] } });
     const breath = compileFeat(action("Dragon Breath (Eidolon)", "Compendium.pf2e.actionspf2e.Item.Vr3w3t028ZKDg0mO", "<p>Breath.</p>"), { dcs });
@@ -407,5 +407,9 @@ test("companions: eidolon actions by hand", () => {
     // Read without a hand plan: "Your eidolon makes a melee Strike" is the readers' "You make a melee Strike".
     const furious = compileFeat(action("Furious", null, "<p>Your eidolon makes a melee Strike. This counts as two attacks when calculating your multiple attack penalty.</p>"), { dcs });
     assert.equal(furious.builtin, "strike-activity");
-    assert.equal(furious.countsAs, 2);
+    assert.equal(furious.countsAs, 2);    const { eventTrigger } = await import("../src/compiler/event-reminders.js");
+    const reaction = (name, trigger, actor) => ({ name, actor, system: { description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` }, actionType: { value: "reaction" }, traits: { value: ["eidolon"] } } });
+    assert.equal(eventTrigger(reaction("Anatomy", "An enemy adjacent to your eidolon deals damage to your eidolon")).event, "damaged");
+    assert.equal(eventTrigger(reaction("Redistribute", "An enemy's Strike against your eidolon is a critical hit.")).event, "critical-hit");
+    assert.equal(eventTrigger(reaction("Anatomy", "An enemy adjacent to your eidolon deals damage to your eidolon", { type: "character", traits: new Set(["human"]) })), null, "on the summoner's sheet, as written");
 });
