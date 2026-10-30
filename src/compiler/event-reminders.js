@@ -26,6 +26,10 @@ export function eventTrigger(item) {
     if (/^(?:You critically (?:hit|succeed (?:at|on) (?:a|an|your)\b[^.]*?\bStrike)|Your\b[^.]*?\bStrike critically hits)\b/i.test(trigger)) return read("own-critical-hit");
     if (/^(?:You hit (?:a|an)\b[^.]*?\bStrike|You succeed at a (?:melee |ranged )?Strike|Your\b[^.]*?\bStrike hits)\b/i.test(trigger)) return read("own-hit");
     if (/^(?:You miss with (?:a|an|your)\b[^.]*?\bStrike|You (?:or your [\w ]+? )?(?:roll|gets?) a failure on a Strike)\b|^You misfire\b/i.test(trigger)) return read("own-miss");
+    // (A foe dropped by the character or an ally: "You reduce an enemy to 0 Hit Points", "Your melee Strike reduces a creature to 0 Hit
+    // Points", "An ally within 30 feet brings an enemy to 0 Hit Points": whoever's turn it is when a foe falls to 0; the loop, 2026-10-30.)
+    if (/^(?:You reduce|Your\b[^.]*?\b(?:Strike|attack) reduces)\b[^.]*?\bto 0 (?:Hit Points|HP)\b/i.test(trigger)) return read("own-kill");
+    if (/^An? (?:adjacent )?ally\b[^.]*?\b(?:brings|reduces) (?:an enemy|a foe|a creature)\b[^.]*?\bto 0 (?:Hit Points|HP)\b/i.test(trigger)) return read("ally-kill");
     // (A save's effect, "targeted by a spell … that allows a saving throw": no attack roll to watch.)
     if (/\b(?:requires|allows) a (?:save|saving throw)\b/i.test(trigger)) return null;
     // ("A creature Casts a Spell", "An enemy casts a spell that targets you …", "Another creature within 30 feet Casts a Spell": a spell another

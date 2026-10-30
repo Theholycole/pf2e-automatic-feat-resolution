@@ -190,6 +190,8 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.equal(eventTrigger(reaction("You critically hit a foe with a melee weapon Strike or a melee unarmed attack.")).event, "own-critical-hit");
     assert.equal(eventTrigger(reaction("You succeed at a melee Strike.")).event, "own-hit");
     assert.equal(eventTrigger(reaction("You miss with a firearm or crossbow Strike.")).event, "own-miss");
+    assert.equal(eventTrigger(reaction("You reduce an enemy to 0 Hit Points.")).event, "own-kill");
+    assert.equal(eventTrigger(reaction("An ally within 30 feet brings an enemy to 0 Hit Points.")).event, "ally-kill");
     assert.equal(eventTrigger(reaction("You would be hit by a Strike.")).event, "hit");
     assert.equal(eventTrigger(reaction("You would take acid, cold, electricity, poison, fire, or sonic damage.")).event, "damaged");
     assert.deepEqual(eventTrigger(reaction("You're reduced to 0 Hit Points.")).conditions, ["0-hp"]);

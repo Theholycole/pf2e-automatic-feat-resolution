@@ -167,6 +167,23 @@ export async function onConditionGained(actor, slug) {
     }
     const token = actor.getActiveTokens(true)[0] ?? null;
     if (!token) return;
+    // (A foe dropped: the character whose turn it is ("You reduce an enemy to 0 Hit Points"), and its allies in range ("An ally within 30
+    // feet brings an enemy to 0 Hit Points"); the loop, 2026-10-30.)
+    const current = game.combat?.started ? game.combat.combatant : null;
+    const killerToken = current?.token?.object ?? null;
+    if (slug === "0-hp" && current?.actor?.type === "character" && killerToken && killerToken.document.disposition !== token.document.disposition) {
+        const killer = current.actor;
+        const of = (each, event) => [...each.itemTypes.feat, ...each.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === event);
+        const due = of(killer, "own-kill");
+        if (due.length) await whisper(killer, `<strong>${escape(killer.name)}</strong>: ${escape(actor.name)} is reduced to 0 Hit Points on your turn.`, due);
+        for (const other of canvas?.tokens?.placeables ?? []) {
+            const each = other.actor;
+            if (each?.type !== "character" || each === killer || other.document.disposition !== killerToken.document.disposition) continue;
+            const distance = distanceBetween(other, killerToken);
+            const near = of(each, "ally-kill").filter(({ read }) => !read.within || (distance !== null && distance <= read.within));
+            if (near.length) await whisper(each, `<strong>${escape(each.name)}</strong>: your ally ${escape(killer.name)} brings ${escape(actor.name)} to 0 Hit Points.`, near);
+        }
+    }
     for (const other of canvas?.tokens?.placeables ?? []) {
         const each = other.actor;
         if (each?.type !== "character" || each === actor) continue;
