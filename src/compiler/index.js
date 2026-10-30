@@ -11,6 +11,7 @@ import { selfEffect } from "./self-effect.js";
 import { linkedEffect } from "./linked-effect.js";
 import { otherHeal } from "./other-heal.js";
 import { spellLike } from "./spell-like.js";
+import { regainPoint } from "./regain-point.js";
 import { handAct, handAffect, handEntry, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
@@ -35,7 +36,9 @@ export function compileFeat(item, options = {}) {
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
     const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? otherHeal(filled) ?? selfEffect(filled, dcs)
         // (A feat that is a spell, "the effects of a 2nd-rank Web": cast through the spell module; 2026-10-30, "Spell-like feats".)
-        ?? spellLike(filled, dcs);
+        ?? spellLike(filled, dcs)
+        // (A Focus or Mythic Point back, "You regain 1 Focus Point": added to the pool; 2026-10-30, the loop.)
+        ?? regainPoint(filled);
     // (A text entry's notes: what its rewritten text leaves out.)
     // (A text entry's notes: what its rewritten text leaves out; its target, who the card is for when the rewrite can't say it.)
     if (plan && hand?.text) return { ...plan, ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };

@@ -148,6 +148,24 @@ creature, or the action also has a check, an area, a Strike or a spell.
   Kar (Reflex, the prison's numbers a note), Spellbinding Speech. Each against the higher of the class and spell DC.
 - **Measured:** 3 more. Count: 2,843 of 4,826 left.
 
+## Hand-picked: heals around a choice or a cost (2026-10-30, the loop)
+
+- `src/plans/heals.js`: Spirit's Absolution (you or an adjacent ally, the spirit wisp's (level)d4), Floral Restoration, Vital Compound
+  Invocation (5 + double your level, after the runes), Instant Recovery (Constitution × level). Areas, found by the card: Waters of Creation
+  ((half level)d6 to each creature within 15 feet) and Plant Banner (4 temporary Hit Points, 4 more at 4th level and every 4 levels, to each
+  ally within 30 feet, for 1 round). An area's amount is worked out from every character number now, not only the level.
+- **Left.** You Can't Keep Us Down heals only dying or unconscious-and-wounded allies, which the card can't pick; Life's Blood heals what
+  you lose; Reclaim Power and Absorb Strength depend on what was destroyed or eaten.
+
+## A Focus or Mythic Point back (2026-10-30, the loop)
+
+- "You regain 1 Focus Point, up to your usual maximum", "You regain 1 Mythic Point": when that is the last thing the action says and
+  nothing is rolled (`src/compiler/regain-point.js`), posting it adds the point to the character's pool, never past its maximum, and says
+  so in the chat (`scripts/main.js`, run by the GM). What comes with it is a note: Invoke Infernal Focus's doomed, Consume Thrall's
+  thrall. Not "When an enemy triggers your champion's reaction, you regain …" (Retributive Focus): only sometimes.
+- Energized Font, Well of Potential, Dissolution's Clarity, Surging Focus, Consume Thrall, Invoke Infernal Focus, Summon Mythic Power, Mythic
+  Echo. Count: 2,830 of 4,826 left.
+
 ## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
 
 - **How they're built.** PF2e has no actor type for an eidolon or an animal companion. PF2e Companion Compendia makes them "character" actors: an eidolon has the Eidolon class and an ancestry with the eidolon trait, an animal companion has the minion trait. A familiar has its own type, "familiar", and the only link PF2e keeps: `system.master.id`. Neither Companion Compendia nor Summoners+ links an eidolon to its summoner.

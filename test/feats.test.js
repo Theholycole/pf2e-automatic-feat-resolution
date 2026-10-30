@@ -493,3 +493,29 @@ test("sense regions: water, silence and blocked senses", async () => {
     assert.deepEqual(insideConditions({ silent: true, deafens: false }), []);
     assert.deepEqual(insideConditions({ conditions: ["dazzled", "nonsense"] }), ["dazzled"]);
 });
+
+test("hand-picked heals: the amount worked out, areas found by the card", () => {
+    const dcs = { ...DCS, abilities: { ...DCS.abilities, con: 3 } };
+    const item = (name, uuid, actions = 1) => ({ ...feat(name, "<p>Heal.</p>", actions), sourceId: uuid });
+    const banner = compileFeat(item("Plant Banner", "Compendium.pf2e.feats-srd.Item.xEeCaJsQeDtRAVk1"), { dcs });
+    assert.equal(banner.targeting.target, "each ally within 30 feet");
+    assert.deepEqual(banner.resolution.outcomes.success.effects.map(({ kind }) => kind), ["temp-hp"]);
+    assert.equal(banner.resolution.outcomes.success.effects[0].formula, "4*(3)", "4 more at 4th level and every 4 levels");
+    const waters = compileFeat(item("Waters of Creation", "Compendium.pf2e.feats-srd.Item.KGxGE0yv69ND2hct", 2), { dcs });
+    assert.equal(waters.resolution.outcomes.success.effects[0].formula, "4d6");
+    const recovery = compileFeat(item("Instant Recovery", "Compendium.pf2e.actionspf2e.Item.8UJaVPsT5FA8XH87"), { dcs });
+    assert.equal(recovery.resolution.native.healing.components[0].formula, "24", "Constitution 3 × level 8");
+    const absolution = compileFeat(item("Spirit's Absolution", "Compendium.pf2e.feats-srd.Item.03mVGvudDLyGEpTZ"), { dcs });
+    assert.equal(absolution.resolution.outcomes.success.effects[0].formula, "8d4");
+});
+
+test("a Focus or Mythic Point back", () => {
+    const action = (html, type = "action") => ({ name: "Point", type: "feat", system: { description: { value: html }, actionType: { value: type }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
+    const font = compileFeat(action("<p><strong>Frequency</strong> once per day</p><hr /><p>You can focus your mind more quickly. You regain 1 Focus Point, up to your usual maximum.</p>"), { dcs: DCS });
+    assert.deepEqual(font, { builtin: "regain-point", resource: "focus", value: 1, notes: [] });
+    const echo = compileFeat(action("<p><strong>Trigger</strong> You would fail a check</p><hr /><p><strong>Effect</strong> You regain 1 Mythic Point.</p>", "reaction"), { dcs: DCS });
+    assert.equal(echo.resource, "mythic");
+    const infernal = compileFeat(action("<p><strong>Effect</strong> You regain 1 Focus Point and then increase the value of your doomed condition by 1.</p>"), { dcs: DCS });
+    assert.deepEqual(infernal.notes, ["Then increase the value of your doomed condition by 1."]);
+    assert.equal(compileFeat(action("<p>When an enemy triggers your champion's reaction, you regain 1 Focus Point.</p>", "free"), { dcs: DCS }), null, "only sometimes");
+});

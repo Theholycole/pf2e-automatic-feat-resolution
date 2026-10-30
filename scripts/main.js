@@ -79,6 +79,8 @@ async function cardForFeat(message) {
     }
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
+    // (A Focus or Mythic Point back: added to the pool, up to its maximum; 2026-10-30, the loop.)
+    if (plan?.builtin === "regain-point") return regainPoint(item, plan);
     const play = abilityApi()?.live?.playAbility;
     // (Warned at the first card, not at ready: the ability module sets its live API only once its basic actions load; 2026-10-30 Foundry test.)
     if (!play) return warnOnce();
@@ -117,6 +119,22 @@ async function cardForFeat(message) {
     // ("You and your allies", Defiant Banner: the character with the GM's targets.)
     if (/^you and\b/i.test(plan.targeting?.target ?? "") && source) targets.push(source);
     return play(item, plan, sourceToken, new Set(targets));
+}
+
+// "You regain 1 Focus Point, up to your usual maximum": the pool on the character's sheet, and a line in the chat saying so.
+const POOLS = { focus: { path: "system.resources.focus", label: "Focus Point" }, mythic: { path: "system.resources.mythicPoints", label: "Mythic Point" } };
+async function regainPoint(item, plan) {
+    const pool = POOLS[plan.resource];
+    const actor = item.actor;
+    const current = foundry.utils.getProperty(actor, pool?.path ?? "");
+    if (!pool || !current) return;
+    const value = Number(current.value) || 0;
+    const max = Number(current.max);
+    const next = Number.isFinite(max) ? Math.min(max, value + plan.value) : value + plan.value;
+    if (next !== value) await actor.update({ [`${pool.path}.value`]: next });
+    const notes = (plan.notes ?? []).map((note) => `<p>${note}</p>`).join("");
+    const said = next === value ? `already has all ${max} ${pool.label}s` : `regains ${next - value} ${pool.label}${next - value === 1 ? "" : "s"} (${next}${Number.isFinite(max) ? ` of ${max}` : ""})`;
+    return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${item.name}</strong>: ${actor.name} ${said}.</p>${notes}` });
 }
 
 // (Between the tokens' edges, not their centers: a Large token adjacent to the character is 5 feet away, not 10; 2026-10-30 Foundry test,

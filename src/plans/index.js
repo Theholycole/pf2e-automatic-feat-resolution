@@ -5,6 +5,7 @@
 // PF2e's own tags, so the character's numbers still fill in). Looked up by the item's compendium source.
 
 import { sourceOf } from "../rules/index.js";
+import { fillCharacterNumbers } from "../compiler/character-dcs.js";
 import fighter from "./fighter.js";
 import martial from "./martial.js";
 import tactical from "./tactical.js";
@@ -20,8 +21,9 @@ import strikes3 from "./strikes-3.js";
 import affects from "./affects.js";
 import eidolons from "./eidolons.js";
 import saves4 from "./saves-4.js";
+import heals from "./heals.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
@@ -85,7 +87,12 @@ const NONE = () => ({ damage: { mode: "none", multiplier: 0, sourceComponentIds:
 // (An effect with its own kind, Rallying Cry's temporary Hit Points: as given, its "@actor.level" the character's; 2026-10-30 Foundry test.)
 export function handAffect(item, entry, dcs = null) {
     const affect = entry.affect ?? {};
-    const level = (formula) => String(formula).replace(/@actor\.level\b/g, String(dcs?.level ?? "@actor.level"));
+    // (Every character number, as a damage tag's: Plant Banner's level, Instant Recovery's Constitution; worked out where it can be.)
+    const level = (formula) => {
+        const filled = fillCharacterNumbers(`@Damage[${formula}]`, dcs, item);
+        const inner = /^@Damage\[(.*)\]$/s.exec(filled)?.[1] ?? String(formula);
+        return inner.replace(/@actor\.level\b/g, String(dcs?.level ?? "@actor.level"));
+    };
     const effects = (affect.effects ?? []).map((effect) => (effect.kind ? { ...effect, ...(effect.formula ? { formula: level(effect.formula) } : {}) }
         : { kind: "condition", slug: effect.slug, value: effect.value ?? null, duration: effect.duration ?? null }));
     return {
