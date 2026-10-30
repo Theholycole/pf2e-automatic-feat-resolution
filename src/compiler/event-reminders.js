@@ -45,6 +45,20 @@ export function eventTrigger(item) {
         const skills = [...check[2].matchAll(/Recall Knowledge|[A-Z][a-z]+/g)].map((match) => match[0].toLowerCase()).filter((word) => word !== "recall knowledge");
         return { ...read("own-check"), outcomes: [...new Set(outcomes)], skills };
     }
+    // (Another creature's roll result: "A creature within 30 feet critically fails an attack roll, skill check, or saving throw", "An ally
+    // within 30 feet of you critically succeeds at an attack roll or skill check", "An enemy critically succeeds at an attack roll or saving
+    // throw", "You or an ally within 30 feet fails an attack roll or skill check", "An ally misses … with their attack": others-roll, by who
+    // rolled, its degrees and kinds of roll; the loop, 2026-10-30.)
+    const others = /^(You or an ally|An? (?:adjacent )?(?:ally|enemy|foe|creature(?: other than you)?))\b[^.]*?\b((?:(?:critically )?(?:succeeds|fails|misses)(?:,? \(?but (?:doesn't|does not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on |with )?(?:a |an |their |its )?((?:(?:attack rolls?|Strikes?|spell attack rolls?|skill checks?|saving throws?|saves?|attack)(?:,? or |, )?)+)/i.exec(trigger);
+    if (others && !/\bagainst (?:you|your)\b|\b(?:Strike|attack) you\b/i.test(trigger)) {
+        const words = others[2].toLowerCase();
+        const outcomes = [...(/critically succeeds/.test(words) ? ["criticalSuccess"] : []), ...(/(?<!critically )succeeds/.test(words) ? ["success"] : []), ...(/(?<!critically )(?:fails|misses)/.test(words) ? ["failure", ...(/but (?:doesn't|does not) critically fail/.test(words) ? [] : ["criticalFailure"])] : []), ...(/critically (?:fails|misses)/.test(words) ? ["criticalFailure"] : [])];
+        const kinds = others[3].toLowerCase();
+        const rolls = [...(/attack|strike/.test(kinds) ? ["attack-roll", "spell-attack-roll"] : []), ...(/skill/.test(kinds) ? ["skill-check"] : []), ...(/sav/.test(kinds) ? ["saving-throw"] : [])];
+        const head = others[1].toLowerCase();
+        const who = head.startsWith("you or") ? "self-or-ally" : /ally/.test(head) ? "ally" : /enemy|foe/.test(head) ? "enemy" : "creature";
+        return { ...read("others-roll"), who, outcomes: [...new Set(outcomes)], rolls };
+    }
     // (A foe dropped by the character or an ally: "You reduce an enemy to 0 Hit Points", "Your melee Strike reduces a creature to 0 Hit
     // Points", "An ally within 30 feet brings an enemy to 0 Hit Points": whoever's turn it is when a foe falls to 0; the loop, 2026-10-30.)
     if (/^(?:You reduce|Your\b[^.]*?\b(?:Strike|attack) reduces)\b[^.]*?\bto 0 (?:Hit Points|HP)\b/i.test(trigger)) return read("own-kill");

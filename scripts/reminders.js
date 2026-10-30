@@ -67,6 +67,7 @@ async function whisper(actor, heading, due) {
 export async function onRollMessage(message) {
     if (!game.settings.get(MODULE_ID, SETTING)) return;
     const context = message.flags?.pf2e?.context;
+    remindOthersRoll(message, context).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     const events = eventsOf(context?.type, context?.outcome);
     const targetToken = context?.target?.token ? fromUuidSync(context.target.token)?.object ?? null : null;
     const target = targetToken?.actor ?? (context?.target?.actor ? fromUuidSync(context.target.actor) : null);
@@ -113,6 +114,25 @@ export async function onRollMessage(message) {
         const distance = distanceBetween(token, targetToken);
         const due = ofItems(actor).filter(({ read }) => events.includes(read.event.replace(/^ally-/, "")) && read.event.startsWith("ally-") && (!read.within || (distance !== null && distance <= read.within))).filter(byFits);
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(source)}'s ${context.type === "damage-roll" ? "damage" : "attack"} is aimed at your ally ${escape(target.name)}.`, due);
+    }
+}
+
+// Another creature's roll (the loop, 2026-10-30): each character on the scene with feats that trigger on that roll's degree by an ally, an
+// enemy or any creature in range ("An ally within 30 feet of you critically succeeds at an attack roll or skill check"). In an encounter.
+async function remindOthersRoll(message, context) {
+    const kinds = ["attack-roll", "spell-attack-roll", "skill-check", "saving-throw"];
+    if (!kinds.includes(context?.type) || !context.outcome || !game.combat?.started) return;
+    const rollerToken = message.token?.object ?? message.actor?.getActiveTokens?.(true)[0] ?? null;
+    if (!rollerToken) return;
+    for (const token of canvas?.tokens?.placeables ?? []) {
+        const actor = token.actor;
+        if (actor?.type !== "character") continue;
+        const self = actor === rollerToken.actor;
+        const allied = token.document.disposition === rollerToken.document.disposition;
+        const distance = self ? 0 : distanceBetween(token, rollerToken);
+        const fits = (read) => (self ? read.who === "self-or-ally" : read.who === "creature" || (allied ? ["ally", "self-or-ally"].includes(read.who) : read.who === "enemy"));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "others-roll" && fits(read) && read.outcomes.includes(context.outcome) && read.rolls.includes(context.type) && (!read.within || (distance !== null && distance <= read.within)));
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${self ? "your" : `${escape(rollerToken.name)}'s`} roll.`, due);
     }
 }
 
