@@ -12,7 +12,7 @@ import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnU
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
 
-const SPELL_MODULE = "pf2e-automatic-spell-resolution";
+const SPELL_MODULE = "pf2e-automatic-resolution";
 const spellApi = () => (game.modules.get(SPELL_MODULE)?.active ? game.modules.get(SPELL_MODULE).api ?? null : null);
 const abilityApi = () => (game.modules.get(ABILITY_MODULE)?.active ? game.modules.get(ABILITY_MODULE).api ?? null : null);
 const isActiveGM = () => game.users.activeGM?.isSelf ?? game.user.isGM;
