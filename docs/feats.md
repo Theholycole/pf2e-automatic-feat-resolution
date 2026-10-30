@@ -443,3 +443,8 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Toggled passives (feat 4a729d6): Eater of Avatars, Hypersenses (PF2e asks the sense), Moonscarred (12 hours, its temporary Hit
   Points), Affliction Mithridatism (asks the result), Verse of Preparation: all pass. Teams+'s Verse of Preparation Effect works out its
   temporary Hit Points from each ally's own level (5 and 2 in the test), not the bard's: its note says so.
+
+### Round 19 (2026-10-30)
+
+- Deft Cooperation (+1 attack and AC to the end of your next turn) passes. Born in the Saddle's +1 to Reflex applied unmounted too; it's
+  now predicated on PF2e's Effect: Mounted ("self:effect:mounted"), whose -2 it softens to -1.

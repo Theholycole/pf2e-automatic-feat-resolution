@@ -87,8 +87,9 @@ export default [
     },
     {
         uuid: pf2e("3aUlLF4V2KW7Hga5"), name: "Born in the Saddle",
-        toggle: { rules: [bonus("reflex", 1, "circumstance", undefined, "born-in-the-saddle")] },
-        notes: ["While you're mounted: your -2 circumstance penalty to Reflex saves is only -1. Post again when you dismount. If your mount is knocked prone, see the feat."]
+        // (Only with PF2e's Effect: Mounted on, whose -2 it softens; 2026-10-30 Foundry test.)
+        toggle: { rules: [bonus("reflex", 1, "circumstance", ["self:effect:mounted"], "born-in-the-saddle")] },
+        notes: ["Your -2 circumstance penalty to Reflex saves while mounted (PF2e's Effect: Mounted) is only -1. If your mount is knocked prone, see the feat."]
     },
     {
         uuid: pf2e("8pmd9gMl3TamFx3u"), name: "Deft Cooperation",
