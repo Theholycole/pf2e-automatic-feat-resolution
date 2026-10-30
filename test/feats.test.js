@@ -304,6 +304,9 @@ test("fixes from the Foundry test: Tail Spin's success, Mask of Fear only while 
     assert.equal(turnReminders([mask], "start", () => false).length, 0);
     assert.equal(turnReminders([mask], "start", (slug) => slug === "frightened").length, 1);
 
+    const dive = compileFeat(action("Death Dive", "Compendium.pf2e.feats-srd.Item.BKdKyftmphU9n3Wq", "<p>Dive.</p>", ["archetype"]), { dcs });
+    assert.equal(dive.by, "companion", "the mount's Strike");
+    assert.equal(dive.onHit.conditions[0].slug, "prone");
     const { eventTrigger } = await import("../src/compiler/event-reminders.js");
     assert.deepEqual(eventTrigger(reaction("A creature with the animal, beast, elemental, fey, fungus, or plant trait attacks you, and you can see the attacker.")).by, ["animal", "beast", "elemental", "fey", "fungus", "plant"]);
 

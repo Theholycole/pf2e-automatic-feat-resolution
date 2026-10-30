@@ -64,8 +64,14 @@ async function cardForFeat(message) {
     const posted = await fromUuid(message.flags.pf2e.origin.uuid);
     if (!PLAYS.has(posted?.actor?.type)) return;
     // (2026-10-30, "Companions": Constricting Hold on the summoner's sheet is the eidolon's, with its numbers and from its token.)
-    const item = actingItem(posted, { actors: [...game.actors], users: [...game.users] });
-    const plan = compileItem(item);
+    const world = { actors: [...game.actors], users: [...game.users] };
+    let item = actingItem(posted, world);
+    let plan = compileItem(item);
+    // (A feat its companion acts in, Death Dive's mount: the companion's Strike.)
+    if (plan?.by === "companion" && item === posted) {
+        item = actingItem(posted, world, { companion: true });
+        if (item !== posted) plan = compileItem(item);
+    }
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     const play = abilityApi()?.live?.playAbility;

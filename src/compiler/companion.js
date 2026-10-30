@@ -61,11 +61,15 @@ export function companionsOf(master, world = {}) {
 
 // The item as its companion's: an evolution feat (the eidolon trait) the summoner posts is the eidolon's action, rolled with the eidolon's
 // Strikes, Strength and level, from its token. The item itself when its actor is the eidolon or has none.
-export function actingItem(item, world = {}) {
-    if (!(item?.system?.traits?.value ?? []).includes("eidolon") || !item.actor || isEidolon(item.actor)) return item;
-    const eidolons = companionsOf(item.actor, world).filter(isEidolon);
-    if (eidolons.length !== 1) return item;
-    return new Proxy(item, { get: (target, key) => (key === "actor" || key === "parent" ? eidolons[0] : Reflect.get(target, key)) });
+export function actingItem(item, world = {}, { companion = false } = {}) {
+    if (!item?.actor || isCompanion(item.actor) || !(companion || isEidolonItem(item))) return item;
+    // (A feat the companion acts in, by hand, plan.by "companion" — Death Dive's mount, Tandem Strike's eidolon: its one companion, an
+    // eidolon first for a summoner's.)
+    const all = companionsOf(item.actor, world);
+    const eidolons = all.filter(isEidolon);
+    const actors = isEidolonItem(item) || (eidolons.length && (item.system?.traits?.value ?? []).some((trait) => ["summoner", "tandem"].includes(trait))) ? eidolons : all;
+    if (actors.length !== 1) return item;
+    return new Proxy(item, { get: (target, key) => (key === "actor" || key === "parent" ? actors[0] : Reflect.get(target, key)) });
 }
 
 // An eidolon's ability in the words the readers know (2026-10-30, "Companions"): it acts, so "Your eidolon makes a melee Strike" is

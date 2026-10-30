@@ -50,6 +50,8 @@ export function handStrike(item, entry, base = null) {
     };
     // (No save read, the character without that class's DC — a Fighter with Stunning Finisher, no Swashbuckler Dedication: the note says
     // to roll it by hand, not that it's on the card; 2026-10-30 Foundry test.)
+    // (The companion makes it, played as the companion's: scripts/main.js; 2026-10-30, "Companions".)
+    if (entry.by) plan.by = entry.by;
     if (!plan.onHit.save) plan.notes = (plan.notes ?? []).map((note) => (note === "The save on a hit is on its card." ? "No class DC was found for the save on a hit: call for it by hand." : note));
     return plan;
 }
