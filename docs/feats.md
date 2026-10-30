@@ -384,3 +384,16 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 | D10 | A feat read in slice 5 puts the module's Effect on the character as soon as it's used, with no card or button. Should it ask first (a button on the chat card), or apply it as PF2e's own stances do? | Applied on use, whatever the D2 setting. |
 | D11 | Turn reminders (slice 6), attack and damage reminders (slice 7) and own-action reminders (slice 8) before-the-roll reminders (slice 9) condition reminders (slice 10) and foe-movement reminders (slice 11) are whispered to the character's owners and the GM at each turn start or end, or attack or damage roll, where a feat triggers. On by default, or off until a group turns them on? | On by default; a world setting turns them off. |
 | D12 | Slice 13's cards that apply a PF2e Effect a feat links: in the "Cards for characters' feats" default ("checks"), or only with "all"? | In the default; the GM still presses Apply. |
+
+### Round 11 (2026-10-30)
+
+- Heals by hand: You Can't Keep Us Down (3 x level to the allies you target; only the dying, or unconscious and wounded, qualify), Patch Up
+  (an underling's 1d8 per two levels to an adjacent ally). Linked Effects: Revitalizing Blood (Teams+ Barbarians' Effect on 1 ally within
+  30 feet), Raise the Walls (you and 1 ally within 15 feet). Foundry test (feat ec8ffe1): all pass, and Spin Tale (villain targeted before
+  Apply) and Educate Allies (allies within 60 feet) now pass too.
+- Teams+ Magic's aspects: their saves name the spell's DC and rank by path ("dc:resolve(@actor.flags.pf2e.aspectDC)",
+  "(@actor.flags.pf2e.aspectRank)d6"), which Teams+ Magic's AspectForm rule sets on the aspect each time it's prepared. The ability module
+  now fills a creature's own numbers by path before reading (ability 1e15a78, src/compiler/roll-data.js), and reads "must make a … save
+  or become X" (Behold!). Aspects are NPCs, so their cards are the ability module's; 13 of the index's aspect actions read. Foundry test on
+  an NPC with the flags set by hand (Foundry Summons, which Teams+ Magic's summon macro needs, isn't in the test copy): Aftershock (DC 25
+  basic Reflex, 3d6) and Terrifying Shriek (6d6 mental) pass.
