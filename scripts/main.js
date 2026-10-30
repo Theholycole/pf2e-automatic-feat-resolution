@@ -4,6 +4,7 @@
 import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
+import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { applyFeatEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
@@ -153,7 +154,11 @@ Hooks.once("init", () => {
     registerReminderSetting();
     // (The module's rule elements, docs/rules.md: before any actor prepares; PF2e's item classes are in CONFIG by the system's own init.)
     setUpRules();
+    // (Senses on tokens, docs/feats.md "Senses": their detection modes now, the wrapper once PF2e's token class is in CONFIG.)
+    registerSenses();
 });
+
+Hooks.once("setup", () => wrapDetectionModes());
 
 Hooks.once("ready", () => {
     Hooks.on("preCreateChatMessage", recordTargets);

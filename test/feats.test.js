@@ -437,3 +437,23 @@ test("spell-like feats: the spell, its rank and the character's DC", async () =>
     assert.equal(spellLike(feat("<p>Attempt a @Check[crafting|dc:40] check. If you succeed, the target returns with the effects of @UUID[Compendium.pf2e.spells-srd.Item.Raise Dead].</p>"), dcs), null, "after a check");
     assert.equal(spellLike(feat("<p>You can cast @UUID[Compendium.pf2e.spells-srd.Item.Heal] once per day.</p>", "passive"), dcs), null, "a passive");
 });
+
+test("senses on tokens: the modes PF2e leaves off, by acuity and range", async () => {
+    const { senseModes, senseFinds } = await import("../src/compiler/senses.js");
+    const modes = senseModes([
+        { type: "darkvision", acuity: "precise", range: Infinity },
+        { type: "echolocation", acuity: "precise", range: 40 },
+        { type: "scent", acuity: "imprecise", range: 30 },
+        { type: "scent", acuity: "vague", range: 30 },
+        { type: "lifesense", acuity: "precise", range: 10 },
+        { type: "tremorsense", acuity: "imprecise", range: 30 },
+        { type: "truesight", acuity: "precise", range: 60 }
+    ]);
+    assert.deepEqual(modes.map((mode) => [mode.id, mode.range]), [["feat-sense-precise-echolocation", 40], ["feat-sense-imprecise-scent", 30], ["feat-sense-precise-lifesense", 10]]);
+    assert.equal(senseModes([{ type: "thoughtsense", acuity: "imprecise" }])[0].range, Infinity, "no range: unlimited");
+    assert.equal(senseFinds("lifesense", { modeOfBeing: "undead", traits: new Set(["undead"]) }), false);
+    assert.equal(senseFinds("lifesense", { modeOfBeing: "living", traits: new Set() }), true);
+    assert.equal(senseFinds("spiritsense", { modeOfBeing: "construct", traits: new Set(["construct"]) }), false);
+    assert.equal(senseFinds("thoughtsense", { traits: new Set(["mindless"]) }), false);
+    assert.equal(senseFinds("scent", { traits: new Set(["construct"]) }), true);
+});

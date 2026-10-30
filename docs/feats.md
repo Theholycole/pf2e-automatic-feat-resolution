@@ -163,6 +163,16 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Foundry test (2026-10-30).** Webslinger cast a 2nd-rank Web at DC 24 (the higher of class 24 and spell 22), Quaking Stomp an 8th-rank Earthquake at the class DC, True Senses a 6th-rank Truesight, each with the feat's name in the card's header. Dire Growth, Ka Stone Ritual and Rat Form cast nothing: live, their spell's UUID is by id, and the ability module's own reader made them its "cast-spell" plan first. That plan now casts the same way. The spell module's temporary entry and Effect stay on the sheet for 10 minutes of world time; a card resolved after that can't find the DC.
 - 22 feats, among them Webslinger, True Senses, Rat Form, Bat Form, Animal Rage, Dire Growth, Quaking Stomp, Reactive Transformation and Glass Skin.
 
+## Senses on tokens (2026-10-30, Cole: "darkvision, true sight, echolocation and others should work as expected")
+
+- **What PF2e does.** With rules-based vision on, `TokenDocumentPF2e#_prepareDetectionModes` gives the token darkvision (greater darkvision the same), see invisibility, tremorsense and hearing, rebuilt on every prepare. It leaves every other sense off the token, and ignores acuity.
+- **What the module adds** (`scripts/senses.js`, `src/compiler/senses.js`). After PF2e's own step (a libWrapper wrapper, or a plain override without libWrapper), it adds a detection mode for each of the actor's other senses at its range. A precise sense shows the creatures it finds as seen (built on Foundry's DetectionModeAll); an imprecise one outlines where they are (DetectionModeTremor's outline), as PF2e's hidden. A vague sense adds nothing.
+  - Echolocation: precise (always), sound; not while deafened.
+  - Scent, wavesense, motion sense, electromagnetic sense: any creature in range.
+  - Lifesense and bloodsense: living creatures. Spiritsense: living or undead. Thoughtsense: not mindless, through walls.
+- **Left to PF2e or with nothing to show.** Darkvision, greater darkvision, see invisibility and tremorsense (PF2e's own); low-light vision (a token already sees in dim light; concealment is the rules'); truesight (it sees through illusions, not darkness or invisibility); magicsense (magic, not creatures).
+- **Setting.** "Senses on tokens", on by default.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed
