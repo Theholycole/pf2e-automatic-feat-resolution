@@ -51,9 +51,12 @@ const TEMP = new RegExp(String.raw`(?:^(?:In addition, )?You (?:also )?gain|^| a
 
 function plainOf(html) {
     // A damage tag as its formula; its label's "Hit Points" kept ("@Damage[(8)[healing]]{Hit Points equal to your level}" → "⟦8⟧ Hit Points").
-    const tagged = String(html).replace(/@Damage\[((?:[^[\]]|\[(?:[^[\]]|\[[^\]]*\])*\])*)\](?:\{([^}]*)\})?/g, (_all, raw, label) => {
+    // (A label that says the amount in words, "{1d6 Hit Points for every 2 levels} you have (minimum 1d6)": the words after it that finish it
+    // go with it; 2026-10-30, Feral Mending, Revivifying Mutagen.)
+    const tagged = String(html).replace(/@Damage\[((?:[^[\]]|\[(?:[^[\]]|\[[^\]]*\])*\])*)\](?:\{([^}]*)\})?((?:\s+you have\b)?(?:\s*\(minimum [^)]*\))?)/g, (_all, raw, label, after) => {
         const formula = readDamage(raw).replace(/\[(?:healing|vitality|,)+\]/gi, "").replace(/^\((.*)\)$/, "$1");
-        return `⟦${formula}⟧${label && /\b(?:Hit Points|HP)\b/.test(label) ? " Hit Points" : ""}`;
+        const words = label && /\b(?:Hit Points|HP)\b/.test(label);
+        return `⟦${formula}⟧${words ? " Hit Points" : ""}${words ? "" : after}`;
     });
     return htmlToPlainText(tagged.replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1")).replace(/\s+/g, " ").trim();
 }
