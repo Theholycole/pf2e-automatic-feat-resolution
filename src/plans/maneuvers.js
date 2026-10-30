@@ -89,6 +89,17 @@ export default [
     { uuid: feats("GJRq9nCzL1amXtY4"), name: "Monumental Shove", act: "shove", notes: ["On a success it moves further: the check's result ÷ 2, rounded up to 5 feet. See the feat for a critical success into an obstacle."] },
     { uuid: feats("J1xFhXLePB7I61Pa"), name: "Mid-air Tackle", act: "grapple", target: "1 airborne creature", notes: ["Leap first (High Jump or Long Jump with 3 actions); see the feat for the extra results."] },
     { uuid: tianXia("3LMWofoux3UQicIv"), name: "Clearing The Way", act: "disarm", notes: ["Step before or after. Stepping onto a weapon you disarmed, you can pick it up as a free action."] },
+    // More (the loop, 2026-10-30)
+    { uuid: pf2e("dPmJ91qawZW2U8K3"), name: "Staff Sweep", act: "trip", target: "up to two foes within reach", notes: ["Or Shove, with your staff. One roll against both foes' DCs; they must be within 5 feet of each other."] },
+    { uuid: pf2e("pmz1itHp13JtcrjW"), name: "Unbalancing Sweep", act: "trip", target: "up to three enemies within reach", notes: ["Or Shove all three. A separate check against each; the multiple attack penalty rises only after all of them."] },
+    { uuid: pf2e("MyDluIbnX2sjm3pB"), name: "Ranged Disarm", act: "disarm", notes: ["Roll a ranged attack with your simple firearm or combination weapon instead of Athletics, against the target's Reflex DC."] },
+    { uuid: pf2e("XlagOGG88w6D3G3Z"), name: "Wheeling Grab", act: "grapple", notes: ["Enter claw stance and Tumble Through first; the Grapple only against an enemy whose space you moved through."] },
+    { uuid: pf2e("A981119DMdqE9Pg1"), name: "Running Tackle", act: "grapple", notes: ["Or Shove. Stride twice first, or High Jump or Long Jump and use it at any point of the jump (the jump ends there)."] },
+    { uuid: pf2e("3KVFBmWPVSItUuq3"), name: "Protect the Royal Line", act: "shove", successAsCritical: true, notes: ["Or Reposition, against an enemy flanking you. +2 circumstance if you can see one of your designated knights, +4 if one is adjacent. A critical success moves it 5 feet farther."] },
+    { uuid: pf2e("SzkpazSZ0pi1WZsH"), name: "Squirm Free", act: "escape" },
+    { uuid: pf2e("2hwNGs7WQnO6yv0Q"), name: "Toppling Transformation", act: "shove", notes: ["Or Trip, an adjacent creature; use your size after the transformation."] },
+    { uuid: pf2e("W7IfFi6MkTDfO2hb"), name: "Disengaging Twist", act: "escape", notes: ["Athletics, with a +2 circumstance bonus."] },
+    { uuid: pf2e("jCIBYryi6Y3JwmqH"), name: "Mixed Maneuver", act: "grapple", notes: ["Any two of Grapple, Reposition, Shove and Trip, against the same or different creatures; use the other's card too. The penalty rises only after both."] },
     // Strikes that end in a maneuver
     { uuid: pf2e("AGiIjgLOFuahmwiT"), name: "Shackles of Law", strike: { melee: true, onHit: { follow: "grapple" }, notes: ["The Grapple only if it deals damage. With a flail or spiked chain no free hand is needed, and a success counts as a critical success."] } },
     { uuid: pf2e("74MnTnoqSveet8Sy"), name: "Reflexive Grapple", strike: { strike: "lash", anyStrike: false, onHit: { follow: "grapple" }, notes: ["The penalty rises only after both."] } },
