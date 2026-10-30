@@ -79,5 +79,15 @@ export default [
         uuid: pf2e("stsCnc8hR6db1Get"), name: "Kinetic Dampening",
         toggle: { rules: [{ key: "Resistance", type: "physical", value: "5 * floor((@actor.level - 2) / 4)" }], duration: ROUND },
         notes: ["Awakening: for an extra action, the creatures you choose within 15 feet get it too (by hand); or also resistance to fire, electricity or sonic, your choice."]
+    },
+    {
+        uuid: pf2e("IqDbNiwHQH1xApo9"), name: "Ironblood Surge",
+        toggle: { rules: [bonus("ac", 1, "circumstance")], duration: ROUND },
+        notes: ["Only in Ironblood Stance. Your stance's resistance also becomes your Strength modifier, if higher, for the same time (by hand)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.Ha4JUcgOaQRLarvk", name: "Unravel Into Runes",
+        toggle: { rules: [{ key: "Resistance", type: "all-damage", value: "@actor.level" }], duration: { value: 4, unit: "rounds", expiry: "turn-start", sustained: false } },
+        notes: ["You're incorporeal and can't make attacks (by hand). In an ally's space you can give it your runes' effects and a +4 status bonus to damage rolls; leaving its space, or it falling unconscious, ends this."]
     }
 ];
