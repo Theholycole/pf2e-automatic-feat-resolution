@@ -21,6 +21,11 @@ export function eventTrigger(item) {
     const traits = /\bcreature with the ((?:[a-z-]+,? (?:or |and )?)*[a-z-]+) traits?\b/i.exec(trigger)?.[1];
     const by = traits ? traits.toLowerCase().split(/,? (?:or |and )?|,/).map((word) => word.trim()).filter(Boolean) : null;
     const read = (event) => ({ event, within, trigger, kind, ...(by ? { by } : {}) });
+    // (The character's own Strike: "You critically hit a foe with a melee weapon Strike", "Your Strike critically hits …", "You succeed at a
+    // melee Strike", "You miss with a firearm or crossbow Strike": its attack roll's degree; the loop, 2026-10-30.)
+    if (/^(?:You critically (?:hit|succeed (?:at|on) (?:a|an|your)\b[^.]*?\bStrike)|Your\b[^.]*?\bStrike critically hits)\b/i.test(trigger)) return read("own-critical-hit");
+    if (/^(?:You hit (?:a|an)\b[^.]*?\bStrike|You succeed at a (?:melee |ranged )?Strike|Your\b[^.]*?\bStrike hits)\b/i.test(trigger)) return read("own-hit");
+    if (/^(?:You miss with (?:a|an|your)\b[^.]*?\bStrike|You (?:or your [\w ]+? )?(?:roll|gets?) a failure on a Strike)\b|^You misfire\b/i.test(trigger)) return read("own-miss");
     // (A save's effect, "targeted by a spell … that allows a saving throw": no attack roll to watch.)
     if (/\b(?:requires|allows) a (?:save|saving throw)\b/i.test(trigger)) return null;
     // ("A creature Casts a Spell", "An enemy casts a spell that targets you …", "Another creature within 30 feet Casts a Spell": a spell another
@@ -42,7 +47,7 @@ export function eventTrigger(item) {
     // within 30 feet would be reduced to 0 HP but not immediately killed", "A creature within 60 feet gains the Frightened condition".)
     const conditions = conditionsOf(trigger);
     if (conditions) {
-        const who = /^(?:An?|Another|Your|One of your) (?:adjacent )?all(?:y|ies)\b/i.test(trigger) ? "ally-condition" : /^(?:A|Another) creature\b/i.test(trigger) ? "creature-condition" : /^You (?:would )?(?:gain|become|are reduced|fall|would be reduced)\b/i.test(trigger) ? "self-condition" : null;
+        const who = /^(?:An?|Another|Your|One of your) (?:adjacent )?all(?:y|ies)\b/i.test(trigger) ? "ally-condition" : /^(?:A|Another) creature\b/i.test(trigger) ? "creature-condition" : /^You(?:'re| are)? (?:would )?(?:gain|become|are reduced|reduced|fall|would be reduced)\b/i.test(trigger) ? "self-condition" : null;
         if (who) return { ...read(who), conditions };
     }
     const ally = /\b(?:an|your|one of your|a) (?:adjacent )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
@@ -62,9 +67,9 @@ export function eventTrigger(item) {
     // ("A creature missed you with a melee attack", "A creature misses you with a ranged attack", "An adjacent creature you can see fails an
     // attack roll against you": Elude Trouble's, Coursing Weave's; the loop, 2026-10-30.)
     if (/\bmiss(?:es|ed)? you\b|\bfails an attack roll against you\b/i.test(trigger)) return read("miss");
-    if (/\bhits you\b|^You are hit by\b/i.test(trigger)) return read("hit");
-    if (/\btargets you\b|^You are (?:the )?target(?:ed)? (?:of|by)\b|\battempts? (?:a (?:melee |ranged )?Strike|an attack(?: roll)?) against you\b|\battacks you\b|\bmakes an attack(?: roll)? against you\b/i.test(trigger)) return read("targeted");
-    if (/(?:^|,\s*)You (?:or your [\w ]+? )?(?:would )?take damage\b|\bwould deal damage to you\b|\bdamages you\b|\bdeals damage to you\b/i.test(trigger) && !/\bfall(?:ing)? damage\b/i.test(trigger)) return read("damaged");
+    if (/\bhits you\b|^You(?:'re| are| would be) hit\b/i.test(trigger)) return read("hit");
+    if (/\btargets you\b|^You are (?:the )?target(?:ed)? (?:of|by)\b|\battempts? (?:a (?:melee |ranged )?Strike|an attack(?: roll)?) against you\b|\battacks you\b|\bmakes an attack(?: roll)? against you\b|^You(?:'re| are) targeted with (?:a|an) (?:melee |ranged )?(?:Strike|attack)\b/i.test(trigger)) return read("targeted");
+    if (/(?:^|,\s*)You (?:or your [\w ]+? )?(?:would )?take (?:(?:[a-z]+(?:,| or| and)?|or|and) )*?damage\b|^You(?:'re| are) dealt\b[^.]*\bdamage\b|\bwould deal damage to you\b|\bdamages you\b|\bdeals damage to you\b/i.test(trigger) && !/\bfall(?:ing)? damage\b/i.test(trigger)) return read("damaged");
     return null;
 }
 
@@ -72,7 +77,7 @@ const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled
 // "gains the Frightened condition", "would become Frightened, Drained, …", "becomes frightened or stupefied", "falls to 0 Hit Points" → the
 // conditions (with "0-hp" for the last), or null.
 function conditionsOf(trigger) {
-    if (/\b(?:falls to|is reduced to|would be reduced to|brings? [^.]*? to|drops to) 0 (?:Hit Points|HP)\b/i.test(trigger) && !/\bbrings an enemy\b/i.test(trigger)) return ["0-hp"];
+    if (/\b(?:falls to|is reduced to|are reduced to|'re reduced to|would be reduced to|brings? [^.]*? to|drops to) 0 (?:Hit Points|HP)\b/i.test(trigger) && !/\bbrings an enemy\b/i.test(trigger)) return ["0-hp"];
     const match = /\b(?:gains?|would gain|becomes?|would become)(?: the)? ((?:[A-Za-z-]+(?:,? (?:or|and) |, ))*[A-Za-z-]+)(?: condition)?\b/i.exec(trigger);
     if (!match) return null;
     const words = match[1].toLowerCase().split(/,? (?:or|and) |, /).map((word) => word.trim());
@@ -88,6 +93,12 @@ export function eventsOf(contextType, outcome) {
     }
     if (contextType === "damage-roll") return ["damaged"];
     return [];
+}
+
+// What a character's own Strike's attack roll means for its own feats: own-hit, own-critical-hit or own-miss by its degree.
+export function ownStrikeEvents(contextType, outcome) {
+    if (contextType !== "attack-roll") return [];
+    return [...(["success", "criticalSuccess"].includes(outcome) ? ["own-hit"] : []), ...(outcome === "criticalSuccess" ? ["own-critical-hit"] : []), ...(["failure", "criticalFailure"].includes(outcome) ? ["own-miss"] : [])];
 }
 
 // A reaction or free action triggered by the character's own action or spell (slice 8): "You use Orc Ferocity.", "You Shield Block a melee

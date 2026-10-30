@@ -187,6 +187,12 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.equal(eventTrigger(reaction("A creature you can see attempts a ranged Strike against you.")).event, "targeted");
     assert.equal(eventTrigger(reaction("A Large or larger enemy ends a move action adjacent to you.")).event, "foe-acts");
     assert.equal(eventTrigger(reaction("A foe ends its movement adjacent to you.")).moves, true);
+    assert.equal(eventTrigger(reaction("You critically hit a foe with a melee weapon Strike or a melee unarmed attack.")).event, "own-critical-hit");
+    assert.equal(eventTrigger(reaction("You succeed at a melee Strike.")).event, "own-hit");
+    assert.equal(eventTrigger(reaction("You miss with a firearm or crossbow Strike.")).event, "own-miss");
+    assert.equal(eventTrigger(reaction("You would be hit by a Strike.")).event, "hit");
+    assert.equal(eventTrigger(reaction("You would take acid, cold, electricity, poison, fire, or sonic damage.")).event, "damaged");
+    assert.deepEqual(eventTrigger(reaction("You're reduced to 0 Hit Points.")).conditions, ["0-hp"]);
     assert.deepEqual([eventTrigger(reaction("An ally ends a move action adjacent to you.")).event, eventTrigger(reaction("An ally ends a move action adjacent to you.")).within], ["ally-moves", 5]);
     assert.equal(eventTrigger(reaction("An ally within your reach uses a move action or leaves a square during a move action they're using.")).within, 10);
     const frightened = eventTrigger(reaction("An ally within 30 feet would become Frightened, Drained, or Sickened."));
