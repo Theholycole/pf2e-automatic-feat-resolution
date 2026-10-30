@@ -190,6 +190,8 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.equal(eventTrigger(reaction("You critically hit a foe with a melee weapon Strike or a melee unarmed attack.")).event, "own-critical-hit");
     assert.equal(eventTrigger(reaction("You succeed at a melee Strike.")).event, "own-hit");
     assert.equal(eventTrigger(reaction("You miss with a firearm or crossbow Strike.")).event, "own-miss");
+    const verse = eventTrigger({ name: "Of Verse Unbroken", system: { actionType: { value: "passive" }, description: { value: "<p>Whenever you critically succeed on a Strike, you gain a +1 status bonus.</p>" } } });
+    assert.deepEqual([verse.event, verse.kind], ["own-critical-hit", "passive"]);
     const { weaponFits } = await import("../src/compiler/event-reminders.js");
     const recall = eventTrigger(reaction("You miss with a firearm or crossbow Strike."));
     assert.equal(weaponFits(recall.weapons, ["item:group:crossbow", "item:ranged"]), true);

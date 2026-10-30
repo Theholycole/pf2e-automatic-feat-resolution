@@ -10,11 +10,14 @@ const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}
 // kind }, or null.
 export function eventTrigger(item) {
     const type = item?.system?.actionType?.value;
-    if (!["reaction", "free"].includes(type)) return null;
-    const found = /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
+    // (A passive feat that says when it applies, "Whenever you critically succeed on a Strike, …", "When you would become fatigued, …": read
+    // the same way, its "When" clause as the trigger; the loop, 2026-10-30.)
+    const passive = type === "passive" ? /(?:^|[.!?]\s+)When(?:ever)? ((?:you|an? (?:ally|enemy|creature|foe))\b[^,.]*),/i.exec(plainOf(item?.system?.description?.value ?? "")) : null;
+    if (!passive && !["reaction", "free"].includes(type)) return null;
+    const found = passive ? [null, passive[1].replace(/^./, (letter) => letter.toUpperCase())] : /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
     if (!found) return null;
     const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
-    const kind = type === "reaction" ? "reaction" : "free action";
+    const kind = passive ? "passive" : type === "reaction" ? "reaction" : "free action";
     const within = Number(/\bwithin (\d+) feet\b/i.exec(trigger)?.[1]) || (/\badjacent\b/i.test(trigger) ? 5 : null);
     // (2026-10-30 Foundry test, Hunter's Defense: "A creature with the animal, beast, elemental, fey, fungus, or plant trait attacks you" —
     // only a creature with one of those traits: by.)
