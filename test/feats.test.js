@@ -549,3 +549,11 @@ test("PF2e's older inline check syntax in third-party packs", async () => {
     assert.equal(fillCharacterDCs(currentSyntax("@Check[type:reflex|dc:resolve(@actor.attributes.classDC.value)|basic:true]"), DCS), "@Check[reflex|basic|dc:25]");
     assert.equal(currentSyntax("@Check[type:acrobatics|defense:will]{Acrobatics}"), "@Check[acrobatics|defense:will]{Acrobatics}");
 });
+
+test("toggled Effects: a passive's PF2e Effect, on the character or its target", async () => {
+    const passive = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Passive.</p>" }, actionType: { value: "passive" }, traits: { value: [] }, rules: [] } });
+    const formation = compileFeat(passive("Formation Training", "Compendium.pf2e.feats-srd.Item.aoz9dCq2NynyUYEf"), { dcs: DCS });
+    assert.deepEqual(formation, { builtin: "passive-effect", effect: "Compendium.pf2e.feat-effects.Item.Effect: Formation Training", who: "you", notes: [] });
+    const root = compileFeat(passive("Root Magic", "Compendium.pf2e.feats-srd.Item.22P7IFyhrF7Fbw8B"), { dcs: DCS });
+    assert.equal(root.who, "target");
+});

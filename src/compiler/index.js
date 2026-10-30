@@ -31,6 +31,11 @@ export function compileFeat(item, options = {}) {
     const own = !hand?.text && isEidolonItem(item) ? withText(item, eidolonWords(item.system?.description?.value ?? "")) : written;
     const filled = withCharacterDCs(own, dcs);
     if (hand?.affect) return handAffect(item, hand, dcs);
+    // (A passive whose bonus holds only in a moment PF2e can't see, "while adjacent to two hobgoblin allies": its Effect, turned on and off
+    // by posting the feat; 2026-10-30, docs/rules.md, "Toggled Effects".)
+    // (A passive with PF2e's own Effect for its moment: that Effect, on and off the same way.)
+    if (hand?.passiveEffect) return { builtin: "passive-effect", effect: hand.passiveEffect.effect, who: hand.passiveEffect.who, notes: hand.notes ?? [] };
+    if (hand?.toggle) return { builtin: "feat-effect", toggle: true, effect: { name: item.name, rules: hand.toggle.rules, duration: hand.toggle.duration ?? { value: -1, unit: "unlimited", expiry: null, sustained: false }, stance: false }, notes: hand.notes ?? [] };
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));

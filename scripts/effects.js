@@ -14,6 +14,8 @@ export async function applyFeatEffect(item, plan) {
     // (Used again: the old one goes, so the time starts over and the bonus doesn't stack with itself.)
     const old = actor.itemTypes.effect.filter((each) => ours(each) && (each.flags[MODULE_ID].effect.source === item.sourceId || each.flags[MODULE_ID].effect.item === item.id || (effect.stance && each.flags[MODULE_ID].effect.stance)));
     if (old.length) await actor.deleteEmbeddedDocuments("Item", old.map((each) => each.id));
+    // (A toggled passive's Effect, on: posting it again turns it off.)
+    if (plan.toggle && old.length) return null;
     const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
     const [created] = await actor.createEmbeddedDocuments("Item", [{
         name: `${effect.stance ? "Stance" : "Effect"}: ${effect.name}`,
@@ -31,4 +33,35 @@ export async function applyFeatEffect(item, plan) {
         }
     }]);
     return created ?? null;
+}
+
+// A passive's PF2e Effect (2026-10-30, docs/rules.md, "Toggled Effects"): on each actor that hasn't it, off each that has. Its UUID by name
+// in the text ("…feat-effects.Item.Effect: Formation Training") is the pack's entry of that name.
+export async function togglePassiveEffect(item, plan, actors) {
+    let uuid = plan.effect;
+    const parts = /^Compendium\.([\w-]+)\.([\w-]+)\.Item\.(.+)$/.exec(uuid);
+    if (parts && !/^[A-Za-z0-9]{16}$/.test(parts[3])) {
+        const entry = game.packs.get(`${parts[1]}.${parts[2]}`)?.index?.getName?.(parts[3]);
+        if (!entry) return null;
+        uuid = `Compendium.${parts[1]}.${parts[2]}.Item.${entry._id}`;
+    }
+    const effect = await fromUuid(uuid);
+    if (!effect) return null;
+    const lines = [];
+    for (const actor of actors) {
+        const had = actor.itemTypes.effect.filter((each) => (each.sourceId ?? each._stats?.compendiumSource) === uuid);
+        if (had.length) {
+            await actor.deleteEmbeddedDocuments("Item", had.map((each) => each.id));
+            lines.push(`${escape(effect.name)} ends on ${escape(actor.name)}.`);
+            continue;
+        }
+        const source = effect.toObject();
+        source._stats = { ...(source._stats ?? {}), compendiumSource: uuid };
+        foundry.utils.setProperty(source, `flags.${MODULE_ID}.passive`, { item: item.id });
+        await actor.createEmbeddedDocuments("Item", [source]);
+        lines.push(`${escape(effect.name)} on ${escape(actor.name)}.`);
+    }
+    if (!lines.length) return null;
+    const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
+    return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), content: `<p><strong>${escape(item.name)}</strong>: ${lines.join(" ")}</p>${notes}` });
 }

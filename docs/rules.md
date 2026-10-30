@@ -77,6 +77,22 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
   Teams+'s Fourth Facet (Keeper) and (Wanderer) (master in simple weapons and unarmed attacks).
 - +2 circumstance to Stealth to Conceal an Object (`action:conceal-an-object`): Reflective Pocket, Spirit Sheath.
 
+### Toggled Effects (2026-10-30, Cole's choice "Toggle Effects from the chat card")
+
+- **Why.** Most passive bonuses hold only in a moment PF2e can't see ("when you are adjacent to at least two hobgoblin allies", "in a
+  crowd", "against that prey"). A toggle among the added rules can't keep its state (it writes back to its source), so the switch is an
+  Effect instead: posting the passive feat to chat puts its Effect on, posting it again takes it off.
+- **PF2e's own Effect** (`src/plans/passive-effects.js`, `passiveEffect`): 49 passives link one in their text. On the character ("you":
+  Formation Training, Lost in the Crowd, Terrifying Mien, Hydration, Phenom's Verve, Starstone Aspirant Dedication and others) or on the
+  player's targets ("target": Root Magic, Treat Disease, Didactic Strike, the debilitations, Clan Protector's Parry, Swift Support).
+  Which is which was read by hand from each text. With no target for a "target" one, the GM is told to target first.
+- **Live** (`togglePassiveEffect`, `scripts/effects.js`, run by the GM): the Effect from its pack (a name-form UUID is looked up in the
+  pack), copied with its compendium source; an actor that has it already loses it instead. One chat line says what changed.
+- **Left:** Methodical Debilitations and Exemplary Finisher link several Effects, one per choice; aura, mount, companion and party Effects
+  (Cavalier's Banner, Scout, sacred animals) for now.
+- **Hand-written** (`toggle` entries, `feat-effect` with `toggle: true`): the same switch with the module's own Effect, for passives with
+  none of PF2e's.
+
 ### Looked at, not batched
 
 - **Stances:** 99 of the 117 stances already have PF2e's own Effect. Most of the other 18 change terrain, cover or allies rather than numbers on the character, so they stay notes for the GM.
