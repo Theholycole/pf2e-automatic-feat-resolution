@@ -2,7 +2,7 @@
 // starting or ending, whispered to its owners and the GM as that turn comes. Nothing is used for them; the player decides.
 
 import { turnReminders } from "../src/compiler/turn-reminders.js";
-import { eventTrigger, eventsOf } from "../src/compiler/event-reminders.js";
+import { eventTrigger, eventsOf, ownUseTrigger, usesTrigger } from "../src/compiler/event-reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const SETTING = "turnReminders";
@@ -76,4 +76,18 @@ export async function onRollMessage(message) {
         const due = ofItems(actor).filter(({ read }) => events.includes(read.event.replace(/^ally-/, "")) && read.event.startsWith("ally-") && (!read.within || (distance !== null && distance <= read.within)));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(source)}'s ${context.type === "damage-roll" ? "damage" : "attack"} is aimed at your ally ${escape(target.name)}.`, due);
     }
+}
+
+// The character's own action or spell (slice 8): when its message is posted, its reactions and free actions that trigger on using that
+// action or casting that spell ("You use Orc Ferocity.", "You Shield Block …", "You Cast a Spell using a spell slot.").
+export async function onOwnUse(message) {
+    if (!game.settings.get(MODULE_ID, SETTING)) return;
+    const origin = message.flags?.pf2e?.origin;
+    // (Its use, not a later roll from it: a check or damage message has a context type.)
+    if (!origin?.uuid || message.flags?.pf2e?.context?.type) return;
+    const item = await fromUuid(origin.uuid).catch(() => null);
+    const actor = item?.actor;
+    if (actor?.type !== "character") return;
+    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].filter((each) => each !== item).map((each) => ({ item: each, read: ownUseTrigger(each) })).filter(({ read }) => usesTrigger(read, item.name, item.type));
+    if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: you used ${escape(item.name)}.`, due);
 }

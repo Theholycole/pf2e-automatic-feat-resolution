@@ -60,6 +60,12 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **Live** (`scripts/reminders.js`): when PF2e posts an attack roll or a damage roll with a target, the GM's client whispers the target's owners its feats for that event (an attack: targeted, and hit or critical hit by its degree; damage: damaged), and each other character on the scene with the same disposition its ally feats, if in range. The trigger's other words ("with a melee Strike", "and you can see the attacker") are the player's to judge. Same world setting as slice 6, renamed "Reminders for characters' reactions".
 - **Measured:** 106 options in the needs-work set (Reactive Shield, Dodge Away, Deflect Projectile, Faultless Defense, Guardian's Deflection, Body Shield and others).
 
+## Slice 8: reminders when the character uses the action or spell a feat triggers on (2026-10-30)
+
+- **The reader** (`ownUseTrigger` in `src/compiler/event-reminders.js`): "You use Orc Ferocity.", "You Shield Block a melee Strike …", "You enter Tenacious Stance.", "You Leap.", "You cast summon undead.", "You Cast a Spell using a spell slot." / "You cast a divine spell …" (any spell).
+- **Live** (`onOwnUse` in `scripts/reminders.js`): when a character's action, feat or spell is posted (its use, not a later check or damage roll from it), its owners are whispered the feats that trigger on it, matched by the item's name or, for "a spell", any spell. Same setting as slices 6 and 7.
+- **Measured:** 24 options (Rampaging Ferocity, Disarming Block, Aggressive Block, Mighty Rage, Sustaining Steel and others).
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.
@@ -78,4 +84,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 | D8 | What's left (about 4,300 options) is mostly passives (849 "other rule text", 148 conditional bonuses, 65 resistances, 196 daily resources), companions (475) and stances with no Effect (about 60). These don't read into a card: PF2e automates them with rule elements on the feat or an Effect. Should the module ship its own rule elements for them (a compendium of Effects, or rules added to the feat when it's on a character), batch by batch as the ability module did monsters? | Not started. The text readers go on with the long tail meanwhile. |
 | D9 | 157 options have PF2e's own self-applied Effect (`selfEffect`), which PF2e already offers as a button on the feat's chat card. Should the module apply it on use instead of the button? | Left to PF2e's button. |
 | D10 | A feat read in slice 5 puts the module's Effect on the character as soon as it's used, with no card or button. Should it ask first (a button on the chat card), or apply it as PF2e's own stances do? | Applied on use, whatever the D2 setting. |
-| D11 | Turn reminders (slice 6) and attack and damage reminders (slice 7) are whispered to the character's owners and the GM at each turn start or end, or attack or damage roll, where a feat triggers. On by default, or off until a group turns them on? | On by default; a world setting turns them off. |
+| D11 | Turn reminders (slice 6), attack and damage reminders (slice 7) and own-action reminders (slice 8) are whispered to the character's owners and the GM at each turn start or end, or attack or damage roll, where a feat triggers. On by default, or off until a group turns them on? | On by default; a world setting turns them off. |

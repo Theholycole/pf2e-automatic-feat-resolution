@@ -136,7 +136,8 @@ const DEGREES = [
     [/^(?:succeed|roll a success) (?:at |on )?/, ["success", "criticalSuccess"]],
     [/^(?:critically succeed|roll a critical success) (?:at |on )?/, ["criticalSuccess"]],
     [/^roll a critical failure (?:at |on )?/, ["criticalFailure"]],
-    [/^roll a failure (?:at |on )?/, ["failure"]]
+    [/^roll a failure (?:at |on )?/, ["failure"]],
+    [/^successfully (?:use [a-z]+ to )?/, ["success", "criticalSuccess"]]
 ];
 // What's rolled → its selectors (and an action's predicate).
 function rolledSelectors(words) {
@@ -148,6 +149,9 @@ function rolledSelectors(words) {
     if ((match = /^an? (demoralize|feint|grapple|trip|shove|disarm) (?:check|attempt)\b/.exec(text))) return [{ selector: ACTION_STATISTICS[match[1]][0], predicate: [`action:${match[1]}`] }];
     if ((match = /^an? check to ([a-z ]+?)\b(?: |\.|$)/.exec(text)) && ACTION_STATISTICS[match[1].replace(/\s+/g, "-")]) return ACTION_STATISTICS[match[1].replace(/\s+/g, "-")].map((selector) => ({ selector, predicate: [`action:${match[1].replace(/\s+/g, "-")}`] }));
     if ((match = /^an? ([a-z]+) check\b/.exec(text)) && Object.values(ACTION_STATISTICS).flat().includes(match[1])) return [{ selector: match[1] }];
+    // ("You successfully Grapple a creature …", "… Recall Knowledge to identify …": the action named first.)
+    const named = Object.keys(ACTION_STATISTICS).find((slug) => text.startsWith(`${slug.replace(/-/g, " ")} `) || text === slug.replace(/-/g, " ") || text.startsWith(`${slug.replace(/-/g, " ")}.`));
+    if (named) return ACTION_STATISTICS[named].map((selector) => ({ selector, predicate: [`action:${named}`] }));
     if (/^(?:an? |your )?(?:melee |ranged )?(?:strike|attack roll)s?\b/.test(text)) return [{ selector: /strike/.test(text) ? "strike-attack-roll" : "attack-roll" }];
     return null;
 }

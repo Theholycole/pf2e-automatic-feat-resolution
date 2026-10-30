@@ -41,3 +41,31 @@ export function eventsOf(contextType, outcome) {
     if (contextType === "damage-roll") return ["damaged"];
     return [];
 }
+
+// A reaction or free action triggered by the character's own action or spell (slice 8): "You use Orc Ferocity.", "You Shield Block a melee
+// Strike …", "You enter Tenacious Stance.", "You Cast a Spell using a spell slot.", "You cast summon undead." → { names: the action's or
+// spell's names (lower case), spell: any spell counts, trigger, kind }, or null. Matched against the item of the character's own chat
+// message when it uses one.
+export function ownUseTrigger(item) {
+    const type = item?.system?.actionType?.value;
+    if (!["reaction", "free"].includes(type)) return null;
+    const found = /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
+    if (!found) return null;
+    const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
+    const kind = type === "reaction" ? "reaction" : "free action";
+    let match;
+    if (/^You (?:Cast|cast) (?:a|an) (?:[\w-]+ )*?(?:spell|cantrip)\b/.test(trigger)) return { names: [], spell: true, trigger, kind };
+    if ((match = /^You (?:use|used) (?:the |your )?([A-Z][\w'’-]*(?: (?:[A-Z][\w'’-]*|of|the|a|for))*)/.exec(trigger))) return { names: [match[1].replace(/ (?:of|the|a|for)$/, "").toLowerCase()], spell: false, trigger, kind };
+    if ((match = /^You (?:Cast|cast) ([a-z][\w'’ -]+?)(?=[.,]| and | to | on | with | using |$)/.exec(trigger)) && !/^(?:a|an|the|your)\b/.test(match[1])) return { names: [match[1].toLowerCase()], spell: false, trigger, kind };
+    if ((match = /^You enter ((?:[A-Z][\w'’-]*\s?)+Stance)\b/.exec(trigger))) return { names: [match[1].trim().toLowerCase()], spell: false, trigger, kind };
+    if ((match = /^You (Shield Block|Raise a Shield|Leap|Stride|Step|Sustain a Spell|Interact)\b/.exec(trigger))) return { names: [match[1].toLowerCase()], spell: false, trigger, kind };
+    return null;
+}
+
+// Whether the character's own message (its item's name and type) is what the trigger names.
+export function usesTrigger(read, itemName, itemType) {
+    if (!read) return false;
+    if (read.spell) return itemType === "spell";
+    const name = String(itemName ?? "").toLowerCase().replace(/\s*\([^)]*\)\s*$/, "").trim();
+    return read.names.some((each) => name === each || name.startsWith(`${each} `));
+}

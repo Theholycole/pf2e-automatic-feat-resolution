@@ -180,3 +180,15 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.deepEqual(eventsOf("attack-roll", "failure"), ["targeted"]);
     assert.deepEqual(eventsOf("damage-roll"), ["damaged"]);
 });
+
+test("a reaction triggered by the character's own action or spell: matched to the item it used", async () => {
+    const { ownUseTrigger, usesTrigger } = await import("../src/compiler/event-reminders.js");
+    const free = (trigger) => ({ name: "X", system: { actionType: { value: "free" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>You Stride.</p>` } } });
+    const ferocity = ownUseTrigger(free("You use Orc Ferocity."));
+    assert.deepEqual(ferocity.names, ["orc ferocity"]);
+    assert.ok(usesTrigger(ferocity, "Orc Ferocity", "feat"));
+    assert.ok(!usesTrigger(ferocity, "Orc Weapon Familiarity", "feat"));
+    assert.ok(usesTrigger(ownUseTrigger(free("You Cast a Spell using a spell slot.")), "Fireball", "spell"));
+    assert.ok(usesTrigger(ownUseTrigger(free("You Shield Block a melee Strike made with a held weapon.")), "Shield Block", "action"));
+    assert.equal(ownUseTrigger(free("You use an action or cast a spell with the teleportation trait.")), null);
+});

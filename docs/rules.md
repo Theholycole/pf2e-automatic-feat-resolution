@@ -64,6 +64,10 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
   - The trigger's other conditions ("against a mental effect", "with a slashing weapon") are in the note's words, for the player to judge; the note doesn't test them.
   - Not a trigger before the roll ("but you haven't rolled yet", "You're about to roll initiative"): a note on the roll's card comes too late for those. They wait for a prompt before the roll.
 
+### Batch 6 (2026-10-30): 5 options
+
+- Batch 5's reader, for "You successfully Grapple a creature …", "You successfully Demoralize an enemy.", "You successfully Recall Knowledge to identify …": the action named first, with its statistic and roll option, on a success.
+
 ### Looked at, not batched
 
 - **Stances:** 99 of the 117 stances already have PF2e's own Effect. Most of the other 18 change terrain, cover or allies rather than numbers on the character, so they stay notes for the GM.
