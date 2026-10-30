@@ -20,8 +20,8 @@ export function compileFeat(item, options = {}) {
     if (!dcs) return null;
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
-    if (hand?.strike) return handStrike(item, hand);
     const filled = withCharacterDCs(hand?.text ? withText(item, hand.text) : item, dcs);
+    if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
     const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? selfEffect(filled, dcs);
     if (plan) return plan;
     // (Slice 3: a reaction or free action, its effect as the player uses it; its trigger and time kept on the plan.)

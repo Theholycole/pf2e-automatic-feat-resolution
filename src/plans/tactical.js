@@ -1,6 +1,6 @@
 // The swashbuckler's, gunslinger's, guardian's, magus's and champion's Strike feats, by hand (2026-10-30). As fighter.js: what a hit does
-// that the readers missed, the rest as notes. A save after the hit (Stunning Finisher, Ring Their Bell, Bloody Denial) is a note for now:
-// the card names the save and the GM rolls it from the note's link.
+// that the readers missed, the rest as notes. A save after the hit (Stunning Finisher, Ring Their Bell, Bloody Denial) the readers already
+// take at the character's class DC; the entry keeps it (src/plans/index.js).
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const action = (id) => `Compendium.pf2e.actionspf2e.Item.${id}`;
@@ -17,7 +17,7 @@ export default [
     { uuid: pf2e("HxMkvkxd8QMXcQ67"), name: "Retreating Finisher", strike: { melee: true, notes: ["On a miss (not a critical miss), Step as a free action."] } },
     { uuid: pf2e("a5jZJPZO8RPQjqE7"), name: "Illimitable Finisher", strike: { notes: ["Step first. The finisher gains the bravado trait; if it gives you panache back, you can attempt another finisher as part of this action."] } },
     { uuid: pf2e("dxujgA0NgiEvA0H8"), name: "Bleeding Finisher", strike: { notes: ["A slashing or piercing Strike. On a hit, persistent bleed damage equal to your precise strike finisher damage."] } },
-    { uuid: pf2e("jkBzlMB4TS1sS2Fm"), name: "Stunning Finisher", strike: { melee: true, notes: ["On a hit, the foe attempts a Fortitude save against your class DC (incapacitation): success, no reactions until its next turn; failure, stunned 1; critical failure, stunned 3."] } },
+    { uuid: pf2e("jkBzlMB4TS1sS2Fm"), name: "Stunning Finisher", strike: { melee: true, notes: ["The save on a hit is on its card."] } },
     // Gunslinger
     { uuid: pf2e("ySr510TkpUO3N6Ty"), name: "Trick Shot", strike: { ...ranged, notes: ["Against an easy DC for your level, at an object near the target: on a success, one of the feat's effects instead of a hit on the foe."] } },
     { uuid: pf2e("7spk6rZPiNk2S0yA"), name: "Blood in the Air", strike: { ...ranged, notes: ["Against a concealed or hidden enemy you damaged with a ranged weapon in the last minute: ignore concealed, and the hidden flat check is DC 5."] } },
@@ -43,9 +43,9 @@ export default [
     { uuid: pf2e("Um5owecqPW17dtl2"), name: "Taunting Strike", strike: { notes: ["Hit or miss, you Taunt the target (the Taunt gains the visual trait)."] } },
     { uuid: pf2e("YHeKwgJq1zkdcV0p"), name: "Proud Nail", strike: { melee: true, notes: ["Against your taunted, off-guard enemy: one extra weapon die on a hit (two at 10th level, three at 18th)."] } },
     { uuid: pf2e("SiGvSOPQmZ0nyXVO"), name: "Lock Down", strike: { melee: true, notes: ["If it hits and deals damage, the enemy can't move beyond this weapon's reach until your next turn, until you move, or until you attack with it again."] } },
-    { uuid: pf2e("NMRBes7gGfGldOrn"), name: "Ring Their Bell", strike: { melee: true, notes: ["A fist (or gauntlet) Strike against your taunted enemy. If it hits and deals damage, a Fortitude save against your class DC (incapacitation): success stunned 1, failure stunned 2, critical failure stunned 3."] } },
+    { uuid: pf2e("NMRBes7gGfGldOrn"), name: "Ring Their Bell", strike: { melee: true, notes: ["A fist (or gauntlet) Strike against your taunted enemy, even without a free hand. The save comes only if it deals damage."] } },
     { uuid: pf2e("Xik9lMAA4e5xFegM"), name: "Shield Wallop", strike: { melee: true, onHit: { conditions: [{ slug: "stupefied", value: 1, duration: untilYourNextTurn }], critical: [{ slug: "stupefied", value: 2, duration: untilYourNextTurn }] }, notes: ["A shield Strike, only if it deals damage. With a tower or fortress shield, one step higher (stupefied 2, or 3 on a critical hit)."] } },
-    { uuid: pf2e("8okUez3GQOdrE4Ov"), name: "Bloody Denial", strike: { notes: ["On a hit, a Fortitude save against your class DC, one degree worse on a critical hit: success, no reactions against an ally you choose; failure, no reactions; critical failure, also stunned 1. Until the start of your next turn."] } },
+    { uuid: pf2e("8okUez3GQOdrE4Ov"), name: "Bloody Denial", strike: { notes: ["On a critical hit the save is one degree worse. On its success, the creature can't use reactions against an ally you choose until the start of your next turn."] } },
     // Magus
     { uuid: pf2e("iHUuWrvkT2uR0PnK"), name: "Whirlwind Spell", strike: { melee: true, notes: ["Spellstrike with a melee Strike against each enemy in reach; a multitarget or area spell affects every foe you hit."] } },
     { uuid: pf2e("Fs88vjez9px2mmrC"), name: "Spell Swipe", strike: { melee: true, strikes: ["melee", "melee"], notes: ["Spellstrike against two adjacent creatures in your reach; a multitarget or area spell affects whichever you hit."] } },

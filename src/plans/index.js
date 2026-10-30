@@ -13,9 +13,11 @@ const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]))
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
 
-// A strike entry → the strike-activity plan.
-export function handStrike(item, entry) {
+// A strike entry → the strike-activity plan. base: what the readers made of the feat, when they read it as a Strike activity; its save
+// after the hit (at the character's own DC) stays unless the entry gives one, and the entry's notes replace its unread sentences.
+export function handStrike(item, entry, base = null) {
     const strike = entry.strike ?? {};
+    const read = base?.builtin === "strike-activity" ? base : null;
     return {
         builtin: "strike-activity",
         actions: Number(item.system?.actions?.value) || 1,
@@ -30,7 +32,8 @@ export function handStrike(item, entry) {
         oncePerFight: false,
         source: { name: item.name, type: item.type },
         notes: [],
+        ...(read ?? {}),
         ...strike,
-        onHit: { conditions: [], critical: null, push: null, damage: [], save: null, size: null, ...(strike.onHit ?? {}) }
+        onHit: { conditions: [], critical: null, push: null, damage: [], save: null, size: null, ...(read ? { save: read.onHit?.save ?? null, size: read.onHit?.size ?? null } : {}), ...(strike.onHit ?? {}) }
     };
 }

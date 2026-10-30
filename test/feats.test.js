@@ -229,4 +229,7 @@ test("a feat with a hand-written plan: the plan, by the item's compendium source
     const phalanx = compileFeat({ ...feat("Phalanx Breaker", "<p>…</p>", 2), sourceId: "Compendium.pf2e.feats-srd.Item.BkEOwv3SRtefczpO" }, { dcs: DCS });
     assert.equal(phalanx.strike, "ranged");
     assert.equal(phalanx.onHit.criticalPush, 20);
+    const stunning = compileFeat({ ...feat("Stunning Finisher", "<p>Make a melee Strike. If you hit, your foe must attempt a @Check[fortitude|against:class] save against your class DC with the following results.</p><hr /><p><strong>Critical Success</strong> The target is unaffected.</p><p><strong>Success</strong> The target can't use reactions until its next turn.</p><p><strong>Failure</strong> The target is @UUID[Compendium.pf2e.conditionitems.Item.Stunned]{Stunned 1}.</p><p><strong>Critical Failure</strong> The target is @UUID[Compendium.pf2e.conditionitems.Item.Stunned]{Stunned 3}.</p>"), sourceId: "Compendium.pf2e.feats-srd.Item.jkBzlMB4TS1sS2Fm" }, { dcs: DCS });
+    assert.equal(stunning.onHit.save?.resolution?.kind, "save", "the readers' save stays under the entry");
+    assert.deepEqual(stunning.notes, ["The save on a hit is on its card."]);
 });
