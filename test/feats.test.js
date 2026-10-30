@@ -191,6 +191,9 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.equal(eventTrigger(reaction("You succeed at a melee Strike.")).event, "own-hit");
     assert.equal(eventTrigger(reaction("You miss with a firearm or crossbow Strike.")).event, "own-miss");
     assert.equal(eventTrigger(reaction("You reduce an enemy to 0 Hit Points.")).event, "own-kill");
+    const cartwheel = eventTrigger(reaction("You succeed or critically succeed at a Reflex saving throw."));
+    assert.deepEqual([cartwheel.event, cartwheel.outcomes, cartwheel.saves], ["own-save", ["criticalSuccess", "success"], ["reflex"]]);
+    assert.deepEqual(eventTrigger(reaction("You fail (but don't critically fail) a saving throw against an effect with the visual trait.")).outcomes, ["failure"]);
     assert.equal(eventTrigger(reaction("An ally within 30 feet brings an enemy to 0 Hit Points.")).event, "ally-kill");
     assert.equal(eventTrigger(reaction("You would be hit by a Strike.")).event, "hit");
     assert.equal(eventTrigger(reaction("You would take acid, cold, electricity, poison, fire, or sonic damage.")).event, "damaged");

@@ -26,6 +26,16 @@ export function eventTrigger(item) {
     if (/^(?:You critically (?:hit|succeed (?:at|on) (?:a|an|your)\b[^.]*?\bStrike)|Your\b[^.]*?\bStrike critically hits)\b/i.test(trigger)) return read("own-critical-hit");
     if (/^(?:You hit (?:a|an)\b[^.]*?\bStrike|You succeed at a (?:melee |ranged )?Strike|Your\b[^.]*?\bStrike hits)\b/i.test(trigger)) return read("own-hit");
     if (/^(?:You miss with (?:a|an|your)\b[^.]*?\bStrike|You (?:or your [\w ]+? )?(?:roll|gets?) a failure on a Strike)\b|^You misfire\b/i.test(trigger)) return read("own-miss");
+    // (The character's own save: "You succeed or critically succeed at a Reflex saving throw", "You fail (but don't critically fail) a saving
+    // throw against …", "You critically succeed on a Fortitude save against a poison effect": the degrees and saves it names; the loop,
+    // 2026-10-30. What the save is against is the player's to judge.)
+    const save = /^You ((?:(?:critically )?(?:succeed|fail)(?:,? \(?but (?:don't|do not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on )?(?:a |an |your )?((?:(?:Fortitude|Reflex|Will)(?: or |, )?)*)\s*sav(?:e|ing throw)s?\b/i.exec(trigger);
+    if (save) {
+        const words = save[1].toLowerCase();
+        const outcomes = [...(/critically succeed/.test(words) ? ["criticalSuccess"] : []), ...(/(?<!critically )succeed/.test(words) ? ["success"] : []), ...(/(?<!critically )fail/.test(words) ? ["failure", ...(/but (?:don't|do not) critically fail/.test(words) ? [] : ["criticalFailure"])] : []), ...(/critically fail(?!\))/.test(words) && !/but (?:don't|do not) critically fail/.test(words) ? ["criticalFailure"] : [])];
+        const saves = [...save[2].matchAll(/Fortitude|Reflex|Will/gi)].map((match) => match[0].toLowerCase());
+        return { ...read("own-save"), outcomes: [...new Set(outcomes)], saves };
+    }
     // (A foe dropped by the character or an ally: "You reduce an enemy to 0 Hit Points", "Your melee Strike reduces a creature to 0 Hit
     // Points", "An ally within 30 feet brings an enemy to 0 Hit Points": whoever's turn it is when a foe falls to 0; the loop, 2026-10-30.)
     if (/^(?:You reduce|Your\b[^.]*?\b(?:Strike|attack) reduces)\b[^.]*?\bto 0 (?:Hit Points|HP)\b/i.test(trigger)) return read("own-kill");

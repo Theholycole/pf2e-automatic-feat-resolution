@@ -70,6 +70,16 @@ export async function onRollMessage(message) {
     const events = eventsOf(context?.type, context?.outcome);
     const targetToken = context?.target?.token ? fromUuidSync(context.target.token)?.object ?? null : null;
     const target = targetToken?.actor ?? (context?.target?.actor ? fromUuidSync(context.target.actor) : null);
+    // (The character's own save: its feats that trigger on that degree of that save, "You succeed or critically succeed at a Reflex saving
+    // throw"; the loop, 2026-10-30.)
+    if (context?.type === "saving-throw" && message.actor?.type === "character" && context.outcome) {
+        const saver = message.actor;
+        const domains = context.domains ?? [];
+        const kind = ["fortitude", "reflex", "will"].find((each) => domains.includes(each) || context.statistic === each) ?? null;
+        const due = [...saver.itemTypes.feat, ...saver.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-save" && read.outcomes.includes(context.outcome) && (!read.saves.length || (kind && read.saves.includes(kind))));
+        if (due.length) await whisper(saver, `<strong>${escape(saver.name)}</strong>: your ${kind ?? ""} save's result.`.replace("your  save", "your save"), due);
+        return;
+    }
     // (The character's own Strike: its feats that trigger on its hit, critical hit or miss; the loop, 2026-10-30.)
     const attacker = message.actor;
     const own = ownStrikeEvents(context?.type, context?.outcome);
