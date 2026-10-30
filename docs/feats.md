@@ -145,6 +145,12 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Measured:** 5 more (Cantorian Restoration, Ease the Burden, Fermenting Liquors, Fish From the Falls' Edge, Searing Restoration; the
   others matched were already read). Count: 3,223 of 4,826 left.
 
+## Older check syntax in third-party packs (2026-10-30, the loop)
+
+- Teams+ and Summoners+ still write `@Check[type:will|…|basic:true]`, PF2e's older syntax; it's read as `@Check[will|…|basic]` before the
+  character's DCs are filled (`currentSyntax`, `src/compiler/character-dcs.js`). Restricting Flora, Animal Mimicry and World-Shaking
+  Throw now get cards; the others with it (Strike Barrage, Bomb Flurry) deal a Strike's or a bomb's damage the card can't name.
+
 ## Hand-picked: saves said in words (2026-10-30, the loop)
 
 - `src/plans/saves-4.js`: Frightening Power (each enemy within 20 feet, Will, frightened 1/2/4), Breath of the Dragon (Dragonblood; a

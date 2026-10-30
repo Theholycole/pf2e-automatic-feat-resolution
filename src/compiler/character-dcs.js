@@ -209,10 +209,14 @@ export function namedDCs(html) {
         .replace(WORDED_CHECK, (_all, verb, skill, defense) => `${verb} a @Check[${skill.toLowerCase()}|against:${defense.toLowerCase()}] check against the target's ${defense} DC`);
 }
 
+// PF2e's older inline check syntax, still in third-party packs (Teams+, Summoners+): "@Check[type:will|…|basic:true]" is
+// "@Check[will|…|basic]" (2026-10-30, the loop: Strike Barrage, Bomb Flurry, Whirling Advance).
+export const currentSyntax = (html) => String(html).replace(/@Check\[type:/g, "@Check[").replace(/(@Check\[[^\]]*?)\|basic:true\b/g, "$1|basic");
+
 export function withCharacterDCs(item, dcs) {
     const html = item?.system?.description?.value;
     if (!dcs || typeof html !== "string" || !(html.includes("@Check[") || html.includes("@Damage["))) return item;
-    const filled = inReaderWords(fillCharacterNumbers(fillCharacterDCs(namedDCs(html), dcs), dcs, item));
+    const filled = inReaderWords(fillCharacterNumbers(fillCharacterDCs(namedDCs(currentSyntax(html)), dcs), dcs, item));
     if (filled === html) return item;
     return withText(item, filled);
 }

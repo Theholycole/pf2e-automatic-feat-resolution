@@ -542,3 +542,10 @@ test("reminders: a passive's action or spell named in words", async () => {
     assert.deepEqual(ownUseTrigger(passive("<p>When you Treat a Disease or a Poison, you …</p>")).names, ["treat disease", "treat poison"]);
     assert.equal(ownUseTrigger(passive("<p>When you cast a spell, you …</p>"))?.names?.length ?? 0, 0, "any spell, as before");
 });
+
+test("PF2e's older inline check syntax in third-party packs", async () => {
+    const { currentSyntax } = await import("../src/compiler/character-dcs.js");
+    assert.equal(currentSyntax("@Check[type:fortitude|dc:resolve(@actor.attributes.classOrSpellDC.value)|basic:true]"), "@Check[fortitude|dc:resolve(@actor.attributes.classOrSpellDC.value)|basic]");
+    assert.equal(fillCharacterDCs(currentSyntax("@Check[type:reflex|dc:resolve(@actor.attributes.classDC.value)|basic:true]"), DCS), "@Check[reflex|basic|dc:25]");
+    assert.equal(currentSyntax("@Check[type:acrobatics|defense:will]{Acrobatics}"), "@Check[acrobatics|defense:will]{Acrobatics}");
+});
