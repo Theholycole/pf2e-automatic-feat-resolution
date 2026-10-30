@@ -191,6 +191,16 @@ errors from the modules. Fixed after it:
 - A Shove's push reminded Hunting Snag and Reactive Strike: forced movement and teleports no longer count as moving.
 Not fixed: the area save cards (Kobold Breath) hit only the GM's targets, with the area as a note; a heal's card line says "Damage rolled".
 
+### Foundry test, round 4 (2026-10-30, the wide round)
+
+A level 8 Fighter, "Wide Tester", with 22 of the day's hand-picked feats, plus re-tests on the eidolon. Passed: Dragon Breath's fire, Drain Life's void damage, Kobold Breath, Wrath of the Hold, Luring Chomp, Mummy's Despair, Bestial Snarling, Stranglehold, Twist the Knife, Poisoner's Twist, Death Roll, Staff Sweep, Running Tackle, Protect the Royal Line, Storm Shroud, Quickening Banner, Rallying Cry, Battle Cry at initiative, Recall Ammunition (crossbow, not javelin), and no move reminder on a Shove's push. No console errors.
+
+Fixed after it:
+- "Each creature within 5 feet" measures between the tokens' edges, so a Large creature next to you is in range (Pouncing Transformation found no one).
+- An affect entry can give an effect of its own kind: Rallying Cry's temporary Hit Points equal to your level.
+
+Left as notes: Drain Life's one-degree-worse save on a critical hit, Protect the Royal Line's extra 5 feet on a critical success, and Guiding Shot's Effect on a hit.
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.

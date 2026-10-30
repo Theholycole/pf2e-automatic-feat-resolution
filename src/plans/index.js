@@ -81,9 +81,12 @@ const NONE = () => ({ damage: { mode: "none", multiplier: 0, sourceComponentIds:
 
 // An affect entry → a plan with no roll: its conditions on each target. entry.affect: { effects: [{ slug, value, duration }], target,
 // range }.
-export function handAffect(item, entry) {
+// (An effect with its own kind, Rallying Cry's temporary Hit Points: as given, its "@actor.level" the character's; 2026-10-30 Foundry test.)
+export function handAffect(item, entry, dcs = null) {
     const affect = entry.affect ?? {};
-    const effects = (affect.effects ?? []).map((effect) => ({ kind: "condition", slug: effect.slug, value: effect.value ?? null, duration: effect.duration ?? null }));
+    const level = (formula) => String(formula).replace(/@actor\.level\b/g, String(dcs?.level ?? "@actor.level"));
+    const effects = (affect.effects ?? []).map((effect) => (effect.kind ? { ...effect, ...(effect.formula ? { formula: level(effect.formula) } : {}) }
+        : { kind: "condition", slug: effect.slug, value: effect.value ?? null, duration: effect.duration ?? null }));
     return {
         modelVersion: 13,
         source: sourceFor(item),

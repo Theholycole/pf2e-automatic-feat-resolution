@@ -28,7 +28,7 @@ export function compileFeat(item, options = {}) {
     // (An eidolon's action, "Your eidolon Strikes": the readers' "You Strike"; 2026-10-30, "Companions".)
     const own = !hand?.text && isEidolonItem(item) ? withText(item, eidolonWords(item.system?.description?.value ?? "")) : written;
     const filled = withCharacterDCs(own, dcs);
-    if (hand?.affect) return handAffect(item, hand);
+    if (hand?.affect) return handAffect(item, hand, dcs);
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));

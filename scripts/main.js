@@ -90,7 +90,7 @@ async function cardForFeat(message) {
     const source = sourceToken?.object ?? sourceToken;
     if (area && source && canvas?.tokens) {
         const around = canvas.tokens.placeables.filter((token) => token.actor && inArea(area, {
-            distance: canvas.grid.measurePath([source.center, token.center]).distance,
+            distance: edgeDistance(source, token),
             disposition: token.document.disposition,
             sourceDisposition: source.document.disposition,
             elevation: token.document.elevation ?? 0,
@@ -104,6 +104,14 @@ async function cardForFeat(message) {
     // ("You and your allies", Defiant Banner: the character with the GM's targets.)
     if (/^you and\b/i.test(plan.targeting?.target ?? "") && source) targets.push(source);
     return play(item, plan, sourceToken, new Set(targets));
+}
+
+// (Between the tokens' edges, not their centers: a Large token adjacent to the character is 5 feet away, not 10; 2026-10-30 Foundry test,
+// Pouncing Transformation found no one adjacent.)
+function edgeDistance(source, token) {
+    const centers = canvas.grid.measurePath([source.center, token.center]).distance;
+    const sizes = ((Math.max(source.document.width, 1) - 1) + (Math.max(token.document.width, 1) - 1)) / 2;
+    return Math.max(0, centers - sizes * canvas.grid.distance);
 }
 
 let warned = false;

@@ -22,6 +22,6 @@ export default [
     // On the character's allies
     { uuid: pf2e("WoUwDqhA6i6abwen"), name: "Song of Grace and Speed", affect: { target: "you and each ally within 30 feet", effects: [{ slug: "quickened", duration: minutes(1) }] }, notes: ["The extra action only to Strike, Stride or Step."] },
     { uuid: pf2e("l0pcURfMUGwnJgeU"), name: "Quickening Banner", affect: { target: "each ally within 30 feet", effects: [{ slug: "quickened", duration: rounds(1) }] }, notes: ["The allies in your banner's aura. The extra action only to Strike or Stride."] },
-    { uuid: pf2e("8l3qDZrfhxUGijjB"), name: "Rallying Cry", affect: { target: "each ally within 30 feet", effects: [{ slug: "quickened", duration: minutes(1) }] }, notes: ["Each also gains temporary Hit Points equal to your level. The extra action only to Step, Stride or Strike."] },
+    { uuid: pf2e("8l3qDZrfhxUGijjB"), name: "Rallying Cry", affect: { target: "each ally within 30 feet", effects: [{ slug: "quickened", duration: minutes(1) }, { kind: "temp-hp", formula: "@actor.level", duration: minutes(1) }] }, notes: ["The extra action only to Step, Stride or Strike."] },
     { uuid: pf2e("a9zzu4kb7vstq0HQ"), name: "Cadence Call", affect: { target: "each ally within 10 feet", effects: [{ slug: "quickened", duration: untilYourNextTurnEnds }] }, notes: ["Willing allies in your marshal's aura, until the end of their next turn. The extra action only to Stride; one that uses it is slowed 1 at the end of its turn."] }
 ];
