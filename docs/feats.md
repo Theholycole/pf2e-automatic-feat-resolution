@@ -296,6 +296,9 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Six:** the marshal stances (Inspiring, Dread, Devrin's Cunning, Strategist), Helpful Tinkering (on the ally), Call of the Ancestor.
 - **Left:** 83 options use a level's DC; most are exploration or downtime (Deep Meditation, Circadian Disciplinarian), or a DC of the
   *target's* level (Guiding Words, Invincible Army, Commitment to Protection), which a card's fixed DC can't follow.
+- **Foundry test** (2026-10-30, cdb2e28): Inspiring and Dread Marshal Stance (DC 22), Strategist Stance (DC 24, its critical-success
+  stance) entered the stance, PF2e's aura giving its Effect to allies inside; a failure applied nothing. Helpful Tinkering (DC 26) put
+  its Effect on the ally once the GM picked the weapon in PF2e's prompt, which Apply waits on (now said in its note).
 
 ## Tested in Foundry (2026-10-30)
 

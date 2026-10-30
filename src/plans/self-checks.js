@@ -30,7 +30,7 @@ export default [
     {
         uuid: pf2e("qUSWPWxYF8gfhfHM"), name: "Helpful Tinkering",
         selfCheck: { statistic: "crafting", adjustment: 2, target: "1 ally", outcomes: both({ nativeEffects: [effect("Effect: Helpful Tinkering")] }) },
-        notes: ["Target the ally in your reach; the boost is for the weapon you chose. On a critical failure your ally takes your offensive boost's damage: roll it by hand."]
+        notes: ["Target the ally in your reach. On Apply, PF2e asks which of the ally's weapons gets the boost: the card finishes once it's picked. On a critical failure your ally takes your offensive boost's damage: roll it by hand."]
     },
     {
         uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.f7DtQ9kQ02gAuqyr", name: "Call of the Ancestor",
