@@ -399,6 +399,10 @@ test("companions: eidolon actions by hand", async () => {
     const breath = compileFeat(action("Dragon Breath (Eidolon)", "Compendium.pf2e.actionspf2e.Item.Vr3w3t028ZKDg0mO", "<p>Breath.</p>"), { dcs });
     assert.equal(breath.resolution.check.against.value, 26);
     assert.equal(breath.targeting.area.type, "cone");
+    const fire = compileFeat({ ...action("Dragon Breath (Eidolon)", "Compendium.pf2e.actionspf2e.Item.Vr3w3t028ZKDg0mO", "<p>Breath.</p>"), flags: { pf2e: { rulesSelections: { dragonBreathDamage: "fire" } } } }, { dcs });
+    assert.equal(fire.resolution.sharedDamage.components[0].formula, "4d6[fire]", "the eidolon's own damage type");
+    const drain = compileFeat(action("Drain Life", "Compendium.pf2e.actionspf2e.Item.JPHWzD2soqjffeSU", "<p>Drain.</p>"), { dcs });
+    assert.equal(drain.onHit.save.resolution.outcomes.failure.damage.formulas[0].formula, "(4)[void]");
     const hold = compileFeat(action("Constricting Hold", "Compendium.pf2e.feats-srd.Item.si8FGX2ZRxetdVHp", "<p>Hold.</p>"), { dcs });
     assert.equal(hold.targeting.target, "the creature you have grabbed");
     const charge = compileFeat(action("Beast's Charge", "Compendium.pf2e.actionspf2e.Item.cx0juTYewwBmrYWv", "<p>Charge.</p>"), { dcs });

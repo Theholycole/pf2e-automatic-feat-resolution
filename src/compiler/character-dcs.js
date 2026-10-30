@@ -151,7 +151,9 @@ function workedCall(name, args) {
 // item: the feat itself, for "@item.level" and the choice PF2e keeps for it ("[@item.flags.system.rulesSelections.damageType]").
 export function fillCharacterNumbers(html, dcs, item = null) {
     if (!html || !dcs || !html.includes("@Damage[")) return html;
-    const selections = item?.flags?.system?.rulesSelections ?? {};
+    // (PF2e keeps a ChoiceSet's choice at flags.pf2e.rulesSelections — the eidolon's Dragon Breath type, 2026-10-30 Foundry test — and at
+    // flags.system for older items.)
+    const selections = { ...(item?.flags?.system?.rulesSelections ?? {}), ...(item?.flags?.pf2e?.rulesSelections ?? {}) };
     const itemLevel = Number(item?.system?.level?.value);
     return html.replace(/@Damage\[((?:[^\[\]]|\[(?:[^\[\]]|\[[^\]]*\])*\])*)\]/g, (all, inner) => {
         // (Live, dcs.resolve is PF2e's own: Roll.replaceFormulaData with the feat's roll data, which knows every path.)
@@ -163,7 +165,7 @@ export function fillCharacterNumbers(html, dcs, item = null) {
             });
         }
         formula = formula.replace(/@item\.level\b/g, (match) => (Number.isFinite(itemLevel) ? String(itemLevel) : match))
-            .replace(/@item\.flags\.system\.rulesSelections\.(\w+)/g, (match, key) => (["string", "number"].includes(typeof selections[key]) ? String(selections[key]) : match));
+            .replace(/@item\.flags\.(?:system|pf2e)\.rulesSelections\.(\w+)/g, (match, key) => (["string", "number"].includes(typeof selections[key]) ? String(selections[key]) : match));
         if (formula.includes("@")) return all;
         // Innermost first: floor(4/2), ternary(gte(8,13),2,1), max(1, …), or plain (2*3), until none is left to work out.
         for (let guard = 0; guard < 20; guard++) {

@@ -16,8 +16,8 @@ export default [
     // Saves against your spell DC
     {
         uuid: action("Vr3w3t028ZKDg0mO"), name: "Dragon Breath (Eidolon)",
-        text: `<p>All creatures in a @Template[type:cone|distance:30] take @Damage[(ceil(@actor.level/2))d6[untyped]|options:area-damage] damage with a @Check[reflex|against:spell|basic|options:area-effect] save against your spell DC.</p>`,
-        notes: ["Your eidolon's own area (a 30-foot cone or a 60-foot line) and damage type: the card rolls untyped damage in a cone.", recharge]
+        text: `<p>All creatures in a @Template[type:cone|distance:30] take @Damage[(ceil(@actor.level/2))d6[@item.flags.pf2e.rulesSelections.dragonBreathDamage]|options:area-damage] damage with a @Check[reflex|against:spell|basic|options:area-effect] save against your spell DC.</p>`,
+        notes: ["Your eidolon's own area: the card's template is a 30-foot cone (a 60-foot line if that's your eidolon's); target the creatures in it.", recharge]
     },
     {
         uuid: action("Cb9XbKqHBHPAbQKk"), name: "Elemental Burst",
@@ -50,7 +50,12 @@ export default [
     demoralize(summoners("1GrcVMZtL3xAay6x"), "Be Not Afraid!", null, ["+2 circumstance against an unholy creature. Then each ally within 30 feet reduces its frightened condition by 1."]),
     demoralize(summoners("CqysXOAp6rpgojAF"), "Glory Seeker", null, ["No penalty for not sharing a language. On a success, its frightened can't drop below 1 while your eidolon has Struck it or used an Athletics maneuver on it since its last turn."]),
     // Strikes
-    { uuid: action("JPHWzD2soqjffeSU"), name: "Drain Life", strike: { melee: true, notes: ["The save on a hit is on its card. On a failure, your eidolon gains temporary Hit Points equal to the enemy's level (double on a critical failure) for 1 minute."] } },
+    // (Its save after the hit, rewritten with the void damage: 2026-10-30 Foundry test, the half-level damage was a note.)
+    {
+        uuid: action("JPHWzD2soqjffeSU"), name: "Drain Life",
+        text: `<p>You Strike a living enemy. If the Strike hits and deals damage, the target must attempt a @Check[fortitude|against:spell|options:damaging-effect,inflicts:drained] save against your spell DC.</p>${degrees(`The target takes @Damage[(floor(@actor.level/2))[void]] damage.`, `The target takes @Damage[(floor(@actor.level/2))[void]] damage and is ${condition("4D2KBtexWXa6oUMR", "Drained 1")}.`, `The target takes @Damage[(floor(@actor.level/2))[void]] damage and is ${condition("4D2KBtexWXa6oUMR", "Drained 2")}.`, "No effect.")}`,
+        strike: { melee: true, notes: ["The save on a hit is on its card; on a critical hit, the target uses the result one degree worse. On a failure, your eidolon gains temporary Hit Points equal to the enemy's level (double on a critical failure) for 1 minute."] }
+    },
     { uuid: action("cx0juTYewwBmrYWv"), name: "Beast's Charge", strike: { melee: true, strides: 2, notes: ["+1 circumstance to the attack roll if your eidolon moved at least 20 feet in a straight line."] } },
     { uuid: action("tu5viJZT4zFE1sYn"), name: "Whirlwind Maul", strike: { melee: true, notes: ["Against up to four enemies within reach, each with any unarmed attack; the multiple attack penalty rises only after all of them. Use it again for each."] } },
     { uuid: action("H8EXYfvFOSuq6vo8"), name: "Elemental Maelstrom", strike: { melee: true, strides: 1, notes: ["One Strike against each enemy that comes within reach during the Stride; the multiple attack penalty rises only after all of them."] } },
