@@ -17,5 +17,6 @@ export default [
     { uuid: pf2e("04Smj4ZsEBD8WIXv"), name: "Dual-Weapon Blitz", strike: { melee: true, strides: 1, strikes: ["melee", "melee"], notes: ["Stride up to your Speed, with one Strike with each one-handed weapon at any point of it."] } },
     { uuid: pf2e("PcayTyfEv6s9wRfN"), name: "Cornered Animal", strike: { melee: true, strikes: ["melee", "melee"], notes: ["Against two different creatures flanking you; –2 if the unarmed attack isn't agile. The penalty rises only after both."] } },
     { uuid: pf2e("S450JMWfF90oOcv9"), name: "Path of Iron", strike: { melee: true, strides: 1, strikes: ["melee", "melee", "melee"], notes: ["Stride without triggering reactions, with up to three Strikes at any point, each against a different enemy; the penalty rises only after all of them."] } },
+    { uuid: pf2e("lTBARjqQZc1duLIX"), name: "Engraving Strike", strike: { melee: true, notes: ["On a hit, Trace Rune onto the target."] } },
     { uuid: pf2e("Ks4CgusuaXn2aE1U"), name: "Deathblow", strike: { ...ranged, notes: ["A blowgun or sling with your poisoned ammunition. If it hits while you're hidden, unnoticed or undetected, the target must succeed at a Fortitude save against your class DC or die (death, incapacitation); one that survives is immune for 1 day."] } }
 ];

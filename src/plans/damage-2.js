@@ -36,6 +36,11 @@ export default [
         notes: ["Four seasonal cones: the card rolls spring's electricity. Summer is bludgeoning (critical failure: prone), fall slashing (off-guard until the end of its next turn), winter cold (stupefied until the end of its next turn); spring's critical failure: clumsy until the end of its next turn."]
     },
     {
+        uuid: pf2e("5Jc2ySGLVi053qpz"), name: "Twist the Knife",
+        text: `<p>The target takes @Damage[(1+floor((@actor.level+1)/6))[persistent,bleed]] damage.</p>`,
+        notes: ["Persistent bleed equal to your sneak attack dice: the card counts a rogue's (1 at 1st, 2 at 5th, 3 at 11th, 4 at 17th). After a melee Strike that dealt sneak attack damage to an off-guard target."]
+    },
+    {
         uuid: teams("clerics-remaster", "clerics-feats", "KD1HERdiPVfiLhQz"), name: "Spirit Burn",
         text: `<p>The target takes @Damage[(floor((@actor.level -1)/2) +1)[persistent,spirit]] damage and is ${enfeebled(1)}.</p>`,
         notes: ["The enfeeblement lasts as long as the persistent damage. One that removes it is immune for 1 minute."]
