@@ -183,6 +183,10 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.deepEqual(eventsOf("attack-roll", "criticalFailure"), ["targeted", "miss", "critical-miss"]);
     assert.equal(eventTrigger(reaction("A creature missed you with a melee attack.")).event, "miss");
     assert.equal(eventTrigger(reaction("You are struck by a critical hit that deals physical damage.")).event, "critical-hit");
+    assert.equal(eventTrigger(reaction("A critical hit deals physical damage to you.")).event, "critical-hit");
+    assert.equal(eventTrigger(reaction("A creature you can see attempts a ranged Strike against you.")).event, "targeted");
+    assert.equal(eventTrigger(reaction("A Large or larger enemy ends a move action adjacent to you.")).event, "foe-acts");
+    assert.equal(eventTrigger(reaction("A foe ends its movement adjacent to you.")).moves, true);
     const frightened = eventTrigger(reaction("An ally within 30 feet would become Frightened, Drained, or Sickened."));
     assert.deepEqual([frightened.event, frightened.conditions, frightened.within], ["ally-condition", ["frightened", "drained", "sickened"], 30]);
     assert.deepEqual(eventTrigger(reaction("You would be reduced to 0 Hit Points but not immediately killed.")).conditions, ["0-hp"]);

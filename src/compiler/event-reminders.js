@@ -29,11 +29,11 @@ export function eventTrigger(item) {
     // (A foe near the character moving or using a manipulate, concentrate or move action: "A creature within your reach leaves a square during
     // a move action it's using", "A creature within 10 feet of you uses a manipulate action or a move action", "A creature moves to be within
     // 15 feet of you", "A creature within your reach uses a concentrate action" — Reactive Strike's kind. Reach counted as 10 feet.)
-    const near = /^(?:A|An|Another) (?:creature|enemy|foe|opponent)\b/i.test(trigger) && (within || /\bwithin your reach\b|\badjacent to you\b|\bwithin \d+ feet of you\b/i.test(trigger));
+    const near = /^(?:A|An|Another) (?:(?:Tiny|Small|Medium|Large|Huge|Gargantuan)(?: or (?:larger|smaller))? )?(?:creature|enemy|foe|opponent)\b/i.test(trigger) && (within || /\bwithin your reach\b|\badjacent to you\b|\bwithin \d+ feet of you\b/i.test(trigger));
     if (near && !/\ball(?:y|ies)\b/i.test(trigger)) {
         const reach = within ?? 10;
         const traits = [...trigger.matchAll(/\b(manipulate|concentrate|move|auditory|visual) action\b/gi)].map((match) => match[1].toLowerCase());
-        const moves = /\bleaves a square\b|\bmoves\b|\bmove action\b/i.test(trigger);
+        const moves = /\bleaves a square\b|\bmoves\b|\bmove action\b|\bends its movement\b/i.test(trigger);
         if (traits.length || moves) return { ...read("foe-acts"), within: reach, traits: [...new Set(traits)], moves };
     }
     // ("A creature within your reach critically fails a Strike against you": Dueling Riposte's.)
@@ -52,12 +52,12 @@ export function eventTrigger(item) {
         if (/\b(?:is|are) targeted\b|\btargets (?:an|your|the|one of your) all/i.test(trigger)) return read("ally-targeted");
         return null;
     }
-    if (/\bcritically hits you\b|^You are critically hit\b|^You (?:are struck by|would take|take) a critical hit\b/i.test(trigger)) return read("critical-hit");
+    if (/\bcritically hits you\b|^You are critically hit\b|^You (?:are struck by|would take|take) a critical hit\b|^A critical hit deals [^.]*\bdamage to you\b|\bcritically succeeds (?:on|at) (?:a|an) (?:melee |ranged )?(?:Strike|attack(?: roll)?) against you\b/i.test(trigger)) return read("critical-hit");
     // ("A creature missed you with a melee attack", "A creature misses you with a ranged attack", "An adjacent creature you can see fails an
     // attack roll against you": Elude Trouble's, Coursing Weave's; the loop, 2026-10-30.)
     if (/\bmiss(?:es|ed)? you\b|\bfails an attack roll against you\b/i.test(trigger)) return read("miss");
     if (/\bhits you\b|^You are hit by\b/i.test(trigger)) return read("hit");
-    if (/\btargets you\b|^You are (?:the )?target(?:ed)? (?:of|by)\b|\battempts? (?:a Strike|an attack(?: roll)?) against you\b|\battacks you\b|\bmakes an attack(?: roll)? against you\b/i.test(trigger)) return read("targeted");
+    if (/\btargets you\b|^You are (?:the )?target(?:ed)? (?:of|by)\b|\battempts? (?:a (?:melee |ranged )?Strike|an attack(?: roll)?) against you\b|\battacks you\b|\bmakes an attack(?: roll)? against you\b/i.test(trigger)) return read("targeted");
     if (/(?:^|,\s*)You (?:or your [\w ]+? )?(?:would )?take damage\b|\bwould deal damage to you\b|\bdamages you\b|\bdeals damage to you\b/i.test(trigger) && !/\bfall(?:ing)? damage\b/i.test(trigger)) return read("damaged");
     return null;
 }
