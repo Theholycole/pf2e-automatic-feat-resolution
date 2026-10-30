@@ -172,7 +172,7 @@ creature, or the action also has a check, an area, a Strike or a spell.
   a success, prone too on a critical success, the distance a note), Mythic Containment (Deception against Will; grabbed and slowed 1 in
   the receptacle), Denounce Tyranny (Diplomacy against the Will DC of each ally of the creature, the GM's targets).
 - Also: Embrace of Destiny in `saves-4.js` (Will against the class DC, the pull to an adjacent square by hand), and Ghostly Condemnation
-  cast as a 5th-rank Vision of Death ("is subject to the effects of" now reads as a spell-like feat). Count: 2,823 of 4,826 left.
+  cast as a 5th-rank Vision of Death ("is subject to the effects of" now reads as a spell-like feat). Count: 2,825 of 4,826 left.
 
 ## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
 
