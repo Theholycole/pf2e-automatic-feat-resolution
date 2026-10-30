@@ -193,9 +193,26 @@ export const tokenCenter = (document, changed = {}) => {
     return { x: x + ((changed.width ?? source.width) * canvas.grid.size) / 2, y: y + ((changed.height ?? source.height) * canvas.grid.size) / 2 };
 };
 
+// An ally of a character moving near it (the loop, 2026-10-30): each other character of the mover's disposition with feats that trigger on
+// it ("An ally ends a move action adjacent to you"), when the move starts or ends in range. In an encounter only.
+async function remindAllyMoves(allyToken, positions) {
+    if (!game.settings.get(MODULE_ID, SETTING) || !allyToken?.actor || !game.combat?.started) return;
+    for (const token of canvas?.tokens?.placeables ?? []) {
+        const actor = token.actor;
+        if (actor?.type !== "character" || actor === allyToken.actor || token.document.disposition !== allyToken.document.disposition) continue;
+        const distances = positions.map((point) => canvas.grid.measurePath([token.center, point]).distance);
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "ally-moves" && distances.some((distance) => distance !== null && distance <= read.within));
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(allyToken.name)} moves near you.`, due);
+    }
+}
+
 export function onTokenMoved(document, from, changed = {}) {
     const token = document.object;
-    if (!token || !from || token.actor?.type === "character") return;
+    if (!token || !from) return;
+    if (token.actor?.type === "character") {
+        remindAllyMoves(token, [from, tokenCenter(document, changed)]).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
+        return;
+    }
     // (Where it ends, from the change: during the move's animation token.center and the document's x and y are still on the way; 2026-10-30
     // Foundry test.)
     const to = tokenCenter(document, changed);

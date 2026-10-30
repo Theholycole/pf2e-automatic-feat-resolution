@@ -46,6 +46,12 @@ export function eventTrigger(item) {
         if (who) return { ...read(who), conditions };
     }
     const ally = /\b(?:an|your|one of your|a) (?:adjacent )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
+    // (An ally near the character moving: "An ally ends a move action adjacent to you", "An ally within your reach uses a move action or
+    // leaves a square …", "An adjacent ally moves", "A willing ally enters a space within your lash's reach using a move action": Goblin
+    // Scuttle's, Shadow Tempo's; the loop, 2026-10-30. Reach counted as 10 feet.)
+    if (/^(?:An?|Another) (?:adjacent |willing )?ally\b/i.test(trigger) && /\bmove action\b|\bmoves\b|\bleaves a square\b|\bends (?:its|their) movement\b/i.test(trigger)) {
+        return { ...read("ally-moves"), within: within ?? (/\breach\b/i.test(trigger) ? 10 : 5) };
+    }
     if (ally) {
         if (/\b(?:is|are) (?:critically )?hit\b|\bhits (?:an|your|the) ally\b/i.test(trigger)) return read("ally-hit");
         if (/\b(?:takes?|would take) damage\b|\bis damaged\b|\bdamages (?:an|your|the) ally\b/i.test(trigger)) return read("ally-damaged");

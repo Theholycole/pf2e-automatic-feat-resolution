@@ -187,6 +187,8 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.equal(eventTrigger(reaction("A creature you can see attempts a ranged Strike against you.")).event, "targeted");
     assert.equal(eventTrigger(reaction("A Large or larger enemy ends a move action adjacent to you.")).event, "foe-acts");
     assert.equal(eventTrigger(reaction("A foe ends its movement adjacent to you.")).moves, true);
+    assert.deepEqual([eventTrigger(reaction("An ally ends a move action adjacent to you.")).event, eventTrigger(reaction("An ally ends a move action adjacent to you.")).within], ["ally-moves", 5]);
+    assert.equal(eventTrigger(reaction("An ally within your reach uses a move action or leaves a square during a move action they're using.")).within, 10);
     const frightened = eventTrigger(reaction("An ally within 30 feet would become Frightened, Drained, or Sickened."));
     assert.deepEqual([frightened.event, frightened.conditions, frightened.within], ["ally-condition", ["frightened", "drained", "sickened"], 30]);
     assert.deepEqual(eventTrigger(reaction("You would be reduced to 0 Hit Points but not immediately killed.")).conditions, ["0-hp"]);
