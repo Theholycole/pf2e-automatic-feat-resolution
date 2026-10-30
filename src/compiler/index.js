@@ -5,6 +5,8 @@
 import { compileAbility } from "../../../pf2e-automatic-ability-resolution/src/compiler/index.js";
 import { withCharacterDCs, withText } from "./character-dcs.js";
 import { characterStrike } from "./strikes.js";
+import { asUsed } from "./used.js";
+import { selfHeal } from "./self-heal.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
 export { characterStrike } from "./strikes.js";
@@ -15,7 +17,15 @@ export function compileFeat(item, options = {}) {
     const { dcs, ...abilityOptions } = options;
     if (!dcs) return null;
     const filled = withCharacterDCs(item, dcs);
-    const plan = compileAbility(filled, abilityOptions);
+    const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs);
     if (plan) return plan;
-    return characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) });
+    // (Slice 3: a reaction or free action, its effect as the player uses it; its trigger and time kept on the plan.)
+    const used = asUsed(filled);
+    const usedPlan = used ? read(used.item, abilityOptions) ?? selfHeal(used.item, dcs) : null;
+    if (!usedPlan) return null;
+    return { ...usedPlan, ...(usedPlan.activation ? { activation: { ...usedPlan.activation, time: used.time } } : {}), usedOn: used.trigger };
+}
+
+function read(item, options) {
+    return compileAbility(item, options) ?? characterStrike(item, { compileSave: (html) => compileAbility(withText(item, html), options) });
 }

@@ -182,10 +182,19 @@ export function fillCharacterNumbers(html, dcs, item = null) {
     });
 }
 
+// (Slice 3) The words a PC's save says its DC in, once it has the number: "@Check[fortitude|dc:27] saving throw against your class DC or spell
+// DC, whichever is higher, or become …" → "@Check[fortitude|dc:27] save or become …", as the readings know a monster's.
+const AGAINST_YOURS = /(@Check\[(?:fortitude|reflex|will)\|[^\]]*\bdc:\d+[^\]]*\](?:\{[^}]*\})?)( (?:basic )?(?:saving throw|save))?,? (?:with a DC equal to |against )(?:the higher of )?your [\w' -]*?DC(?:(?:,| or| \()[^.;)]*?whichever is higher\)?| or (?:your )?(?:spell|class) DC)?/gi;
+export function inReaderWords(html) {
+    return String(html).replace(AGAINST_YOURS, (_all, check, save) => `${check}${save ? " save" : ""}`)
+        .replace(/(@Check\[(?:fortitude|reflex|will)\|[^\]]*\](?:\{[^}]*\})?) saving throw\b/gi, "$1 save")
+        .replace(/(@Check\[(?:fortitude|reflex|will)\|[^\]]*\](?:\{[^}]*\})? save), or\b/gi, "$1 or");
+}
+
 export function withCharacterDCs(item, dcs) {
     const html = item?.system?.description?.value;
     if (!dcs || typeof html !== "string" || !(html.includes("@Check[") || html.includes("@Damage["))) return item;
-    const filled = fillCharacterNumbers(fillCharacterDCs(html, dcs), dcs, item);
+    const filled = inReaderWords(fillCharacterNumbers(fillCharacterDCs(html, dcs), dcs, item));
     if (filled === html) return item;
     return withText(item, filled);
 }

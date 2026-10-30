@@ -85,3 +85,53 @@ test("any Strike when the feat names none; not a feat about an ally's Strike", (
     assert.equal(strikeMatches({}, { name: "Longbow", isRanged: true }), false, "a monster's activity with no Strike named stays melee");
     assert.equal(characterStrike(feat("Test Order", "<p>Your ally can make a Strike. If the Strike hits, the target is @UUID[Compendium.pf2e.conditionitems.Item.Prone].</p>")), null);
 });
+
+// Slice 3: a character's reaction, its effect read as the player uses it (src/compiler/used.js); the words its save says its DC in.
+import { inReaderWords } from "../src/compiler/character-dcs.js";
+
+test("a PC save's DC words, once it has the number", () => {
+    assert.equal(inReaderWords("@Check[fortitude|dc:27] saving throw against your class or spell DC, whichever is higher, or become"), "@Check[fortitude|dc:27] save or become");
+    assert.equal(inReaderWords("@Check[will|dc:25] save against your class DC or become"), "@Check[will|dc:25] save or become");
+    assert.equal(inReaderWords("@Check[reflex|basic|dc:27] save against your class DC or spell DC (whichever is higher). Next"), "@Check[reflex|basic|dc:27] save. Next");
+    assert.equal(inReaderWords("@Check[will|against:mystery] save against your class DC"), "@Check[will|against:mystery] save against your class DC", "no number, no change");
+});
+
+// PF2e's Gaping Flesh (ancestry feat), as the pack has it.
+const GAPING_FLESH = "<p><strong>Frequency</strong> once per day</p>\n<p><strong>Trigger</strong> A creature you are aware of damages you with a melee Strike.</p>\n<hr />\n<p>Your wound yawns open, appalling your attacker. The attacker must succeed at a @Check[fortitude|against:class-spell] saving throw against your class or spell DC, whichever is higher, or become @UUID[Compendium.pf2e.conditionitems.Item.Sickened]{Sickened 1} (@UUID[Compendium.pf2e.conditionitems.Item.Sickened]{Sickened 2} on a critical failure). It can't recover from the sickened condition while it's adjacent to you.</p>";
+const reaction = (name, html) => ({ name, type: "feat", system: { description: { value: html }, actionType: { value: "reaction" }, actions: { value: null }, traits: { value: [] }, rules: [] } });
+
+test("a reaction's effect as the player uses it, at the character's DC", () => {
+    const plan = compileFeat(reaction("Gaping Flesh", GAPING_FLESH), { dcs: DCS });
+    assert.equal(plan.resolution.kind, "save");
+    assert.deepEqual([plan.resolution.check.statistic, plan.resolution.check.against.value], ["fortitude", 27]);
+    assert.deepEqual(plan.resolution.outcomes.criticalFailure.effects.map((effect) => [effect.slug, effect.value]), [["sickened", 2]]);
+    assert.equal(plan.activation.time, "reaction");
+    assert.equal(plan.usedOn, "A creature you are aware of damages you with a melee Strike.");
+    assert.equal(plan.trigger.event, "use", "the player saw the trigger and used it");
+});
+
+// Slice 4: the character healing itself or gaining temporary Hit Points (src/compiler/self-heal.js).
+import { amountOf } from "../src/compiler/self-heal.js";
+
+test("amounts by the character's level and attributes", () => {
+    assert.equal(amountOf("your level", DCS), 8);
+    assert.equal(amountOf("half your level", DCS), 4);
+    assert.equal(amountOf("half your level (minimum 1)", { level: 1 }), 1);
+    assert.equal(amountOf("twice your level", DCS), 16);
+    assert.equal(amountOf("10 + your level", DCS), 18);
+    assert.equal(amountOf("your Strength modifier", DCS), 4);
+    assert.equal(amountOf("the enemy's level", DCS), null);
+});
+
+test("self-healing and temporary Hit Points, with their time; a heal only sometimes is the GM's", () => {
+    const success = (plan) => plan.resolution.outcomes.success.effects;
+    // PF2e's Cantorian Rejuvenation: the dice by level, then 10 temporary HP for a minute; the 15th-level sentence a note at 8th.
+    const cantorian = compileFeat(feat("Cantorian Rejuvenation", "<p><strong>Frequency</strong> once per day</p><hr /><p>The life-giving energy that flows in your blood revitalizes you. You recover @Damage[ternary(gte(@actor.level,15),6,4)d6[healing]] Hit Points and gain 10 temporary Hit Points for 1 minute. At 15th level, you instead recover 6d6 HP and gain 15 temporary HP.</p>"), { dcs: DCS });
+    assert.equal(cantorian.targeting.target, "self");
+    assert.deepEqual(success(cantorian).map((effect) => [effect.kind, effect.formula, effect.duration?.unit ?? null]), [["heal", "4d6", null], ["temp-hp", "10", "minutes"]]);
+    assert.deepEqual(cantorian.notes, ["At 15th level, you instead recover 6d6 HP and gain 15 temporary HP."]);
+    // PF2e's Draw From the Land: "They last for 1 round." the next sentence.
+    const draw = compileFeat(feat("Draw From the Land", "<p><strong>Requirements</strong> You gained a terrain attunement benefit this turn, and it matched the terrain you're in.</p>\n<hr />\n<p>You pull strength from the surrounding terrain. You gain temporary Hit Points equal to your level. They last for 1 round. If you previously gained the plains terrain attunement effect this turn, combine the temporary Hit Points together.</p>", 1), { dcs: DCS });
+    assert.deepEqual(success(draw).map((effect) => [effect.formula, effect.duration.value, effect.duration.unit]), [["8", 1, "rounds"]]);
+    assert.equal(compileFeat(feat("Test Rest", "<p>If you rest for 10 minutes, you regain Hit Points equal to your level.</p>"), { dcs: DCS }), null);
+});

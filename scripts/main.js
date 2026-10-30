@@ -36,8 +36,21 @@ function recordTargets(message, _data, _options, userId) {
 }
 
 // A character's feat or action: its card when it reads into a save, a check or healing on its targets, or a Strike feat's (its hit's
-// results when the player's Strike hits). Its other readings stay PF2e's for now (D2).
+// results when the player's Strike hits). Its other readings (a PF2e Effect, a builtin) only with the world setting (D2).
 const CARD_KINDS = new Set(["save", "check", "healing"]);
+const SETTING = "featCards";
+function registerSetting() {
+    game.settings.register(MODULE_ID, SETTING, {
+        name: "Cards for characters' feats",
+        hint: "Which of a character's feats get the ability module's card when used. The rest stay PF2e's.",
+        scope: "world",
+        config: true,
+        type: String,
+        choices: { checks: "Saves, checks, healing and Strike feats", all: "Also Effects and the other readings" },
+        default: "checks"
+    });
+}
+const allCards = () => game.settings.get(MODULE_ID, SETTING) === "all";
 async function cardForFeat(message) {
     if (!isFeatMessage(message) || !message.flags.pf2e.origin.uuid) return;
     const play = abilityApi()?.live?.playAbility;
@@ -47,13 +60,16 @@ async function cardForFeat(message) {
     const plan = compileItem(item);
     const sourceToken = message.token ?? item.actor.getActiveTokens(true, true)[0] ?? null;
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
-    if (!plan?.resolution || !CARD_KINDS.has(plan.resolution.kind) || (plan.trigger?.event ?? "use") !== "use") return;
+    if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
+    if (!(plan.resolution && CARD_KINDS.has(plan.resolution.kind)) && !allCards()) return;
     // (Damage still naming something the feat's roll data doesn't hold: PF2e's own card, not a wrong roll; D3.)
-    if (/"formula":"[^"]*@/.test(JSON.stringify(plan.resolution))) return;
+    if (/"formula":"[^"]*@/.test(JSON.stringify(plan.resolution ?? plan))) return;
     const recorded = message.getFlag?.(MODULE_ID, "targets") ?? [];
     const targets = recorded.map((uuid) => fromUuidSync(uuid)).filter(Boolean).map((token) => token.object ?? token);
     return play(item, plan, sourceToken, new Set(targets));
 }
+
+Hooks.once("init", () => registerSetting());
 
 Hooks.once("ready", () => {
     if (!abilityApi()?.live?.playAbility) console.warn(`${MODULE_ID} | needs PF2e Automatic Ability Resolution 0.9.6 or later for its cards.`);

@@ -8,7 +8,7 @@ import { htmlToPlainText } from "../../../pf2e-resolution-core/src/text/plain-te
 import { degreeSections, inlineTags, readCheck, readConditions, readDamage, readPush } from "../../../pf2e-automatic-ability-resolution/src/compiler/inline.js";
 
 // A sentence is a rule once it has a tag or a game word; the rest ("You rush forward with a battle cry.") is flavour, not a note.
-const RULE_WORDS = /@\w+\[|\[\[|\b(?:Strikes?|Strides?|Steps?|Leaps?|damage|checks?|saves?|saving throws?|DC|bonus|penalty|hits?|feet|actions?|reactions?|rounds?|turns?|minutes?|Hit Points|off-guard|prone|grabbed|frightened|attempts?|Speed|AC|weapon|unarmed|shield|spell|Interact|Raise|Requirements?|Frequency|Trigger)\b/;
+export const RULE_WORDS = /@\w+\[|\[\[|\b(?:Strikes?|Strides?|Steps?|Leaps?|damage|checks?|saves?|saving throws?|DC|bonus|penalty|hits?|feet|actions?|reactions?|rounds?|turns?|minutes?|Hit Points|off-guard|prone|grabbed|frightened|attempts?|Speed|AC|weapon|unarmed|shield|spell|Interact|Raise|Requirements?|Frequency|Trigger)\b/;
 // PF2e's conditions, for the ones a hit gives (a word like "immobilizing" isn't one).
 const CONDITIONS = new Set(["blinded", "broken", "clumsy", "concealed", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "encumbered", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "hidden", "immobilized", "invisible", "observed", "off-guard", "paralyzed", "persistent-damage", "petrified", "prone", "quickened", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "undetected", "unnoticed", "wounded"]);
 // The user makes the Strike: "Make a melee Strike", "make two dagger Strikes", "Stride, then Strike", "Strike an adjacent creature", "You Strike".
