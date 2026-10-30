@@ -64,7 +64,8 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 
 - **The reader** (`ownUseTrigger` in `src/compiler/event-reminders.js`): "You use Orc Ferocity.", "You Shield Block a melee Strike …", "You enter Tenacious Stance.", "You Leap.", "You cast summon undead.", "You Cast a Spell using a spell slot." / "You cast a divine spell …" (any spell).
 - **Live** (`onOwnUse` in `scripts/reminders.js`): when a character's action, feat or spell is posted (its use, not a later check or damage roll from it), its owners are whispered the feats that trigger on it, matched by the item's name or, for "a spell", any spell. Same setting as slices 6 and 7.
-- **Measured:** 24 options (Rampaging Ferocity, Disarming Block, Aggressive Block, Mighty Rage, Sustaining Steel and others).
+- **Another creature's spell:** "A creature Casts a Spell that you have prepared" (Counterspell), "An enemy casts a spell that targets you …", "A creature within 30 feet casts a spell." When a spell is posted, each character on the scene whose disposition isn't the caster's (in range, when the trigger gives one) is whispered those feats.
+- **Measured:** 24 options for the character's own use, 19 for another's spell (Counterspell, Recognize Spell, Countercharm, Reactive Spellshift and others).
 
 ## Measured (2026-10-30, after slice 4)
 

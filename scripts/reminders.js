@@ -91,3 +91,21 @@ export async function onOwnUse(message) {
     const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].filter((each) => each !== item).map((each) => ({ item: each, read: ownUseTrigger(each) })).filter(({ read }) => usesTrigger(read, item.name, item.type));
     if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: you used ${escape(item.name)}.`, due);
 }
+
+// Another creature's spell (slice 8): each character on the scene whose disposition isn't the caster's, and its feats that trigger on a
+// spell cast ("A creature Casts a Spell that you have prepared", Counterspell), in range when the trigger gives one.
+export async function onForeignSpell(message) {
+    if (!game.settings.get(MODULE_ID, SETTING)) return;
+    const origin = message.flags?.pf2e?.origin;
+    if (origin?.type !== "spell" || message.flags?.pf2e?.context?.type) return;
+    const casterToken = message.token?.object ?? null;
+    const caster = message.actor ?? casterToken?.actor ?? null;
+    if (!caster) return;
+    for (const token of canvas?.tokens?.placeables ?? []) {
+        const actor = token.actor;
+        if (actor?.type !== "character" || actor === caster || (casterToken && token.document.disposition === casterToken.document.disposition)) continue;
+        const distance = casterToken ? distanceBetween(token, casterToken) : null;
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-casts" && (!read.within || (distance !== null && distance <= read.within)));
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(caster.name)} casts a spell.`, due);
+    }
+}

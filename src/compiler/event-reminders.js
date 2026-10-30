@@ -6,7 +6,8 @@
 
 const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-// → { event: "critical-hit" | "hit" | "targeted" | "damaged" | "ally-hit" | "ally-targeted" | "ally-damaged", within, trigger, kind }, or null.
+// → { event: "critical-hit" | "hit" | "targeted" | "damaged" | "ally-hit" | "ally-targeted" | "ally-damaged" | "foe-casts", within, trigger,
+// kind }, or null.
 export function eventTrigger(item) {
     const type = item?.system?.actionType?.value;
     if (!["reaction", "free"].includes(type)) return null;
@@ -18,6 +19,9 @@ export function eventTrigger(item) {
     const read = (event) => ({ event, within, trigger, kind });
     // (A save's effect, "targeted by a spell … that allows a saving throw": no attack roll to watch.)
     if (/\b(?:requires|allows) a (?:save|saving throw)\b/i.test(trigger)) return null;
+    // ("A creature Casts a Spell", "An enemy casts a spell that targets you …", "Another creature within 30 feet Casts a Spell": a spell another
+    // creature casts, the Counterspells' trigger.)
+    if (/^(?:A|An|Another|Your) (?:creature|enemy|foe|opponent)\b[^.]*?\b[Cc]asts? a [Ss]pell\b/.test(trigger)) return read("foe-casts");
     const ally = /\b(?:an|your|one of your|a) (?:adjacent )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
     if (ally) {
         if (/\b(?:is|are) (?:critically )?hit\b|\bhits (?:an|your|the) ally\b/i.test(trigger)) return read("ally-hit");

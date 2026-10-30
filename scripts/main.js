@@ -5,7 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
-import { onOwnUse, onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
+import { onForeignSpell, onOwnUse, onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -95,6 +95,7 @@ Hooks.once("ready", () => {
         onRollMessage(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
         // (Slice 8: reminders of reactions the character's own action or spell triggers.)
         onOwnUse(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
+        onForeignSpell(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
     const module = game.modules.get(MODULE_ID);
     if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs });

@@ -179,6 +179,7 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.deepEqual(eventsOf("attack-roll", "criticalSuccess"), ["targeted", "hit", "critical-hit"]);
     assert.deepEqual(eventsOf("attack-roll", "failure"), ["targeted"]);
     assert.deepEqual(eventsOf("damage-roll"), ["damaged"]);
+    assert.deepEqual([eventTrigger(reaction("A creature within 30 feet casts a spell.")).event, eventTrigger(reaction("A creature within 30 feet casts a spell.")).within], ["foe-casts", 30]);
 });
 
 test("a reaction triggered by the character's own action or spell: matched to the item it used", async () => {
