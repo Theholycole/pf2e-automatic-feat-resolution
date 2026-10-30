@@ -457,3 +457,20 @@ test("senses on tokens: the modes PF2e leaves off, by acuity and range", async (
     assert.equal(senseFinds("thoughtsense", { traits: new Set(["mindless"]) }), false);
     assert.equal(senseFinds("scent", { traits: new Set(["construct"]) }), true);
 });
+
+test("truesight: the counteract numbers", async () => {
+    const { degreeOf, counteracts, truesightCounteract, illusionRank } = await import("../src/compiler/truesight.js");
+    assert.equal(degreeOf(25, 25, 10), 2);
+    assert.equal(degreeOf(35, 25, 10), 3);
+    assert.equal(degreeOf(24, 25, 20), 2, "a natural 20 one step better");
+    assert.equal(degreeOf(25, 25, 1), 1, "a natural 1 one step worse");
+    assert.equal(counteracts(2, 6, 7), true);
+    assert.equal(counteracts(2, 6, 8), false);
+    assert.equal(counteracts(3, 6, 9), true);
+    assert.equal(counteracts(1, 6, 5), true);
+    assert.equal(counteracts(0, 6, 1), false);
+    assert.deepEqual(truesightCounteract({ class: 24, spell: 22 }), { modifier: 12, rank: 6 }, "its spell DC first");
+    assert.deepEqual(truesightCounteract({ class: 24 }), { modifier: 14, rank: 6 });
+    assert.equal(illusionRank({ rank: 2 }), 2);
+    assert.equal(illusionRank({ level: 7 }), 4, "a creature: half its level");
+});

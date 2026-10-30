@@ -5,6 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
+import { registerTruesight, truesightSoon } from "./truesight.js";
 import { applyFeatEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
@@ -156,6 +157,7 @@ Hooks.once("init", () => {
     setUpRules();
     // (Senses on tokens, docs/feats.md "Senses": their detection modes now, the wrapper once PF2e's token class is in CONFIG.)
     registerSenses();
+    registerTruesight();
 });
 
 Hooks.once("setup", () => wrapDetectionModes());
@@ -182,6 +184,11 @@ Hooks.once("ready", () => {
         const forced = options?.["pf2e-resolution-core"]?.forcedMovement || options?.teleport || Object.values(options?.movement ?? {}).some((each) => ["displace", "teleport"].includes(each?.method ?? each?.action));
         if (isActiveGM() && ("x" in changed || "y" in changed) && !forced) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null, changed);
     });
+    // (Truesight, docs/feats.md: a secret counteract check against each illusion that comes within range, once per illusion.)
+    for (const hook of ["createToken", "createMeasuredTemplate", "createRegion"]) Hooks.on(hook, (document) => isActiveGM() && truesightSoon(document.parent));
+    Hooks.on("updateToken", (document, changed) => isActiveGM() && ("x" in changed || "y" in changed) && truesightSoon(document.parent));
+    Hooks.on("createItem", (item) => isActiveGM() && item.type === "effect" && truesightSoon());
+    Hooks.on("canvasReady", () => isActiveGM() && truesightSoon());
     Hooks.on("createCombatant", (combatant) => {
         if (isActiveGM()) onJoinEncounter(combatant).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });

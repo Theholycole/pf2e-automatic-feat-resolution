@@ -173,6 +173,13 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Left to PF2e or with nothing to show.** Darkvision, greater darkvision, see invisibility and tremorsense (PF2e's own); low-light vision (a token already sees in dim light; concealment is the rules'); truesight (it sees through illusions, not darkness or invisibility); magicsense (magic, not creatures).
 - **Setting.** "Senses on tokens", on by default.
 
+## Truesight (2026-10-30, Cole: "Have truesight auto roll secretly counteract checks against the spell")
+
+- "The GM rolls a secret counteract check against any illusion within 60 feet, but only once per illusion." A creature whose senses include truesight (any source: heritage, feat, the spell's own Sense rule) rolls one against each illusion that comes within its sense's range (60 feet unless it says otherwise), checked a moment after a token moves, a token, template or region is placed, an Effect is added, or the scene loads (`scripts/truesight.js`).
+- **Illusions.** An illusory creature (its actor has the illusion trait; rank half its level), an illusion's Effect on a creature (the Effect's or its spell's illusion trait: Invisibility, Illusory Disguise, Blur; rank the Effect's level), and an illusion's area (a template or region whose PF2e origin has the illusion trait; rank its cast rank). The DC is the caster's best spellcasting DC. Not its own illusions, and not on itself.
+- **The check** (`src/compiler/truesight.js`). 1d20 + the viewer's spell DC − 10 (class DC − 10 without one), at counteract rank 6 (truesight's). The degree and whether it counteracts are worked out when the illusion's DC and rank are known; otherwise the roll is given to compare by hand.
+- **Secret.** Whispered to the GMs only. Nothing changes on the map: what the creature sees through is the GM's to describe. Each viewer keeps the illusions it checked (`flags["pf2e-automatic-feat-resolution"].truesightChecked`). Setting: "Truesight counteract checks", on by default.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed
