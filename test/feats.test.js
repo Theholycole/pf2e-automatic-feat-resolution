@@ -279,3 +279,18 @@ test("fixes from the Foundry test: Tail Spin's success, Mask of Fear only while 
     assert.equal(fighter.onHit.save, null);
     assert.ok(fighter.notes.some((note) => /by hand/.test(note)));
 });
+
+test("each enemy within 30 feet: the card finds them itself", async () => {
+    const { areaOf, inArea } = await import("../src/compiler/area-targets.js");
+    const area = areaOf("each enemy within 30 feet");
+    assert.deepEqual(area, { who: "enemy", within: 30, grounded: false });
+    assert.equal(areaOf("1 creature within 30 feet"), null);
+    assert.equal(inArea(area, { distance: 25, disposition: -1, sourceDisposition: 1 }), true);
+    assert.equal(inArea(area, { distance: 35, disposition: -1, sourceDisposition: 1 }), false, "out of range");
+    assert.equal(inArea(area, { distance: 10, disposition: 1, sourceDisposition: 1 }), false, "an ally");
+    assert.equal(inArea(area, { distance: 10, disposition: 0, sourceDisposition: 1 }), false, "a neutral");
+    assert.equal(inArea(area, { distance: 10, disposition: -1, sourceDisposition: 1, defeated: true }), false, "a defeated foe");
+    const ground = areaOf("each creature on the ground within 10 feet");
+    assert.equal(inArea(ground, { distance: 5, disposition: -1, sourceDisposition: 1, elevation: 10 }), false, "flying");
+    assert.equal(inArea(ground, { distance: 5, disposition: 1, sourceDisposition: 1 }), true, "any creature, allies too");
+});

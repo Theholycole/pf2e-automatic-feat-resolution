@@ -5,6 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
+import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -72,6 +73,20 @@ async function cardForFeat(message) {
     if (/"formula":"[^"]*@/.test(JSON.stringify(plan.resolution ?? plan))) return;
     const recorded = message.getFlag?.(MODULE_ID, "targets") ?? [];
     const targets = recorded.map((uuid) => fromUuidSync(uuid)).filter(Boolean).map((token) => token.object ?? token);
+    // ("Each enemy within 30 feet": every one on the scene in range, not only the GM's targets; 2026-10-30.)
+    const area = areaOf(plan.targeting?.target);
+    const source = sourceToken?.object ?? sourceToken;
+    if (area && source && canvas?.tokens) {
+        const around = canvas.tokens.placeables.filter((token) => token.actor && inArea(area, {
+            distance: canvas.grid.measurePath([source.center, token.center]).distance,
+            disposition: token.document.disposition,
+            sourceDisposition: source.document.disposition,
+            elevation: token.document.elevation ?? 0,
+            self: token === source || token.actor === item.actor,
+            defeated: !!token.combatant?.defeated || (token.actor.hitPoints?.value ?? 1) <= 0
+        }));
+        if (around.length) return play(item, plan, sourceToken, new Set(around));
+    }
     return play(item, plan, sourceToken, new Set(targets));
 }
 

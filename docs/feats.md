@@ -120,7 +120,9 @@ after it:
 - Dazzling Display, Terrifying Howl and the other "immune for 1 minute" Demoralize feats applied Demoralize's 10-minute immunity: the
   entry carries the feat's own.
 
-Known, not fixed: Dazzling Display's card covers the GM's targets, not "each enemy within 30 feet" by itself.
+- A card whose target is "each enemy within 30 feet" (Dazzling Display, Terrifying Howl and the other each-enemy Demoralizes; "each creature
+  on the ground within 10 feet") covered only the GM's targets: it now finds every creature of that kind in range on the scene itself
+  (src/compiler/area-targets.js), leaving out the character, defeated ones, neutrals for "enemy", and flyers for "on the ground".
 
 ## Measured (2026-10-30, after slice 4)
 
