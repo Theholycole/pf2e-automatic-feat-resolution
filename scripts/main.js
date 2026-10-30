@@ -88,6 +88,8 @@ async function cardForFeat(message) {
         }));
         if (around.length) return play(item, plan, sourceToken, new Set(around));
     }
+    // ("You": a condition the feat puts on the character itself, Nanite Shroud's concealment; the loop, 2026-10-30.)
+    if (/^you$/i.test(plan.targeting?.target ?? "") && source) return play(item, plan, sourceToken, new Set([source]));
     // ("You and your allies", Defiant Banner: the character with the GM's targets.)
     if (/^you and\b/i.test(plan.targeting?.target ?? "") && source) targets.push(source);
     return play(item, plan, sourceToken, new Set(targets));
