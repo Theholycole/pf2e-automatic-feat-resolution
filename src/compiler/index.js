@@ -8,7 +8,7 @@ import { characterStrike } from "./strikes.js";
 import { asUsed } from "./used.js";
 import { selfHeal } from "./self-heal.js";
 import { selfEffect } from "./self-effect.js";
-import { handEntry, handStrike } from "../plans/index.js";
+import { handAct, handAffect, handEntry, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
 export { characterStrike } from "./strikes.js";
@@ -21,6 +21,9 @@ export function compileFeat(item, options = {}) {
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
     const filled = withCharacterDCs(hand?.text ? withText(item, hand.text) : item, dcs);
+    if (hand?.affect) return handAffect(item, hand);
+    const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
+    if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
     const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? selfEffect(filled, dcs);
     if (plan) return plan;

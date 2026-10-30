@@ -233,3 +233,17 @@ test("a feat with a hand-written plan: the plan, by the item's compendium source
     assert.equal(stunning.onHit.save?.resolution?.kind, "save", "the readers' save stays under the entry");
     assert.deepEqual(stunning.notes, ["The save on a hit is on its card."]);
 });
+
+test("a hand entry that uses a basic action, or puts a condition on its target with no roll", async () => {
+    const basicActions = { demoralize: { source: { name: "Demoralize" }, activation: { time: "1", traits: ["mental"] }, targeting: { target: "1 creature", range: "30 feet", area: null }, resolution: { kind: "check", check: { roll: "skill", statistic: "intimidation" }, outcomes: {} } } };
+    const display = compileFeat({ ...feat("Dazzling Display", "<p>…</p>", 1), sourceId: "Compendium.pf2e.feats-srd.Item.lk80TBn933RECRD7" }, { dcs: DCS, basicActions });
+    assert.equal(display.resolution.check.statistic, "intimidation");
+    assert.equal(display.source.name, "Dazzling Display");
+    assert.equal(display.targeting.target, "each enemy within 30 feet");
+    assert.equal(basicActions.demoralize.source.name, "Demoralize", "the action's own plan is left alone");
+    assert.equal(compileFeat({ ...feat("Dazzling Display", "<p>…</p>", 1), sourceId: "Compendium.pf2e.feats-srd.Item.lk80TBn933RECRD7" }, { dcs: DCS }), null, "no card without the action's plan");
+    const opening = compileFeat({ ...feat("Instant Opening", "<p>…</p>", 1), sourceId: "Compendium.pf2e.feats-srd.Item.9zH7IOsmhRBEqXAV" }, { dcs: DCS });
+    assert.equal(opening.resolution.check.roll, "automatic");
+    assert.equal(opening.resolution.outcomes.success.effects[0].slug, "off-guard");
+});
+
