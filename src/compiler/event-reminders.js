@@ -163,6 +163,9 @@ export function preRollTrigger(item) {
     if (!found) return null;
     const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
     const kind = type === "reaction" ? "reaction" : "free action";
+    // ("You roll initiative", "You roll for initiative, and you are observing …": asked as the character joins the encounter; the loop,
+    // 2026-10-30.)
+    if (/^You roll (?:for )?initiative\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
     if (!/^You(?:'re| are| would| attempt| have)\b/i.test(trigger) && !/^You and\b/i.test(trigger)) return null;
     const before = /\babout to (?:roll|attempt)\b|\bwould (?:roll|attempt)\b|\bhaven['’]t (?:yet )?rolled\b/i.test(trigger);
     if (!before) return null;

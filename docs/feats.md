@@ -92,6 +92,7 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **A foe dropped** (the loop, 2026-10-30): "You reduce an enemy to 0 Hit Points", "Your melee Strike reduces a creature to 0 Hit Points" (own-kill) remind the character whose turn it is when a foe falls to 0; "An ally within 30 feet brings an enemy to 0 Hit Points" (ally-kill) its allies in range. Count: 3,120 of 4,826 left.
 - **The character's own save** (the loop, 2026-10-30): "You succeed or critically succeed at a Reflex saving throw", "You fail (but don't critically fail) a saving throw against …", "You critically succeed on a Fortitude save …" (own-save, with the degrees and saves it names): the save's message reminds the character. What it's against is the player's to judge. Count: 3,110 of 4,826 left.
 - **The character's own check** (the loop, 2026-10-30): "You fail, but don't critically fail, a Deception or Performance check", "You succeed at a Demoralize check", "You fail a skill check" (own-check, with its degrees and the skills or actions it names): the skill or Perception check's message reminds the character. Count: 3,101 of 4,826 left.
+- **Initiative** (the loop, 2026-10-30): "You roll initiative", "You roll for initiative, and you are observing …" are read as pre-initiative too (reminded as the character joins the encounter). Count: 3,093 of 4,826 left.
 
 ## Hand-picked: the core classes' feats (2026-10-30, Cole's choice after the loop)
 
