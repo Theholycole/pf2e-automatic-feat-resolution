@@ -27,8 +27,8 @@ export default [
     },
     {
         uuid: pf2e("q0SPmS77pNgiQk93"), name: "Shame the Sin",
-        text: "<p>The target takes @Damage[1d6[mental]] damage.</p>",
-        notes: ["2d6 at 13th level, 3d6 at 17th: add the rest by hand. Only if the demon has no special vulnerability; one that has suffers that instead."]
+        text: "<p>The target takes @Damage[(ternary(gte(@actor.level,17),3,ternary(gte(@actor.level,13),2,1)))d6[mental]] damage.</p>",
+        notes: ["Only if the demon has no special vulnerability; one that has suffers that instead."]
     },
     {
         uuid: pf2e("JoFHG7NjJ6iUNnAY"), name: "Gossamer Blade",
