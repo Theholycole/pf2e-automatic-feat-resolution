@@ -48,3 +48,64 @@ export function readRules(item) {
     const sentences = plain.split(/(?<=[.!?])\s+(?=[A-Z])/);
     return sentences.flatMap((sentence) => sentenceRules(sentence) ?? []).filter((rule) => rule && !has(rule));
 }
+
+// Notes on the roll a passive is about (2026-10-30, docs/rules.md, batch 3): "When you successfully Demoralize a foe, …", "If you critically
+// succeed at a check to Recall Knowledge, …", "Whenever you Treat Wounds, …". PF2e rolls these actions with the roll option action:<slug>,
+// and a Note rule with that predicate (and the degrees the sentence names) puts the feat's words on that roll's card, where the player and
+// GM need them. The words are the feat's own, from that sentence to the end of its paragraph.
+const ACTION_STATISTICS = {
+    demoralize: ["intimidation"], coerce: ["intimidation"],
+    feint: ["deception"], "create-a-diversion": ["deception"], lie: ["deception"], impersonate: ["deception"],
+    trip: ["athletics"], shove: ["athletics"], grapple: ["athletics"], disarm: ["athletics"], reposition: ["athletics"], climb: ["athletics"], swim: ["athletics"], "high-jump": ["athletics"], "long-jump": ["athletics"], "force-open": ["athletics"],
+    escape: ["athletics", "acrobatics"],
+    "recall-knowledge": ["skill-check"], "identify-magic": ["skill-check"], "decipher-writing": ["skill-check"], "learn-a-spell": ["skill-check"], "earn-income": ["skill-check"],
+    seek: ["perception"], "sense-motive": ["perception"],
+    hide: ["stealth"], sneak: ["stealth"], "avoid-notice": ["stealth"],
+    "tumble-through": ["acrobatics"], balance: ["acrobatics"], "maneuver-in-flight": ["acrobatics"], squeeze: ["acrobatics"],
+    "treat-wounds": ["medicine"], "administer-first-aid": ["medicine"], "battle-medicine": ["medicine"], "treat-poison": ["medicine"], "treat-disease": ["medicine"],
+    request: ["diplomacy"], "make-an-impression": ["diplomacy"], "gather-information": ["diplomacy"],
+    track: ["survival"], subsist: ["survival"],
+    craft: ["crafting"], repair: ["crafting"],
+    perform: ["performance"],
+    "command-an-animal": ["nature"],
+    "pick-a-lock": ["thievery"], "disable-a-device": ["thievery"], steal: ["thievery"], "palm-an-object": ["thievery"], "conceal-an-object": ["thievery"]
+};
+const ACTION_NAMES = Object.keys(ACTION_STATISTICS).map((slug) => slug.split("-").map((word) => (["a", "an"].includes(word) ? word : word[0].toUpperCase() + word.slice(1))).join(" "));
+const NOTE_LEAD = new RegExp(String.raw`^(?:When|Whenever|If|Each time) you (successfully |critically succeed (?:at|on|to) |succeed (?:at|on|to) |critically fail (?:at|on|to) |fail (?:at|on|to) |roll a (?:success|critical success|failure|critical failure) (?:at|on|to) )?(?:an? |your |the )?(?:check to |checks? to |attempt to )?(${ACTION_NAMES.join("|")})\b(?! [A-Z])`);
+const OUTCOMES = { successfully: ["success", "criticalSuccess"], succeed: ["success", "criticalSuccess"], "critically succeed": ["criticalSuccess"], fail: ["failure", "criticalFailure"], "critically fail": ["criticalFailure"], "roll a success": ["success"], "roll a critical success": ["criticalSuccess"], "roll a failure": ["failure"], "roll a critical failure": ["criticalFailure"] };
+
+const plainLabels = (html) => String(html).replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1").replace(/\[\[\/act ([\w-]+)[^\]]*\]\](?:\{([^}]*)\})?/g, (_all, slug, label) => label ?? slug.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()));
+
+export function readNotes(item) {
+    if (!["passive", null, undefined].includes(item?.system?.actionType?.value)) return [];
+    if ((item?.system?.rules ?? []).some((rule) => rule.key === "Note")) return [];
+    const notes = [];
+    const seen = new Set();
+    for (const paragraph of String(item?.system?.description?.value ?? "").split(/<\/p>|<hr\s*\/?>/i)) {
+        const plain = htmlToPlainText(plainLabels(paragraph)).replace(/\s+/g, " ").trim();
+        if (/^(?:Prerequisites?|Requirements?|Access|Special|Frequency|Trigger)\b/i.test(plain)) continue;
+        const sentences = plain.split(/(?<=[.!?])\s+(?=[A-Z])/);
+        for (const [index, sentence] of sentences.entries()) {
+            const match = NOTE_LEAD.exec(sentence);
+            if (!match) continue;
+            // ("When you Climb, Force Open, High Jump, Long Jump, or Swim", "If you Hide or Sneak": each.)
+            const names = [match[2]];
+            const list = new RegExp(String.raw`^(?:,? (?:or |and )?|,? )(${ACTION_NAMES.join("|")})\b(?! [A-Z])`);
+            let tail = sentence.slice(match[0].length);
+            for (let more; (more = list.exec(tail)); tail = tail.slice(more[0].length)) names.push(more[1]);
+            const slugs = names.map((name) => name.toLowerCase().replace(/\s+/g, "-")).filter((slug) => !seen.has(slug));
+            if (!slugs.length) continue;
+            for (const slug of slugs) seen.add(slug);
+            const degree = match[1]?.trim().replace(/ (?:at|on|to)$/, "") ?? "";
+            const outcome = OUTCOMES[degree] ?? null;
+            // ("If you Hide or Sneak in this way, …": the paragraph's earlier sentences say which way.)
+            const text = sentences.slice(/\bthis way\b/i.test(sentence) ? 0 : index).join(" ");
+            for (const slug of slugs) {
+                for (const selector of ACTION_STATISTICS[slug]) {
+                    notes.push({ key: "Note", selector, predicate: [`action:${slug}`], ...(outcome ? { outcome } : {}), title: "{item|name}", text: `<p>${text}</p>` });
+                }
+            }
+        }
+    }
+    return notes;
+}

@@ -47,6 +47,12 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
 - Necromantic Bulwark: the shield's bonus to saves against void damage while it's raised, as PF2e's Reflexive Shield.
 - Blooded by the Dead: resistance 2 to bleed.
 
+### Batch 3 (2026-10-30): 45 options, Notes on the roll
+
+- **What:** a passive about one action's roll ("When you successfully Shove a creature, …", "If you critically succeed at a Recall Knowledge check …", "When you Climb, Force Open, High Jump, Long Jump, or Swim, …") gets a `Note` rule on that action's statistic, with the predicate `action:<slug>` PF2e rolls it with and the degrees the sentence names (`outcome`). The feat's own words, from that sentence to the end of its paragraph (the whole paragraph for "in this way"), show on that roll's card.
+  - Read by `readNotes` in `src/rules/read.js` over the needs-work set and reviewed. Examples: Crush Their Spirits and Menacing Prowess on Demoralize, Improved Knockback on Shove, Knowledge is Power on Recall Knowledge's critical success, Slippery Prey on Escape, Quick Stabilization on Administer First Aid, Second-Hand Sleight on Steal and Palm an Object.
+  - Not automation of the result: a reminder at the moment it applies, the GM's to play. A passive that already has a Note is left alone; "Steal Spell" isn't Steal.
+
 ### Looked at, not batched
 
 - **Stances:** 99 of the 117 stances already have PF2e's own Effect. Most of the other 18 change terrain, cover or allies rather than numbers on the character, so they stay notes for the GM.
