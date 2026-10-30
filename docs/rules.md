@@ -38,3 +38,17 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
 - **Not done, the GM's:**
   - Winter's Kiss's step up to your full level when you already have such a resistance;
   - Natural Ambassador's +2 with animals of your own kind.
+
+### Batch 2 (2026-10-30): 6 options
+
+- Reverse Engineering, and Teams+'s Reverse Engineer: Crafting to reverse engineer, as PF2e's Reverse Engineer.
+- Rose Warden Dedication: trained in Deception (`ActiveEffectLike` upgrade). The expert choice, when the character is already trained, is the player's.
+- Nidalese Horselord Dedication: darkvision, and saves against darkness and shadow effects. The horse's half is the horse's own.
+- Necromantic Bulwark: the shield's bonus to saves against void damage while it's raised, as PF2e's Reflexive Shield.
+- Blooded by the Dead: resistance 2 to bleed.
+
+### Looked at, not batched
+
+- **Stances:** 99 of the 117 stances already have PF2e's own Effect. Most of the other 18 change terrain, cover or allies rather than numbers on the character, so they stay notes for the GM.
+- **Backgrounds' skills:** PF2e grants these from the background's own trained skills, not from rules.
+- **Most other "bonus to" passives** apply only in a narrow moment ("to this rerolled check", "for 1 round after …") that PF2e has no roll option for. Each needs a toggle, and a toggle writes back to its source. They wait for a module Effect the card can apply instead.
