@@ -315,3 +315,17 @@ test("slice 13: an action that grants one of PF2e's own Effects, on the characte
     assert.equal(linkedEffect(action("Two", `<p>You gain a bonus.</p>${link("A")}<p>@UUID[Compendium.pf2e.feat-effects.Item.zzzzzzzzzzzzzzzz]{Effect: B}</p>`)), null, "two Effects");
     assert.equal(linkedEffect({ ...action("Own", `<p>You gain a +1 bonus to AC.</p>${link("Own")}`), system: { ...action("Own", `<p>You gain a +1 bonus to AC.</p>${link("Own")}`).system, selfEffect: { uuid: "x" } } }), null, "PF2e's own Use button");
 });
+
+test("slice 14: an action that heals one other creature", async () => {
+    const { otherHeal } = await import("../src/compiler/other-heal.js");
+    const action = (name, html) => ({ name, type: "feat", system: { description: { value: html }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] } } });
+    const ease = otherHeal(action("Ease the Burden", "<p>An adjacent creature regains @Damage[(2d8+4)[healing]] Hit Points and reduces their Drained and Clumsy conditions by 1.</p>"));
+    assert.equal(ease.targeting.target, "1 creature");
+    assert.equal(ease.targeting.range, "touch");
+    assert.deepEqual(ease.resolution.outcomes.success.effects, [{ kind: "heal", formula: "2d8+4" }]);
+    assert.equal(ease.notes[0], "It also reduces their Drained and Clumsy conditions by 1.");
+    const self = otherHeal(action("Searing", "<p>You or a living creature adjacent to you regains @Damage[4d10[healing]] Hit Points.</p>"));
+    assert.equal(self.notes[0], "You can heal yourself instead: target your own token.");
+    assert.equal(otherHeal(action("Cocoon", "<p>You spin a cocoon. If the cocoon survives, the creature inside regains @Damage[3d8[healing]] Hit Points.</p>")), null, "only sometimes");
+    assert.equal(otherHeal(action("Wave", "<p>Each ally within 30 feet regains @Damage[2d8[healing]] Hit Points.</p>")), null, "more than one");
+});

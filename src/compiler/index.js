@@ -9,6 +9,7 @@ import { asUsed } from "./used.js";
 import { selfHeal } from "./self-heal.js";
 import { selfEffect } from "./self-effect.js";
 import { linkedEffect } from "./linked-effect.js";
+import { otherHeal } from "./other-heal.js";
 import { handAct, handAffect, handEntry, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
@@ -26,7 +27,7 @@ export function compileFeat(item, options = {}) {
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
-    const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? selfEffect(filled, dcs);
+    const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? otherHeal(filled) ?? selfEffect(filled, dcs);
     // (A text entry's notes: what its rewritten text leaves out.)
     // (A text entry's notes: what its rewritten text leaves out; its target, who the card is for when the rewrite can't say it.)
     if (plan && hand?.text) return { ...plan, ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };

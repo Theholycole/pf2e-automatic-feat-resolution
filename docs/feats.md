@@ -114,6 +114,16 @@ character). Not when it does anything else (a check, a Strike, movement, a spell
 applies it from the sheet. The cards setting's default now includes these Effect cards (D12, below).
 - **Measured:** 21 options (Ceremony of Protection, Fleet Tempo, Defiant Banner, Fear No Pain!, Watch Your Back …). Count: 3,261 of 4,826 left.
 
+## Slice 14: actions that heal one other creature (2026-10-30)
+
+An action, free action or reaction whose one roll is a healing @Damage tag given to one creature ("An adjacent creature regains …",
+"restore … Hit Points to it", "You or a living creature adjacent to you regains …") gets the ability module's automatic card with its heal,
+on the GM's target (src/compiler/other-heal.js). The rest of that sentence and the text's other rules are notes; "you or" adds a note to
+target the character's own token. Not when the healing comes only later or only sometimes ("If the cocoon survives …"), heals more than one
+creature, or the action also has a check, an area, a Strike or a spell.
+- **Measured:** 5 more (Cantorian Restoration, Ease the Burden, Fermenting Liquors, Fish From the Falls' Edge, Searing Restoration; the
+  others matched were already read). Count: 3,223 of 4,826 left.
+
 ## Tested in Foundry (2026-10-30)
 
 Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed
