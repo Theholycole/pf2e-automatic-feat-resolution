@@ -36,6 +36,15 @@ export function eventTrigger(item) {
         const saves = [...save[2].matchAll(/Fortitude|Reflex|Will/gi)].map((match) => match[0].toLowerCase());
         return { ...read("own-save"), outcomes: [...new Set(outcomes)], saves };
     }
+    // (The character's own skill or Perception check, the same way: "You fail, but don't critically fail, a Deception or Performance check
+    // …", "You succeed or critically succeed at a Recall Knowledge check …", "You critically fail a skill check …".)
+    const check = /^You ((?:(?:critically )?(?:succeed|fail)(?:,? \(?but (?:don't|do not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on )?(?:a |an |your )?((?:[A-Z][a-z]+(?: Knowledge)?(?: or |, (?:or )?)?)*)\s*(?:skill )?check\b/.exec(trigger.replace(/^you\b/, "You"));
+    if (check && !/\bflat check\b/i.test(trigger)) {
+        const words = check[1].toLowerCase();
+        const outcomes = [...(/critically succeed/.test(words) ? ["criticalSuccess"] : []), ...(/(?<!critically )succeed/.test(words) ? ["success"] : []), ...(/(?<!critically )fail/.test(words) ? ["failure", ...(/but (?:don't|do not) critically fail/.test(words) ? [] : ["criticalFailure"])] : []), ...(/critically fail(?!\))/.test(words) && !/but (?:don't|do not) critically fail/.test(words) ? ["criticalFailure"] : [])];
+        const skills = [...check[2].matchAll(/Recall Knowledge|[A-Z][a-z]+/g)].map((match) => match[0].toLowerCase()).filter((word) => word !== "recall knowledge");
+        return { ...read("own-check"), outcomes: [...new Set(outcomes)], skills };
+    }
     // (A foe dropped by the character or an ally: "You reduce an enemy to 0 Hit Points", "Your melee Strike reduces a creature to 0 Hit
     // Points", "An ally within 30 feet brings an enemy to 0 Hit Points": whoever's turn it is when a foe falls to 0; the loop, 2026-10-30.)
     if (/^(?:You reduce|Your\b[^.]*?\b(?:Strike|attack) reduces)\b[^.]*?\bto 0 (?:Hit Points|HP)\b/i.test(trigger)) return read("own-kill");

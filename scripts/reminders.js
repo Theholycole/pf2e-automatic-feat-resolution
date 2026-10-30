@@ -80,6 +80,14 @@ export async function onRollMessage(message) {
         if (due.length) await whisper(saver, `<strong>${escape(saver.name)}</strong>: your ${kind ?? ""} save's result.`.replace("your  save", "your save"), due);
         return;
     }
+    // (Its own skill or Perception check: "You fail, but don't critically fail, a Deception or Performance check".)
+    if (["skill-check", "perception-check"].includes(context?.type) && message.actor?.type === "character" && context.outcome) {
+        const roller = message.actor;
+        const domains = context.domains ?? [];
+        const due = [...roller.itemTypes.feat, ...roller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-check" && read.outcomes.includes(context.outcome) && (!read.skills.length || read.skills.some((skill) => domains.includes(skill) || (context.options ?? []).includes(`action:${skill}`))));
+        if (due.length) await whisper(roller, `<strong>${escape(roller.name)}</strong>: your check's result.`, due);
+        return;
+    }
     // (The character's own Strike: its feats that trigger on its hit, critical hit or miss; the loop, 2026-10-30.)
     const attacker = message.actor;
     const own = ownStrikeEvents(context?.type, context?.outcome);
