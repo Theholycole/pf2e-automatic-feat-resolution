@@ -82,16 +82,26 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
 - **Why.** Most passive bonuses hold only in a moment PF2e can't see ("when you are adjacent to at least two hobgoblin allies", "in a
   crowd", "against that prey"). A toggle among the added rules can't keep its state (it writes back to its source), so the switch is an
   Effect instead: posting the passive feat to chat puts its Effect on, posting it again takes it off.
-- **PF2e's own Effect** (`src/plans/passive-effects.js`, `passiveEffect`): 49 passives link one in their text. On the character ("you":
+- **PF2e's own Effect** (`src/plans/passive-effects.js`, `passiveEffect`): 48 passives link one in their text. On the character ("you":
   Formation Training, Lost in the Crowd, Terrifying Mien, Hydration, Phenom's Verve, Starstone Aspirant Dedication and others) or on the
-  player's targets ("target": Root Magic, Treat Disease, Didactic Strike, the debilitations, Clan Protector's Parry, Swift Support).
+  player's targets ("target": Root Magic, Didactic Strike, the debilitations, Clan Protector's Parry, Swift Support).
   Which is which was read by hand from each text. With no target for a "target" one, the GM is told to target first.
 - **Live** (`togglePassiveEffect`, `scripts/effects.js`, run by the GM): the Effect from its pack (a name-form UUID is looked up in the
   pack), copied with its compendium source; an actor that has it already loses it instead. One chat line says what changed.
 - **Left:** Methodical Debilitations and Exemplary Finisher link several Effects, one per choice; aura, mount, companion and party Effects
   (Cavalier's Banner, Scout, sacred animals) for now.
-- **Hand-written** (`toggle` entries, `feat-effect` with `toggle: true`): the same switch with the module's own Effect, for passives with
-  none of PF2e's.
+- **Third-party Effects:** 13 more (Teams+, clerics-remaster, witches-remaster) link an Effect in their module's own pack: Channel
+  Essence Leak, Pick on Someone Your Own Size, Healing Fog, Ballad of Resilience, Resistance Engine and others. Links without ".Item."
+  are given with it. Those whose Effect follows a check with degrees (Deep Meditation, Become the Mask, Peace with Death) are left out.
+- **Treat Disease** is out: its Effect is the critical success of a Medicine check, so putting it on with no roll was wrong (Foundry test).
+- **Hand-written** (`src/plans/toggles.js`, `feat-effect` with `toggle: true`): the same switch with the module's own Effect, its rules
+  from the text, for passives with none. Shadow Master (resistance 5 to all but force and ghost touch, Reflex rolled twice), Daredevil's
+  Gambit (+2 AC to your next turn), The Harder They Fall (+1 AC and saves, 1 round), Tough Tumbler (+1 AC this turn), Emboldened with
+  Glorious Purpose (+1 status to Will, +2 against emotion and fear), Glyph Expert, Sure Foot, Able Ritualist, Thaumaturgic Ritualist.
+  What the rules can't tell apart (that creature, that trap) is a note. Choices ("attack rolls or AC") are left out.
+- **Foundry test** (2026-10-30, eeb6c8f): Formation Training on and off (AC and Fortitude +1 and back), Lost in the Crowd, Terrifying
+  Mien, Phenom's Verve, Hydration (its Dehydrated Effect, for when you go without water), Root Magic on a target and the GM's whisper
+  with none, Toughness doing nothing new: all passed, every name-form link found, no console errors.
 
 ### Looked at, not batched
 

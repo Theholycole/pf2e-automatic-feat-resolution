@@ -556,4 +556,13 @@ test("toggled Effects: a passive's PF2e Effect, on the character or its target",
     assert.deepEqual(formation, { builtin: "passive-effect", effect: "Compendium.pf2e.feat-effects.Item.Effect: Formation Training", who: "you", notes: [] });
     const root = compileFeat(passive("Root Magic", "Compendium.pf2e.feats-srd.Item.22P7IFyhrF7Fbw8B"), { dcs: DCS });
     assert.equal(root.who, "target");
+    // (No PF2e Effect: the module's own, from the feat's text.)
+    const shadow = compileFeat(passive("Shadow Master", "Compendium.pf2e.feats-srd.Item.BqcAwmNjDlKEI84X"), { dcs: DCS });
+    assert.equal(shadow.builtin, "feat-effect");
+    assert.equal(shadow.toggle, true);
+    assert.deepEqual(shadow.effect.rules[0], { key: "Resistance", type: "all-damage", value: 5, exceptions: ["force", "ghost-touch"] });
+    const gambit = compileFeat(passive("Daredevil's Gambit", "Compendium.pf2e.feats-srd.Item.6DkylvU5RF1O6DTT"), { dcs: DCS });
+    assert.equal(gambit.effect.duration.expiry, "turn-start");
+    const leak = compileFeat(passive("Channel Essence Leak", "Compendium.pf2e-team-plus-magic.items.Item.zaJ0087w6EoqKyDp"), { dcs: DCS });
+    assert.equal(leak.effect, "Compendium.pf2e-team-plus-magic.misc.Item.ehRD6fl2IfuURuaM");
 });

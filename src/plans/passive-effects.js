@@ -50,6 +50,19 @@ export default [
     { uuid: "Compendium.pf2e.classfeatures.Item.ZYAn8X0IjA6i38qU", name: "Fungal Rot", passiveEffect: { effect: "Compendium.pf2e.feat-effects.Item.Effect: Fungal Rot", who: "you" } },
     { uuid: "Compendium.pf2e.classfeatures.Item.huDGjojm3hnuA1E8", name: "Strained Metabolism", passiveEffect: { effect: "Compendium.pf2e.feat-effects.Item.Effect: Strained Metabolism", who: "you" } },
     { uuid: "Compendium.pf2e.classfeatures.Item.pax1pnWW5XFYO0Eg", name: "Adept Benefit (Wand)", passiveEffect: { effect: "Compendium.pf2e.feat-effects.Item.Effect: Fling Magic (Adept Cold)", who: "target" } },
-    { uuid: "Compendium.pf2e.actionspf2e.Item.TC7OcDa7JlWbqMaN", name: "Treat Disease", passiveEffect: { effect: "Compendium.pf2e.other-effects.Item.Effect: Treat Disease", who: "target" } },
     { uuid: "Compendium.magus.magus-feats.Item.ujDlsqwQLUIGi1vs", name: "Mediation of Insight", passiveEffect: { effect: "Compendium.magus.magus-effects.Item.cI71YviGF5ER5wqC", who: "you" } },
+    // Third-party passives (2026-10-30): their Effects sit in the modules' own packs (some links without ".Item.", given here with it).
+    { uuid: "Compendium.clerics-remaster.clerics-features.Item.UkHzVALI26QzbPkS", name: "Heraldic Statue", passiveEffect: { effect: "Compendium.clerics-remaster.clerics-effects.Item.N0pH4HEBpW35cr1p", who: "target" } },
+    { uuid: "Compendium.clerics-remaster.clerics-features.Item.XFVxAw3qlGDnoyBX", name: "Body of the Chosen", passiveEffect: { effect: "Compendium.clerics-remaster.clerics-effects.Item.IkCZh6hbFnz162g1", who: "target" } },
+    { uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.DQeBdmEuorx9aXkC", name: "Give Offerings", passiveEffect: { effect: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.d5SYY8oGAXb5dYIQ", who: "you" } },
+    { uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.IY3S7jaggi50IfUc", name: "Liturgical Performance", passiveEffect: { effect: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.7h1fcYfzPmAnQw1o", who: "you" } },
+    { uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.YOvnL7QRWU3x2lgZ", name: "Pick on Someone Your Own Size", passiveEffect: { effect: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.d3EHjXgDun0hz7Qo", who: "you" } },
+    { uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.sQ11o9ILxV4W6e9Y", name: "Fungal Ward", passiveEffect: { effect: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.knhj2UJsKqLgoNwD", who: "target" } },
+    { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.8j0p8pQ0j300oBFj", name: "Healing Fog", passiveEffect: { effect: "Compendium.pf2e-team-plus-inventors.inventors-effects.Item.t1kzHg9k7sP9bFJ2", who: "you" } },
+    { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.aAhqQ2D5a8RyyExd", name: "Resistance Engine", passiveEffect: { effect: "Compendium.pf2e-team-plus-inventors.inventors-effects.Item.W1Szx0lKcAIMInT1", who: "target" } },
+    { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.c0NOWRH6eV1dYJgk", name: "Critical Enhancement", passiveEffect: { effect: "Compendium.pf2e-team-plus-inventors.inventors-effects.Item.WQtRptNlKEn3Kmef", who: "target" } },
+    { uuid: "Compendium.pf2e-team-plus-magic.items.Item.zaJ0087w6EoqKyDp", name: "Channel Essence Leak", passiveEffect: { effect: "Compendium.pf2e-team-plus-magic.misc.Item.ehRD6fl2IfuURuaM", who: "you" } },
+    { uuid: "Compendium.pf2e-team-plus-oracles-remastered.items.Item.ZBNdYIBcV5qsn4UH", name: "Curse of Vengeful Darkness", passiveEffect: { effect: "Compendium.pf2e-team-plus-oracles-remastered.misc.Item.hqKL2q7hc3FvRlBY", who: "you" } },
+    { uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.yf8L8jRjtmBnIesv", name: "Ballad of Resilience", passiveEffect: { effect: "Compendium.pf2e-team-plus-tian-xia.misc.Item.basjYFk5cnL7Wi1X", who: "target" } },
+    { uuid: "Compendium.witches-remaster.witches-remaster-feats.Item.3mhfYqDZr7qgWKL8", name: "Protection Circle", passiveEffect: { effect: "Compendium.witches-remaster.witches-remaster-effects.Item.GsUkq5v4rsBvpN1t", who: "you" } }
 ];

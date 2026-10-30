@@ -25,8 +25,9 @@ import heals from "./heals.js";
 import checks2 from "./checks-2.js";
 import affects2 from "./affects-2.js";
 import passiveEffects from "./passive-effects.js";
+import toggles from "./toggles.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
