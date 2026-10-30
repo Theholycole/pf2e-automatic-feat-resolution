@@ -588,3 +588,10 @@ test("checks against your level's DC: the marshal stances roll and enter the sta
     const tinkering = compileFeat(action("Helpful Tinkering", "Compendium.pf2e.feats-srd.Item.qUSWPWxYF8gfhfHM"), { dcs: DCS });
     assert.equal(tinkering.resolution.check.against.value, 26);
 });
+
+test("checks against the target's level's DC: Guiding Words, each ally's own", async () => {
+    const action = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Attempt a check.</p>" }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
+    const words = compileFeat(action("Guiding Words", "Compendium.pf2e.feats-srd.Item.LmsjuqB3rrZTqqa6"), { dcs: DCS });
+    assert.deepEqual(words.resolution.check.against, { dc: "level", adjustment: 2 });
+    assert.equal(words.targeting.target, "1 ally");
+});

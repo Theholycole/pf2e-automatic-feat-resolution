@@ -32,6 +32,22 @@ export default [
         selfCheck: { statistic: "crafting", adjustment: 2, target: "1 ally", outcomes: both({ nativeEffects: [effect("Effect: Helpful Tinkering")] }) },
         notes: ["Target the ally in your reach. On Apply, PF2e asks which of the ally's weapons gets the boost: the card finishes once it's picked. On a critical failure your ally takes your offensive boost's damage: roll it by hand."]
     },
+    // Against a DC of the target's level (the ally's), each target's own on the card.
+    {
+        uuid: pf2e("LmsjuqB3rrZTqqa6"), name: "Guiding Words",
+        selfCheck: { statistic: "diplomacy", level: "target", adjustment: 2, target: "1 ally", range: "30 feet", outcomes: both({ nativeEffects: [effect("Effect: Guiding Words")] }) },
+        notes: ["Whatever the result, the ally is immune to Guiding Words for 10 minutes."]
+    },
+    {
+        uuid: pf2e("2zxF682cNhgLMu26"), name: "Invincible Army",
+        selfCheck: { statistic: "diplomacy", level: "target", adjustment: 2, target: "1 ally", outcomes: both({ nativeEffects: [effect("Effect: Invincible Army")] }) },
+        notes: ["You can roll Deception instead. PF2e's Effect asks which damage type. Against a very hard DC (3 more), two types, from a wider list: set it in the Effect."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.u1Yj7NCED4myTRDu", name: "Quick Cuisine",
+        selfCheck: { statistic: "cooking-lore", level: "target", target: "1 ally", outcomes: both({ nativeEffects: [{ uuid: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.F7MX2YhI0mMy3aGG", label: "Effect: Quick Cuisine" }] }) },
+        notes: ["Takes 10 minutes. With two or four allies, the DC is the highest level's. On a critical success the ally also gets temporary Hit Points equal to half your level plus your Intelligence modifier."]
+    },
     {
         uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.f7DtQ9kQ02gAuqyr", name: "Call of the Ancestor",
         selfCheck: { statistic: "perception", outcomes: both({ nativeEffects: [{ uuid: "Compendium.pf2e-team-plus-barbarians.misc.Item.NQvBAbJB8uUlmntt", label: "Effect: Call of the Ancestor" }] }) },

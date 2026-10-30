@@ -294,8 +294,11 @@ creature, or the action also has a check, an area, a Strike or a spell.
   Rulebook table) plus the adjustment, and each degree's Effects go on the target (`nativeEffects`, the core's check rows; resolved by id
   before the card, as linked Effects are).
 - **Six:** the marshal stances (Inspiring, Dread, Devrin's Cunning, Strategist), Helpful Tinkering (on the ally), Call of the Ancestor.
-- **Left:** 83 options use a level's DC; most are exploration or downtime (Deep Meditation, Circadian Disciplinarian), or a DC of the
-  *target's* level (Guiding Words, Invincible Army, Commitment to Protection), which a card's fixed DC can't follow.
+- **The target's level** (`level: "target"`): "the hard DC for the target's level" — the check's `against: { dc: "level", adjustment }`,
+  which the ability module's card works out for each target from its level (ability module, `levelDCOf`). Guiding Words, Invincible
+  Army, Quick Cuisine. The core reports it as a gap (it reads only "target" and "fixed") but resolves it, the card giving each degree.
+- **Left:** 83 options use a level's DC; most are exploration or downtime (Deep Meditation, Circadian Disciplinarian), or the DC of
+  another creature than the target (Commitment to Protection: the threat's level, the ally gets the Effect).
 - **Foundry test** (2026-10-30, cdb2e28): Inspiring and Dread Marshal Stance (DC 22), Strategist Stance (DC 24, its critical-success
   stance) entered the stance, PF2e's aura giving its Effect to allies inside; a failure applied nothing. Helpful Tinkering (DC 26) put
   its Effect on the ally once the GM picked the weapon in PF2e's prompt, which Apply waits on (now said in its note).

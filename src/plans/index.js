@@ -138,7 +138,9 @@ const LEVEL_DCS = [14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 3
 export function handSelfCheck(item, entry, dcs = null) {
     const check = entry.selfCheck;
     const level = Number(dcs?.level ?? item.actor?.level);
-    if (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length) return null;
+    // (check.level "target": "the hard DC for the target's level" — each target's own, the ability module's card works it out.)
+    const byTarget = check.level === "target";
+    if (!byTarget && (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length)) return null;
     const row = (degree) => ({ ...NONE(), effects: [...(check.outcomes?.[degree]?.effects ?? [])], ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
     return {
         modelVersion: 13,
@@ -148,7 +150,7 @@ export function handSelfCheck(item, entry, dcs = null) {
         activation: { time: actionsOf(item), traits: [] },
         targeting: { target: check.target ?? "you", range: check.range ?? null, area: null },
         trigger: { event: "use", immunity: null },
-        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
+        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: byTarget ? { dc: "level", adjustment: check.adjustment ?? 0 } : { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
             outcomes: { criticalSuccess: row("criticalSuccess"), success: row("success"), failure: row("failure"), criticalFailure: row("criticalFailure") } },
         automation: { level: "automatic" },
         notes: [...(entry.notes ?? [])]
