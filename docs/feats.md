@@ -141,6 +141,13 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Measured:** 5 more (Cantorian Restoration, Ease the Burden, Fermenting Liquors, Fish From the Falls' Edge, Searing Restoration; the
   others matched were already read). Count: 3,223 of 4,826 left.
 
+## Hand-picked: saves said in words (2026-10-30, the loop)
+
+- `src/plans/saves-4.js`: Frightening Power (each enemy within 20 feet, Will, frightened 1/2/4), Breath of the Dragon (Dragonblood; a
+  15-foot cone, untyped Reflex), Warped Constriction (the grabbed creature, bludgeoning plus mental, a basic Will save), Curse of the Saumen
+  Kar (Reflex, the prison's numbers a note), Spellbinding Speech. Each against the higher of the class and spell DC.
+- **Measured:** 3 more. Count: 2,843 of 4,826 left.
+
 ## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
 
 - **How they're built.** PF2e has no actor type for an eidolon or an animal companion. PF2e Companion Compendia makes them "character" actors: an eidolon has the Eidolon class and an ancestry with the eidolon trait, an animal companion has the minion trait. A familiar has its own type, "familiar", and the only link PF2e keeps: `system.master.id`. Neither Companion Compendia nor Summoners+ links an eidolon to its summoner.
