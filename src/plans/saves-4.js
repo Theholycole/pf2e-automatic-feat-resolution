@@ -32,5 +32,10 @@ export default [
         uuid: pf2e("bWW2q4HUtWeX0SA2"), name: "Spellbinding Speech",
         text: `<p>Attempt a @Check[arcana|against:will] check against the Will DC of a creature within 30 feet who can hear and understand you.</p><hr /><p><strong>Critical Success</strong> The target can't use reactions until the start of your next turn.</p><p><strong>Success</strong> The target can't use reactions until the start of your next turn.</p>`,
         notes: ["Whatever the result, it's immune for 24 hours."]
+    },
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.V4HToYPQlkw8AW50", name: "Embrace of Destiny", target: "1 enemy within 20 feet",
+        text: `<p>An enemy within 20 feet must attempt a @Check[will|against:class|options:forced-movement] save against your class DC.</p>${degrees("The creature is unaffected.", "You pull the creature up to 20 feet toward you.", "You pull the creature up to 20 feet toward you.")}`,
+        notes: ["Pulled straight toward you, into a square adjacent to you: stop it there."]
     }
 ];

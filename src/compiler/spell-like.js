@@ -16,7 +16,7 @@ export function spellLike(item, dcs) {
     // (Not its trigger or requirements, "You cast Spellsurge", "You have cast Summon Undead this turn": what it does.)
     const html = String(item?.system?.description?.value ?? "").replace(/<p>\s*<strong>\s*(?:Trigger|Requirements?|Prerequisites?)\s*<\/strong>[\s\S]*?<\/p>/gi, "");
     // The sentence that names the spell as what the feat does.
-    const lead = /(?:\b(?:has|have|gain|gains|get|with) the effects? of|\b[Yy]ou (?:can )?cast)\s+(?:(?:a|an|the|either a|one)\s+)?((?:the\s+)?(?:\d+-action version of\s+)?(?:(?:\d+)(?:st|nd|rd|th)-rank\s+)?)@UUID\[/;
+    const lead = /(?:\b(?:has|have|gain|gains|get|with|is subject to) the effects? of|\b[Yy]ou (?:can )?cast)\s+(?:(?:a|an|the|either a|one)\s+)?((?:the\s+)?(?:\d+-action version of\s+)?(?:(?:\d+)(?:st|nd|rd|th)-rank\s+)?)@UUID\[/;
     const found = lead.exec(html);
     if (!found) return null;
     const at = found.index + found[0].length - "@UUID[".length;

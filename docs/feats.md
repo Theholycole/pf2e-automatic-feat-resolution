@@ -166,6 +166,14 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - Energized Font, Well of Potential, Dissolution's Clarity, Surging Focus, Consume Thrall, Invoke Infernal Focus, Summon Mythic Power, Mythic
   Echo. Count: 2,830 of 4,826 left.
 
+## Hand-picked: more checks against a creature (2026-10-30, the loop)
+
+- `src/plans/checks-2.js`: Whirling Throw (Athletics against the grabbed creature's Fortitude DC; (1 + half Str)d6 + Str bludgeoning on
+  a success, prone too on a critical success, the distance a note), Mythic Containment (Deception against Will; grabbed and slowed 1 in
+  the receptacle), Denounce Tyranny (Diplomacy against the Will DC of each ally of the creature, the GM's targets).
+- Also: Embrace of Destiny in `saves-4.js` (Will against the class DC, the pull to an adjacent square by hand), and Ghostly Condemnation
+  cast as a 5th-rank Vision of Death ("is subject to the effects of" now reads as a spell-like feat). Count: 2,823 of 4,826 left.
+
 ## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
 
 - **How they're built.** PF2e has no actor type for an eidolon or an animal companion. PF2e Companion Compendia makes them "character" actors: an eidolon has the Eidolon class and an ancestry with the eidolon trait, an animal companion has the minion trait. A familiar has its own type, "familiar", and the only link PF2e keeps: `system.master.id`. Neither Companion Compendia nor Summoners+ links an eidolon to its summoner.
