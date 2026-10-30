@@ -418,3 +418,5 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Kinetic Dampening (resistance 5 at 8th level, to your next turn) and Unravel Into Runes (resistance to all damage equal to your level,
   4 rounds) pass. Ironblood Surge is taken out: PF2e's own feat already carries its +1 AC and Strength-modifier resistance behind a
   toggle ("ironblood-surge", in Ironblood Stance), and its modifier, with the same slug, shadowed the module's.
+- 72 of the options still counted as needing work already carry PF2e's own toggle (a toggleable RollOption the player turns on from the
+  sheet, which switches on the feat's own modifiers). They're now counted as PF2e's, like those with a self Effect, and left to it.
