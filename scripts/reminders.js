@@ -45,7 +45,7 @@ async function remind(combatant, when) {
     const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
     const lines = due.map(({ item, read }) => `<li>@UUID[${item.uuid}]{${escape(item.name)}} (${read.kind}): ${escape(read.trigger)}</li>`).join("");
     await ChatMessage.create({
-        content: `<p><strong>${escape(actor.name)}</strong>, ${when === "start" ? "your turn begins" : "your turn ends"}. You may be able to use:</p><ul>${lines}</ul>`,
+        content: `<p><strong>${escape(actor.name)}</strong>, ${when === "start" ? "your turn begins" : "your turn ends"}. Feats that may apply:</p><ul>${lines}</ul>`,
         speaker: ChatMessage.getSpeaker({ actor }),
         whisper: owners,
         flags: { [MODULE_ID]: { reminder: when } }
@@ -77,7 +77,7 @@ async function whisper(actor, heading, all) {
     if (!due.length) return;
     const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
     const lines = due.map(({ item, read }) => `<li>@UUID[${item.uuid}]{${escape(item.name)}} (${read.kind}): ${escape(read.trigger)}</li>`).join("");
-    await ChatMessage.create({ content: `<p>${heading} You may be able to use:</p><ul>${lines}</ul>`, speaker: ChatMessage.getSpeaker({ actor }), whisper: owners, flags: { [MODULE_ID]: { reminder: "event" } } });
+    await ChatMessage.create({ content: `<p>${heading} Feats that may apply:</p><ul>${lines}</ul>`, speaker: ChatMessage.getSpeaker({ actor }), whisper: owners, flags: { [MODULE_ID]: { reminder: "event" } } });
 }
 
 export async function onRollMessage(message) {
