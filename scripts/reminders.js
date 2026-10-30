@@ -26,7 +26,7 @@ async function remind(combatant, when) {
     const items = [...actor.itemTypes.feat, ...actor.itemTypes.action];
     // (Slice 9: dying at the turn's start, its recovery check to come.)
     const dying = when === "start" && actor.hasCondition?.("dying") ? items.map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-recovery") : [];
-    const due = [...turnReminders(items, when), ...dying];
+    const due = [...turnReminders(items, when, (slug) => !!actor.hasCondition?.(slug)), ...dying];
     if (!due.length) return;
     const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
     const lines = due.map(({ item, read }) => `<li>@UUID[${item.uuid}]{${escape(item.name)}} (${read.kind}): ${escape(read.trigger)}</li>`).join("");
@@ -52,6 +52,12 @@ export function onTurnChange(combat, prior, current) {
 // (slice 7, src/compiler/event-reminders.js).
 const distanceBetween = (a, b) => (a && b && canvas?.grid ? canvas.grid.measurePath([a.center, b.center]).distance : null);
 
+// (PF2e 8.6 posts a spell's cast with context type "spell-cast": a use, not a later roll from it; 2026-10-30 Foundry test.)
+const isUse = (message) => {
+    const type = message.flags?.pf2e?.context?.type;
+    return !type || type === "spell-cast";
+};
+
 async function whisper(actor, heading, due) {
     const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
     const lines = due.map(({ item, read }) => `<li>@UUID[${item.uuid}]{${escape(item.name)}} (${read.kind}): ${escape(read.trigger)}</li>`).join("");
@@ -67,8 +73,11 @@ export async function onRollMessage(message) {
     if (!events.length || !target) return;
     const source = message.speaker?.alias ?? message.actor?.name ?? "A creature";
     const ofItems = (actor) => [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read);
+    // (A trigger only for some attackers, "A creature with the animal … trait": by the attacker's traits.)
+    const attackerTraits = message.actor?.system?.traits?.value ?? [];
+    const byFits = ({ read }) => !read.by || read.by.some((trait) => attackerTraits.includes(trait));
     if (target.type === "character") {
-        const due = ofItems(target).filter(({ read }) => events.includes(read.event));
+        const due = ofItems(target).filter(({ read }) => events.includes(read.event)).filter(byFits);
         if (due.length) await whisper(target, `<strong>${escape(target.name)}</strong>: ${escape(source)}'s ${context.type === "damage-roll" ? "damage" : "attack"} is aimed at you.`, due);
     }
     // (An ally's: each other character on the scene, the target one of its allies.)
@@ -76,7 +85,7 @@ export async function onRollMessage(message) {
         const actor = token.actor;
         if (actor?.type !== "character" || actor === target || !targetToken || token.document.disposition !== targetToken.document.disposition) continue;
         const distance = distanceBetween(token, targetToken);
-        const due = ofItems(actor).filter(({ read }) => events.includes(read.event.replace(/^ally-/, "")) && read.event.startsWith("ally-") && (!read.within || (distance !== null && distance <= read.within)));
+        const due = ofItems(actor).filter(({ read }) => events.includes(read.event.replace(/^ally-/, "")) && read.event.startsWith("ally-") && (!read.within || (distance !== null && distance <= read.within))).filter(byFits);
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(source)}'s ${context.type === "damage-roll" ? "damage" : "attack"} is aimed at your ally ${escape(target.name)}.`, due);
     }
 }
@@ -87,7 +96,7 @@ export async function onOwnUse(message) {
     if (!game.settings.get(MODULE_ID, SETTING)) return;
     const origin = message.flags?.pf2e?.origin;
     // (Its use, not a later roll from it: a check or damage message has a context type.)
-    if (!origin?.uuid || message.flags?.pf2e?.context?.type) return;
+    if (!origin?.uuid || !isUse(message)) return;
     const item = await fromUuid(origin.uuid).catch(() => null);
     const actor = item?.actor;
     if (actor?.type !== "character") return;
@@ -100,7 +109,7 @@ export async function onOwnUse(message) {
 export async function onForeignSpell(message) {
     if (!game.settings.get(MODULE_ID, SETTING)) return;
     const origin = message.flags?.pf2e?.origin;
-    if (origin?.type !== "spell" || message.flags?.pf2e?.context?.type) return;
+    if (origin?.type !== "spell" || !isUse(message)) return;
     const casterToken = message.token?.object ?? null;
     const caster = message.actor ?? casterToken?.actor ?? null;
     if (!caster) return;
@@ -116,7 +125,7 @@ export async function onForeignSpell(message) {
 // Before a save (slice 9): a hostile spell or ability whose card asks for a save, posted by the GM with characters targeted (the GM's
 // own targets, on this client), whispers each of them its feats used before the save ("… but you haven't rolled yet").
 export async function onSaveAsked(message) {
-    if (!game.settings.get(MODULE_ID, SETTING) || !message.author?.isSelf || message.flags?.pf2e?.context?.type || !asksForSave(message.content)) return;
+    if (!game.settings.get(MODULE_ID, SETTING) || !message.author?.isSelf || !isUse(message) || !asksForSave(message.content)) return;
     const source = message.actor ?? message.token?.actor ?? null;
     if (!source || source.type === "character") return;
     for (const token of game.user.targets) {
@@ -176,16 +185,19 @@ async function remindFoeActs(foeToken, test, words, positions = null) {
     }
 }
 
+export const tokenCenter = (document) => ({ x: document.x + (document.width * canvas.grid.size) / 2, y: document.y + (document.height * canvas.grid.size) / 2 });
+
 export function onTokenMoved(document, from) {
     const token = document.object;
     if (!token || !from || token.actor?.type === "character") return;
-    const to = token.center;
+    // (Where it ends, from the document: during the move's animation token.center is still on the way; 2026-10-30 Foundry test.)
+    const to = tokenCenter(document);
     remindFoeActs(token, (read) => read.moves || read.traits.includes("move"), "moves", [from, to]).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
 }
 
 export async function onFoeAction(message) {
     const origin = message.flags?.pf2e?.origin;
-    if (!origin?.uuid || message.flags?.pf2e?.context?.type) return;
+    if (!origin?.uuid || !isUse(message)) return;
     const token = message.token?.object ?? null;
     if (!token || token.actor?.type === "character") return;
     const item = await fromUuid(origin.uuid).catch(() => null);

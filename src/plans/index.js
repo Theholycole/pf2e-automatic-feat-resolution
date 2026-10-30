@@ -22,7 +22,7 @@ export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
 export function handStrike(item, entry, base = null) {
     const strike = entry.strike ?? {};
     const read = base?.builtin === "strike-activity" ? base : null;
-    return {
+    const plan = {
         builtin: "strike-activity",
         actions: Number(item.system?.actions?.value) || 1,
         strides: 0,
@@ -40,6 +40,10 @@ export function handStrike(item, entry, base = null) {
         ...strike,
         onHit: { conditions: [], critical: null, push: null, damage: [], save: null, size: null, ...(read ? { save: read.onHit?.save ?? null, size: read.onHit?.size ?? null } : {}), ...(strike.onHit ?? {}) }
     };
+    // (No save read, the character without that class's DC — a Fighter with Stunning Finisher, no Swashbuckler Dedication: the note says
+    // to roll it by hand, not that it's on the card; 2026-10-30 Foundry test.)
+    if (!plan.onHit.save) plan.notes = (plan.notes ?? []).map((note) => (note === "The save on a hit is on its card." ? "No class DC was found for the save on a hit: call for it by hand." : note));
+    return plan;
 }
 
 const actionsOf = (item) => (item.system?.actionType?.value === "free" ? "free" : String(Number(item.system?.actions?.value) || 1));
@@ -47,6 +51,7 @@ const sourceFor = (item) => ({ name: item.name, slug: item.system?.slug ?? null,
 
 // An act entry → the basic action's plan as the feat's (its card rolls the character's own check), or null without that action's plan.
 // entry.act: the action's slug; entry.target: who it's used on, as the card says it ("each enemy within 30 feet"); entry.notes.
+// entry.successAsCritical: a success counts as a critical success.
 export function handAct(item, entry, basicActions) {
     const base = basicActions?.[entry.act];
     if (!base) return null;
@@ -54,6 +59,8 @@ export function handAct(item, entry, basicActions) {
     plan.source = sourceFor(item);
     plan.activation = { ...(plan.activation ?? {}), time: actionsOf(item) };
     if (entry.target) plan.targeting = { ...(plan.targeting ?? {}), target: entry.target };
+    // (Tail Spin, 2026-10-30 Foundry test: "a success counts as a critical success" — the success applies the critical success's results.)
+    if (entry.successAsCritical && plan.resolution?.outcomes?.criticalSuccess) plan.resolution.outcomes.success = structuredClone(plan.resolution.outcomes.criticalSuccess);
     plan.notes = [...(entry.notes ?? [])];
     return plan;
 }

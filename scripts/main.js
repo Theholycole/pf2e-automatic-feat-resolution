@@ -5,7 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
-import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
+import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -62,7 +62,8 @@ async function cardForFeat(message) {
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     const play = abilityApi()?.live?.playAbility;
-    if (!play) return;
+    // (Warned at the first card, not at ready: the ability module sets its live API only once its basic actions load; 2026-10-30 Foundry test.)
+    if (!play) return warnOnce();
     const sourceToken = message.token ?? item.actor.getActiveTokens(true, true)[0] ?? null;
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
@@ -74,6 +75,13 @@ async function cardForFeat(message) {
     return play(item, plan, sourceToken, new Set(targets));
 }
 
+let warned = false;
+function warnOnce() {
+    if (warned) return;
+    warned = true;
+    console.warn(`${MODULE_ID} | needs PF2e Automatic Ability Resolution 0.9.6 or later for its cards.`);
+}
+
 Hooks.once("init", () => {
     registerSetting();
     registerReminderSetting();
@@ -82,7 +90,6 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-    if (!abilityApi()?.live?.playAbility) console.warn(`${MODULE_ID} | needs PF2e Automatic Ability Resolution 0.9.6 or later for its cards.`);
     Hooks.on("preCreateChatMessage", recordTargets);
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {
@@ -97,7 +104,7 @@ Hooks.once("ready", () => {
     });
     // (Slice 11: a foe's token moving near a character; where it started, kept before the move.)
     Hooks.on("preUpdateToken", (document, changed, options) => {
-        if (("x" in changed || "y" in changed) && document.object) options[`${MODULE_ID}.from`] = { ...document.object.center };
+        if (("x" in changed || "y" in changed) && canvas?.grid) options[`${MODULE_ID}.from`] = tokenCenter(document);
     });
     Hooks.on("updateToken", (document, changed, options) => {
         if (isActiveGM() && ("x" in changed || "y" in changed)) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null);

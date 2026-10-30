@@ -16,7 +16,11 @@ export function eventTrigger(item) {
     const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
     const kind = type === "reaction" ? "reaction" : "free action";
     const within = Number(/\bwithin (\d+) feet\b/i.exec(trigger)?.[1]) || (/\badjacent\b/i.test(trigger) ? 5 : null);
-    const read = (event) => ({ event, within, trigger, kind });
+    // (2026-10-30 Foundry test, Hunter's Defense: "A creature with the animal, beast, elemental, fey, fungus, or plant trait attacks you" —
+    // only a creature with one of those traits: by.)
+    const traits = /\bcreature with the ((?:[a-z-]+,? (?:or |and )?)*[a-z-]+) traits?\b/i.exec(trigger)?.[1];
+    const by = traits ? traits.toLowerCase().split(/,? (?:or |and )?|,/).map((word) => word.trim()).filter(Boolean) : null;
+    const read = (event) => ({ event, within, trigger, kind, ...(by ? { by } : {}) });
     // (A save's effect, "targeted by a spell … that allows a saving throw": no attack roll to watch.)
     if (/\b(?:requires|allows) a (?:save|saving throw)\b/i.test(trigger)) return null;
     // ("A creature Casts a Spell", "An enemy casts a spell that targets you …", "Another creature within 30 feet Casts a Spell": a spell another

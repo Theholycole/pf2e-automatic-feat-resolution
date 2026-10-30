@@ -100,6 +100,25 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **Saves rewritten** (`saves.js`): a `text` entry can carry notes for what its rewrite leaves out (Fling Head's extra targets, Spirit's Anguish's remnant damage, Pandemonium Eruption's random type, Boulder Roll's push, Sonic Dash's Awakening).
 - **Count** after these: 3,287 of 4,826 still need work. (The count now gives the test character every class's DC, as a character with that class or its archetype has; before, feats with "against:barbarian" and the like weren't read in the count, though they are in play. The count also gives the character every skill's DC and plays the basic actions, as play does. The 161 feats whose PF2e data names their own Effect, applied by PF2e's Use button, are counted as done.)
 
+## Tested in Foundry (2026-10-30)
+
+Foundry 14.367, PF2e 8.6.1, a separate headless server with Teams+, a level-10 test character: 22 of the checklist's 27 checks passed. Fixed
+after it:
+
+- Wolf Drag gave no card: a Strike a stance grants (Wolf Jaws) has the stance's Effect as its message's origin. The ability module (0.9.6)
+  now also matches the pending Strike feat by the roll options' item slug.
+- Disruptive Stare never reminded: PF2e 8.6 posts a spell's cast with context type "spell-cast", which the use, foe-spell, foe-action and
+  save reminders skipped as a later roll. They take it as the use now.
+- Tail Spin's success applied only the success's results: an act entry's successAsCritical copies the critical success onto the success.
+- Hunting Snag missed some moves: the token's end point is read from its document, not token.center (still animating).
+- The "needs 0.9.6" warning was logged at load before the ability module had set its live API: it is logged at the first card instead.
+- Hunter's Defense reminded for any attacker: a trigger's "creature with the animal, … trait" is read as by, matched to the attacker's traits.
+- Mask of Fear reminded at every turn start: a start-of-turn trigger's conditions ("with the Frightened condition") are read as having,
+  checked on the character.
+- Stunning Finisher without a swashbuckler class DC: its note says to call for the save by hand.
+
+Known, not fixed: Dazzling Display's card covers the GM's targets, not "each enemy within 30 feet" by itself.
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.

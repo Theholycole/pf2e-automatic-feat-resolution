@@ -42,7 +42,7 @@ export default [
     { uuid: pf2e("A2EBy2L4acrehiAA"), name: "Pistol Twirl", act: "feint", notes: ["Within the weapon's first range increment; on a success the foe is off-guard to your melee and ranged attacks."] },
     { uuid: pf2e("AtpMrGXaMPJtDIDR"), name: "Prayer Attack", act: "feint", target: "1 enemy within 30 feet", notes: ["After a success, later uses make the target off-guard to your melee attacks without a roll (see the feat)."] },
     // Trip
-    { uuid: pf2e("rnEfO5eyRw7Fywzb"), name: "Tail Spin", act: "trip", target: "up to two adjacent creatures", notes: ["One Athletics check for both; a success counts as a critical success."] },
+    { uuid: pf2e("rnEfO5eyRw7Fywzb"), name: "Tail Spin", act: "trip", target: "up to two adjacent creatures", successAsCritical: true, notes: ["One Athletics check for both; a success counts as a critical success."] },
     { uuid: pf2e("z5fUX9jeqfAViOd8"), name: "Shove Down", act: "trip", notes: ["After a successful Shove, against the same target, even out of reach."] },
     { uuid: pf2e("Yazy4gex46FLwsph"), name: "Tumbling Opportunist", act: "trip", notes: ["Against the enemy whose space you tumbled through; Acrobatics can replace Athletics."] },
     { uuid: pf2e("7x1r2w7C7A4Uy7wG"), name: "Topple Foe", act: "trip", notes: ["Against the enemy your ally just hit."] },

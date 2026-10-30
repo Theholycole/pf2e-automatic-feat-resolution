@@ -257,3 +257,25 @@ test("a Strike feat whose hit adds nothing the readers take: the Strike's card, 
     assert.equal(compileFeat(passive, { dcs: DCS }), null);
 });
 
+
+test("fixes from the Foundry test: Tail Spin's success, Mask of Fear only while Frightened, Hunter's Defense's attackers, Stunning Finisher without the DC", async () => {
+    const crit = { damage: { mode: "none" }, effects: [{ kind: "condition", slug: "prone" }], note: "1d6 bludgeoning" };
+    const basicActions = { trip: { source: { name: "Trip" }, activation: { time: "1" }, targeting: { target: "1 creature" }, resolution: { kind: "check", check: { roll: "skill", statistic: "athletics" }, outcomes: { criticalSuccess: crit, success: { effects: [{ kind: "condition", slug: "prone" }] } } } } };
+    const spin = compileFeat({ ...feat("Tail Spin", "<p>…</p>", 1), sourceId: "Compendium.pf2e.feats-srd.Item.rnEfO5eyRw7Fywzb" }, { dcs: DCS, basicActions });
+    assert.deepEqual(spin.resolution.outcomes.success, crit);
+    assert.notEqual(basicActions.trip.resolution.outcomes.success, crit, "the action's own plan is left alone");
+
+    const { turnReminders } = await import("../src/compiler/turn-reminders.js");
+    const reaction = (trigger) => ({ name: trigger, system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p>` } } });
+    const mask = reaction("You start your turn with the @UUID[Compendium.pf2e.conditionitems.Item.Frightened] condition.");
+    assert.equal(turnReminders([mask], "start", () => false).length, 0);
+    assert.equal(turnReminders([mask], "start", (slug) => slug === "frightened").length, 1);
+
+    const { eventTrigger } = await import("../src/compiler/event-reminders.js");
+    assert.deepEqual(eventTrigger(reaction("A creature with the animal, beast, elemental, fey, fungus, or plant trait attacks you, and you can see the attacker.")).by, ["animal", "beast", "elemental", "fey", "fungus", "plant"]);
+
+    const html = "<p>Make a melee Strike. If you hit, your foe must attempt a @Check[fortitude|against:class] save against your class DC with the following results.</p><hr /><p><strong>Success</strong> The target can't use reactions until its next turn.</p><p><strong>Failure</strong> The target is Stunned 1.</p>";
+    const fighter = compileFeat({ ...feat("Stunning Finisher", html), sourceId: "Compendium.pf2e.feats-srd.Item.jkBzlMB4TS1sS2Fm" }, { dcs: { ...DCS, class: null, byClass: {} } });
+    assert.equal(fighter.onHit.save, null);
+    assert.ok(fighter.notes.some((note) => /by hand/.test(note)));
+});

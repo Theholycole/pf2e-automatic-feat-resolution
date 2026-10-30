@@ -4,6 +4,15 @@
 
 const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
+const CONDITIONS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "drained", "dying", "encumbered", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "paralyzed", "persistent-damage", "petrified", "prone", "quickened", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded", "doomed"];
+
+// The conditions a start-of-turn trigger needs the character to have ("with the Frightened condition", "you're Grabbed or Restrained").
+function havingOf(trigger) {
+    if (/\bnot\b|\bno longer\b|\bwithout\b/i.test(trigger)) return {};
+    const words = [...trigger.toLowerCase().matchAll(/[a-z-]+/g)].map((match) => match[0]).filter((word) => CONDITIONS.includes(word));
+    return words.length ? { having: [...new Set(words)] } : {};
+}
+
 // → { when: "start" | "end", trigger, kind: "reaction" | "free action" }, or null.
 export function turnTrigger(item) {
     const type = item?.system?.actionType?.value;
@@ -12,12 +21,15 @@ export function turnTrigger(item) {
     if (!found) return null;
     const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
     const kind = type === "reaction" ? "reaction" : "free action";
-    if (/^(?:Your turn (?:begins|starts)|You (?:start|begin) your turn|The start of your turn)\b/i.test(trigger)) return { when: "start", trigger, kind };
+    // (2026-10-30 Foundry test: "You start your turn with the Frightened condition", "…, and you're Grabbed or Restrained" — only while
+    // it has one of them: having.)
+    if (/^(?:Your turn (?:begins|starts)|You (?:start|begin) your turn|The start of your turn)\b/i.test(trigger)) return { when: "start", trigger, kind, ...havingOf(trigger) };
     if (/^(?:Your turn ends|You end your turn|The end of your turn)\b/i.test(trigger)) return { when: "end", trigger, kind };
     return null;
 }
 
 // A character's items → the ones to remind of at the start or end of its turn.
-export function turnReminders(items, when) {
-    return [...(items ?? [])].map((item) => ({ item, read: turnTrigger(item) })).filter(({ read }) => read?.when === when);
+// has(slug): whether the character has that condition now (Mask of Fear only while Frightened).
+export function turnReminders(items, when, has = () => true) {
+    return [...(items ?? [])].map((item) => ({ item, read: turnTrigger(item) })).filter(({ read }) => read?.when === when && (!read.having || read.having.some((slug) => has(slug))));
 }
