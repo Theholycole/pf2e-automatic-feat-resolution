@@ -26,6 +26,16 @@ export default [
         notes: ["The untyped die is the required Strike's damage type. At 18th level, 2d6 of each."]
     },
     {
+        uuid: pf2e("mOWtfL7lhW9XpdBN"), name: "Stranglehold",
+        text: `<p>The target takes @Damage[(2*@actor.abilities.str.mod)[bludgeoning]] damage.</p>`,
+        notes: ["The creature you have grabbed or restrained. Until the start of your next turn or until it Escapes, it can barely speak: DC 10 flat check or lose any action that needs speech (a single DC 10 for a spell that also has manipulate, not grabbed's extra DC 5)."]
+    },
+    {
+        uuid: pf2e("LFS9M737RCt0Jq8r"), name: "Rejoice in Solstice Storm",
+        text: `<p>All creatures in a @Template[type:emanation|distance:30] take @Damage[(ceil((1+@actor.level)/2))d8[electricity]|options:area-damage] damage with a @Check[reflex|against:class|basic|options:area-effect] save against your class DC.</p>`,
+        notes: ["Four seasonal cones: the card rolls spring's electricity. Summer is bludgeoning (critical failure: prone), fall slashing (off-guard until the end of its next turn), winter cold (stupefied until the end of its next turn); spring's critical failure: clumsy until the end of its next turn."]
+    },
+    {
         uuid: teams("clerics-remaster", "clerics-feats", "KD1HERdiPVfiLhQz"), name: "Spirit Burn",
         text: `<p>The target takes @Damage[(floor((@actor.level -1)/2) +1)[persistent,spirit]] damage and is ${enfeebled(1)}.</p>`,
         notes: ["The enfeeblement lasts as long as the persistent damage. One that removes it is immune for 1 minute."]
