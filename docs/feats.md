@@ -189,6 +189,9 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - Reactions and free actions, played as the player posts them: concealed (Heat Wave, Eerie Flicker), prone ended as you Stand (Hop Up,
   Call to Battle), drained 1 or 1 more (Blood Calls Blood), dying ended with doomed 1 more (My Legend Must Be Told), and 7d10+28 healing
   on the triggering creature (Sorshen's Devotion).
+- Movement and tempo: concealed (Plane Step until the end of your next turn, Tempo Duelist, Now You See Me until the end of your turn),
+  quickened for the round (Tempo Shift); the Stride and the foes' off-guard are notes. Flourishing Finish in `checks-2.js`: Performance
+  against the Will DC of each enemy within 30 feet, frightened 1, or 2 on a critical success.
 
 ## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
 

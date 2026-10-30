@@ -6,6 +6,7 @@ const condition = (id, label) => `@UUID[Compendium.pf2e.conditionitems.Item.${id
 const prone = condition("j91X7x0XSomq8d60", "Prone");
 const grabbed = condition("kWc1fhmv9LBiTuei", "Grabbed");
 const slowed = condition("xYTAsEpcJE1Ccni3", "Slowed 1");
+const frightened = (value) => condition("TBSHQspnbcqxsmjL", `Frightened ${value}`);
 const check = (skill, defense, against) => `<p>Attempt a @Check[${skill}|defense:${defense}] check against ${against}.</p><hr />`;
 const results = ({ criticalSuccess = null, success = null, failure = null, criticalFailure = null }) =>
     [["Critical Success", criticalSuccess], ["Success", success], ["Failure", failure], ["Critical Failure", criticalFailure]].filter(([, text]) => text).map(([degree, text]) => `<p><strong>${degree}</strong> ${text}</p>`).join("");
@@ -26,5 +27,10 @@ export default [
         uuid: pf2e("ISjnymvdFOPED9um"), name: "Denounce Tyranny", target: "up to three of the triggering creature's allies within 30 feet",
         text: check("diplomacy", "will", "the Will DC of each of up to three of the triggering creature's allies within 30 feet") + results({ criticalSuccess: "The target refuses to treat the triggering creature as an ally for 2 rounds.", success: "The target refuses to treat the triggering creature as an ally for 1 round." }),
         notes: ["Up to five creatures if you're a master in Diplomacy, ten if legendary."]
+    },
+    {
+        uuid: pf2e("isdTXU8bV7ZVOAuQ"), name: "Flourishing Finish", target: "each enemy within 30 feet",
+        text: check("performance", "will", "the Will DC of each foe within 30 feet who can see you") + results({ criticalSuccess: `The target is ${frightened(2)}.`, success: `The target is ${frightened(1)}.` }),
+        notes: ["Only foes that can see you. Whatever the result, each is immune for 10 minutes."]
     }
 ];
