@@ -190,6 +190,10 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.equal(eventTrigger(reaction("You critically hit a foe with a melee weapon Strike or a melee unarmed attack.")).event, "own-critical-hit");
     assert.equal(eventTrigger(reaction("You succeed at a melee Strike.")).event, "own-hit");
     assert.equal(eventTrigger(reaction("You miss with a firearm or crossbow Strike.")).event, "own-miss");
+    const { weaponFits } = await import("../src/compiler/event-reminders.js");
+    const recall = eventTrigger(reaction("You miss with a firearm or crossbow Strike."));
+    assert.equal(weaponFits(recall.weapons, ["item:group:crossbow", "item:ranged"]), true);
+    assert.equal(weaponFits(recall.weapons, ["item:group:dart", "item:ranged"]), false, "a javelin");
     assert.equal(eventTrigger(reaction("You reduce an enemy to 0 Hit Points.")).event, "own-kill");
     const cartwheel = eventTrigger(reaction("You succeed or critically succeed at a Reflex saving throw."));
     assert.deepEqual([cartwheel.event, cartwheel.outcomes, cartwheel.saves], ["own-save", ["criticalSuccess", "success"], ["reflex"]]);

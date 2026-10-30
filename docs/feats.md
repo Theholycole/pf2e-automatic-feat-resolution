@@ -161,6 +161,18 @@ after it:
   on the ground within 10 feet") covered only the GM's targets: it now finds every creature of that kind in range on the scene itself
   (src/compiler/area-targets.js), leaving out the character, defeated ones, neutrals for "enemy", and flyers for "on the ground".
 
+### Foundry test, round 3 (2026-10-30, the loop)
+
+Run in the test Foundry (port 30001) at 636ff0e: Ease the Burden, Kobold Breath, Staff Sweep, Protect the Royal Line, Nanite Shroud, Song
+of Grace and Speed, Poisoner's Twist and Death Roll cards passed, and the reminders for Elude Trouble, Stone Bones, Goblin Scuttle,
+Triumphant Inspiration, Recall Ammunition, Cartwheel Dodge, Name Drop, You're Next, MORE! MOOOORE!, Ill Tide and Big Debut. No console
+errors from the modules. Fixed after it:
+- Recall Ammunition reminded on a javelin miss: an own-Strike trigger that names weapons ("a firearm or crossbow Strike") now matches them
+  to the Strike's roll options (`weaponFits`).
+- Battle Cry gave no reminder: a passive feat saying "When you roll initiative, you can …" is now read as pre-initiative.
+- A Shove's push reminded Hunting Snag and Reactive Strike: forced movement and teleports no longer count as moving.
+Not fixed: the area save cards (Kobold Breath) hit only the GM's targets, with the area as a note; a heal's card line says "Damage rolled".
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.

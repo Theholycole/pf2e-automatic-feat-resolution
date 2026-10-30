@@ -127,7 +127,9 @@ Hooks.once("ready", () => {
         if (("x" in changed || "y" in changed) && canvas?.grid) options[`${MODULE_ID}.from`] = tokenCenter(document);
     });
     Hooks.on("updateToken", (document, changed, options) => {
-        if (isActiveGM() && ("x" in changed || "y" in changed)) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null, changed);
+        // (Not forced movement or a teleport: a Shove's push isn't a move action; 2026-10-30 Foundry test.)
+        const forced = options?.["pf2e-resolution-core"]?.forcedMovement || options?.teleport || Object.values(options?.movement ?? {}).some((each) => ["displace", "teleport"].includes(each?.method ?? each?.action));
+        if (isActiveGM() && ("x" in changed || "y" in changed) && !forced) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null, changed);
     });
     Hooks.on("createCombatant", (combatant) => {
         if (isActiveGM()) onJoinEncounter(combatant).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));

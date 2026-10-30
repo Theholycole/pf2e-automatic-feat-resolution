@@ -23,9 +23,13 @@ export function eventTrigger(item) {
     const read = (event) => ({ event, within, trigger, kind, ...(by ? { by } : {}) });
     // (The character's own Strike: "You critically hit a foe with a melee weapon Strike", "Your Strike critically hits …", "You succeed at a
     // melee Strike", "You miss with a firearm or crossbow Strike": its attack roll's degree; the loop, 2026-10-30.)
-    if (/^(?:You critically (?:hit|succeed (?:at|on) (?:a|an|your)\b[^.]*?\bStrike)|Your\b[^.]*?\bStrike critically hits)\b/i.test(trigger)) return read("own-critical-hit");
-    if (/^(?:You hit (?:a|an)\b[^.]*?\bStrike|You succeed at a (?:melee |ranged )?Strike|Your\b[^.]*?\bStrike hits)\b/i.test(trigger)) return read("own-hit");
-    if (/^(?:You miss with (?:a|an|your)\b[^.]*?\bStrike|You (?:or your [\w ]+? )?(?:roll|gets?) a failure on a Strike)\b|^You misfire\b|^Your attack with a firearm misfires\b/i.test(trigger)) return read("own-miss");
+    // (Only with the weapons it names, "a firearm or crossbow Strike": weapons, matched to the Strike's roll options; 2026-10-30 Foundry test,
+    // Recall Ammunition on a javelin miss.)
+    const weapons = [...new Set([...trigger.matchAll(/\b(firearm|crossbow|bow|sword|axe|hammer|flail|polearm|spear|knife|club|brawling|sling|dart|pick|shield|unarmed|ranged|melee|thrown)s?\b/gi)].map((match) => match[1].toLowerCase()))];
+    const own = (event) => ({ ...read(event), weapons });
+    if (/^(?:You critically (?:hit|succeed (?:at|on) (?:a|an|your)\b[^.]*?\bStrike)|Your\b[^.]*?\bStrike critically hits)\b/i.test(trigger)) return own("own-critical-hit");
+    if (/^(?:You hit (?:a|an)\b[^.]*?\bStrike|You succeed at a (?:melee |ranged )?Strike|Your\b[^.]*?\bStrike hits)\b/i.test(trigger)) return own("own-hit");
+    if (/^(?:You miss with (?:a|an|your)\b[^.]*?\bStrike|You (?:or your [\w ]+? )?(?:roll|gets?) a failure on a Strike)\b|^You misfire\b|^Your attack with a firearm misfires\b/i.test(trigger)) return own("own-miss");
     // (The character's own save: "You succeed or critically succeed at a Reflex saving throw", "You fail (but don't critically fail) a saving
     // throw against …", "You critically succeed on a Fortitude save against a poison effect": the degrees and saves it names; the loop,
     // 2026-10-30. What the save is against is the player's to judge.)
@@ -138,6 +142,13 @@ export function ownStrikeEvents(contextType, outcome) {
     return [...(["success", "criticalSuccess"].includes(outcome) ? ["own-hit"] : []), ...(outcome === "criticalSuccess" ? ["own-critical-hit"] : []), ...(["failure", "criticalFailure"].includes(outcome) ? ["own-miss"] : [])];
 }
 
+// Whether a Strike's roll options fit the weapons a trigger names ("firearm", "crossbow", "melee", "unarmed"); none named fits any.
+export function weaponFits(weapons, options = []) {
+    if (!weapons?.length) return true;
+    const has = (option) => options.includes(option);
+    return weapons.some((weapon) => (weapon === "ranged" ? has("item:ranged") : weapon === "melee" ? has("item:melee") : weapon === "unarmed" ? has("item:category:unarmed") : weapon === "thrown" ? has("item:trait:thrown") || options.some((option) => option.startsWith("item:thrown")) : has(`item:group:${weapon}`)));
+}
+
 // A reaction or free action triggered by the character's own action or spell (slice 8): "You use Orc Ferocity.", "You Shield Block a melee
 // Strike …", "You enter Tenacious Stance.", "You Cast a Spell using a spell slot.", "You cast summon undead." → { names: the action's or
 // spell's names (lower case), spell: any spell counts, trigger, kind }, or null. Matched against the item of the character's own chat
@@ -172,6 +183,12 @@ export function usesTrigger(read, itemName, itemType) {
 // with the character targeted, when the character joins an encounter without initiative, and when its turn begins while it's dying.
 export function preRollTrigger(item) {
     const type = item?.system?.actionType?.value;
+    // (A passive feat that acts as initiative is rolled, Battle Cry's "When you roll initiative, you can yell a mighty battle cry and
+    // Demoralize an observed foe as a free action": reminded as the character joins the encounter; 2026-10-30 Foundry test.)
+    if (type === "passive") {
+        const sentence = /(?:^|[.>]\s*)(When you roll (?:for )?initiative\b[^.<]*[.]?)/i.exec(String(item?.system?.description?.value ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1"));
+        return sentence ? { event: "pre-initiative", trigger: plainOf(sentence[1]), kind: "as you roll initiative" } : null;
+    }
     if (!["reaction", "free"].includes(type)) return null;
     const found = /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
     if (!found) return null;

@@ -2,7 +2,7 @@
 // starting or ending, whispered to its owners and the GM as that turn comes. Nothing is used for them; the player decides.
 
 import { turnReminders } from "../src/compiler/turn-reminders.js";
-import { asksForSave, eventTrigger, eventsOf, ownStrikeEvents, ownUseTrigger, preRollTrigger, usesTrigger } from "../src/compiler/event-reminders.js";
+import { asksForSave, eventTrigger, eventsOf, ownStrikeEvents, ownUseTrigger, preRollTrigger, usesTrigger, weaponFits } from "../src/compiler/event-reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const SETTING = "turnReminders";
@@ -93,7 +93,7 @@ export async function onRollMessage(message) {
     const attacker = message.actor;
     const own = ownStrikeEvents(context?.type, context?.outcome);
     if (attacker?.type === "character" && own.length) {
-        const due = [...attacker.itemTypes.feat, ...attacker.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read && own.includes(read.event));
+        const due = [...attacker.itemTypes.feat, ...attacker.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read && own.includes(read.event) && weaponFits(read.weapons, context.options ?? []));
         const result = own.includes("own-critical-hit") ? "critically hits" : own.includes("own-hit") ? "hits" : "misses";
         if (due.length) await whisper(attacker, `<strong>${escape(attacker.name)}</strong>: your Strike ${result}.`, due);
     }
