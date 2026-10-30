@@ -166,3 +166,17 @@ test("a reaction or free action triggered by the character's own turn: a reminde
     assert.equal(turnTrigger(free("You fail a Will save.")), null);
     assert.equal(turnReminders([free("Your turn begins."), free("Your turn ends.")], "end").length, 1);
 });
+
+test("a reaction triggered by what others do: the event an attack or damage roll brings", async () => {
+    const { eventTrigger, eventsOf } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ name: "X", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>You Step.</p>` } } });
+    assert.equal(eventTrigger(reaction("An enemy hits you with a melee Strike.")).event, "hit");
+    assert.equal(eventTrigger(reaction("A creature targets you with an attack and you can see the attacker.")).event, "targeted");
+    assert.equal(eventTrigger(reaction("While you have your shield raised, you would take damage from a physical attack.")).event, "damaged");
+    assert.deepEqual([eventTrigger(reaction("An adjacent ally is hit by an attack.")).event, eventTrigger(reaction("An adjacent ally is hit by an attack.")).within], ["ally-hit", 5]);
+    assert.equal(eventTrigger(reaction("Your eidolon would take damage.")), null, "someone else's damage, not an ally's roll the module sees");
+    assert.equal(eventTrigger(reaction("One of your allies within 30 feet is targeted by a spell or ability that allows a saving throw.")), null);
+    assert.deepEqual(eventsOf("attack-roll", "criticalSuccess"), ["targeted", "hit", "critical-hit"]);
+    assert.deepEqual(eventsOf("attack-roll", "failure"), ["targeted"]);
+    assert.deepEqual(eventsOf("damage-roll"), ["damaged"]);
+});

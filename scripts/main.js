@@ -5,7 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
-import { onTurnChange, registerReminderSetting } from "./reminders.js";
+import { onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -89,7 +89,10 @@ Hooks.once("ready", () => {
         if (isActiveGM()) onTurnChange(combat, prior, current);
     });
     Hooks.on("createChatMessage", (message) => {
-        if (isActiveGM()) cardForFeat(message).catch((error) => console.error(`${MODULE_ID} | feat card`, error));
+        if (!isActiveGM()) return;
+        cardForFeat(message).catch((error) => console.error(`${MODULE_ID} | feat card`, error));
+        // (Slice 7: reminders of reactions an attack or damage aimed at a character triggers.)
+        onRollMessage(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
     const module = game.modules.get(MODULE_ID);
     if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs });
