@@ -431,3 +431,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Toggled passives (feat 6beee47): Clerics+ sacred animal features (Divine Flight, Transcendent Mobility, Deific Beam, Blessed Skill, on the
   targeted animal), Fist of the Acolyte (PF2e asks the weapon; its Strike becomes returning), Mythic Allies, Cavalier's Banner: all pass,
   on and off. Clerics+ is now enabled in the test copy.
+
+### Round 17 (2026-10-30)
+
+- Toggled passives (feat 057ff5d): Elemental Weapon Systems and Sonar Alert System on the construct, Perfect Appendages (its Strike),
+  Scout and Incredible Scout on the party (the scout's own initiative is unchanged, as PF2e's Effect gives the bonus to the others): all
+  pass, on and off.
