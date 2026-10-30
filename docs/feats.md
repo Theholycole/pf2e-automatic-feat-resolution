@@ -180,6 +180,9 @@ creature, or the action also has a check, an area, a Strike or a spell.
   ally (Banner Twirl, ranged attacks only a note); off-guard on yourself (Statue, until you act); off-guard on the creature your Double
   Slice hit twice (Flensing Slice, its bleed and resistances PF2e's Effect); dazzled on each enemy within 20 feet (Cleansing Light, its
   Restoration by hand).
+- Reactions and free actions, played as the player posts them: concealed (Heat Wave, Eerie Flicker), prone ended as you Stand (Hop Up,
+  Call to Battle), drained 1 or 1 more (Blood Calls Blood), dying ended with doomed 1 more (My Legend Must Be Told), and 7d10+28 healing
+  on the triggering creature (Sorshen's Devotion).
 
 ## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
 
