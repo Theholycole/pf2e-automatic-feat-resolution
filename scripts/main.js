@@ -6,6 +6,7 @@ import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
+import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
 import { applyFeatEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
@@ -158,9 +159,14 @@ Hooks.once("init", () => {
     // (Senses on tokens, docs/feats.md "Senses": their detection modes now, the wrapper once PF2e's token class is in CONFIG.)
     registerSenses();
     registerTruesight();
+    registerSenseZones();
 });
 
-Hooks.once("setup", () => wrapDetectionModes());
+Hooks.once("setup", () => {
+    wrapDetectionModes();
+    // (PF2e's hearing and tremorsense, set by its own init: stopped by the Senses areas too.)
+    guardOwnModes();
+});
 
 Hooks.once("ready", () => {
     Hooks.on("preCreateChatMessage", recordTargets);

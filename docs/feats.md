@@ -173,6 +173,14 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Left to PF2e or with nothing to show.** Darkvision, greater darkvision, see invisibility and tremorsense (PF2e's own); low-light vision (a token already sees in dim light; concealment is the rules'); truesight (it sees through illusions, not darkness or invisibility); magicsense (magic, not creatures).
 - **Setting.** "Senses on tokens", on by default.
 
+## Sense regions (2026-10-30, Cole: "regions that enable or disable senses? Wavesense only works in water. Hearing should not work through areas where no sound can pass")
+
+- **The "Senses" region behavior** (`scripts/sense-zones.js`, declared in module.json's documentTypes). Add it to a scene region and tick:
+  - **Water**: wavesense works only when the sensing creature and its target are both in such an area. With no Senses area on the scene, wavesense finds nothing.
+  - **No sound passes**: hearing (PF2e's own) and echolocation don't reach into, out of or through it.
+  - **Senses blocked**: any of hearing, tremorsense, echolocation, scent, lifesense, bloodsense, spiritsense, thoughtsense, wavesense, motion sense, electromagnetic sense, infrared vision; the same into, out of or through.
+- **How.** Each detection check asks which areas the two tokens stand in, and which the line between them crosses (a point every half square), at their elevations (`senseReaches`, `src/compiler/sense-zones.js`). PF2e's hearing and tremorsense modes are wrapped at setup to ask too.
+
 ## Truesight (2026-10-30, Cole: "Have truesight auto roll secretly counteract checks against the spell")
 
 - "The GM rolls a secret counteract check against any illusion within 60 feet, but only once per illusion." A creature whose senses include truesight (any source: heritage, feat, the spell's own Sense rule) rolls one against each illusion that comes within its sense's range (60 feet unless it says otherwise), checked a moment after a token moves, a token, template or region is placed, an Effect is added, or the scene loads (`scripts/truesight.js`).

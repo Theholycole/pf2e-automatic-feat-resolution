@@ -474,3 +474,16 @@ test("truesight: the counteract numbers", async () => {
     assert.equal(illusionRank({ rank: 2 }), 2);
     assert.equal(illusionRank({ level: 7 }), 4, "a creature: half its level");
 });
+
+test("sense regions: water, silence and blocked senses", async () => {
+    const { senseReaches } = await import("../src/compiler/sense-zones.js");
+    const water = { water: true };
+    const silent = { silent: true };
+    assert.equal(senseReaches("wavesense", { source: [water], target: [water] }), true);
+    assert.equal(senseReaches("wavesense", { source: [water], target: [] }), false, "the target out of the water");
+    assert.equal(senseReaches("hearing", { crossed: [silent] }), false, "through a silent area");
+    assert.equal(senseReaches("echolocation", { target: [silent] }), false);
+    assert.equal(senseReaches("scent", { crossed: [silent] }), true, "not a sound");
+    assert.equal(senseReaches("scent", { source: [{ blocks: ["scent"] }] }), false);
+    assert.equal(senseReaches("tremorsense", {}), true);
+});

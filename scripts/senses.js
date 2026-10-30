@@ -4,6 +4,7 @@
 // outlines where it is, as tremorsense does. Which modes, by the sense's acuity and range: src/compiler/senses.js.
 
 import { SENSES, senseFinds, senseModes } from "../src/compiler/senses.js";
+import { reaches } from "./sense-zones.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const SETTING = "senses";
@@ -33,7 +34,9 @@ function modeClasses() {
         const actor = target?.actor ?? target?.document?.actor ?? null;
         if (!actor || !CREATURES.has(actor.type) || target?.document?.hidden) return false;
         if (SENSES[sense]?.sound && source?.hasCondition?.("deafened")) return false;
-        return senseFinds(sense, { modeOfBeing: actor.modeOfBeing ?? null, traits: new Set(actor.traits ?? actor.system?.traits?.value ?? []) });
+        if (!senseFinds(sense, { modeOfBeing: actor.modeOfBeing ?? null, traits: new Set(actor.traits ?? actor.system?.traits?.value ?? []) })) return false;
+        // (The scene's Senses areas: water for wavesense, silence for echolocation, blocked senses; scripts/sense-zones.js.)
+        return reaches(sense, visionSource?.object, target);
     };
     return {
         precise: (sense) => class extends All {

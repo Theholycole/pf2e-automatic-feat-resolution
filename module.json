@@ -52,5 +52,10 @@
   },
   "esmodules": [
     "scripts/main.js"
-  ]
+  ],
+  "documentTypes": {
+    "RegionBehavior": {
+      "senses": {}
+    }
+  }
 }
