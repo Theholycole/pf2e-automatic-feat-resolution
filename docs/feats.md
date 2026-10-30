@@ -65,6 +65,10 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **The reader** (`ownUseTrigger` in `src/compiler/event-reminders.js`): "You use Orc Ferocity.", "You Shield Block a melee Strike …", "You enter Tenacious Stance.", "You Leap.", "You cast summon undead.", "You Cast a Spell using a spell slot." / "You cast a divine spell …" (any spell).
 - **Live** (`onOwnUse` in `scripts/reminders.js`): when a character's action, feat or spell is posted (its use, not a later check or damage roll from it), its owners are whispered the feats that trigger on it, matched by the item's name or, for "a spell", any spell. Same setting as slices 6 and 7.
 - **Another creature's spell:** "A creature Casts a Spell that you have prepared" (Counterspell), "An enemy casts a spell that targets you …", "A creature within 30 feet casts a spell." When a spell is posted, each character on the scene whose disposition isn't the caster's (in range, when the trigger gives one) is whispered those feats.
+- **More (2026-10-30, the loop).** A passive's spell by name, capitalized as the text has it ("When you cast Harm or Heal", Fast
+  Channel; "you cast Force Fang", Force Jaws; Fireball, Grease, Wall of Fire, Black Tentacles), and actions named in words ("When you
+  Cleave", "Emblazon an Armament", "Spit Ambient Magic", "Prepare Elemental Medicine", "Treat a Disease or a Poison", "Raise your Horde").
+  28 more. Count: 2,774 of 4,826 left.
 - **Measured:** 24 options for the character's own use, 19 for another's spell (Counterspell, Recognize Spell, Countercharm, Reactive Spellshift and others).
 
 ## Slice 9: reminders before the character's own roll (2026-10-30)

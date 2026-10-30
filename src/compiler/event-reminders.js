@@ -185,6 +185,14 @@ export function ownUseTrigger(given) {
     if ((match = /^You (Shield Block|Raise a Shield|Leap|Stride|Step|Sustain a Spell|Interact)\b/.exec(trigger))) return { names: [match[1].toLowerCase()], spell: false, trigger, kind };
     // ("Whenever you Refocus", "When you Rage", "When you Change Shape", "When you Hunt Prey": a class action named as a verb; the loop.)
     if ((match = /^You (Refocus|Rage|Change Shape|Hunt Prey|Devise a Stratagem|Overdrive|Spellstrike|Demoralize|Feint|Recall Knowledge|Seek|Treat Wounds|Battle Medicine|Administer First Aid|Exploit Vulnerability|Exploit a Vulnerability)\b/i.exec(trigger))) return { names: [match[1].toLowerCase().replace("exploit a vulnerability", "exploit vulnerability")], spell: false, trigger, kind };
+    // ("When you Cleave", "Whenever you Emblazon an Armament", "you Treat a Disease or a Poison": an action named as words, its item's name.)
+    const NAMED = [[/^You Cleave\b/, ["cleave"]], [/^You Spit Ambient Magic\b/, ["spit ambient magic"]], [/^You Emblazon an Armament\b/, ["emblazon armament"]],
+        [/^You Prepare Elemental Medicine\b/, ["prepare elemental medicine"]], [/^You Treat a Disease or a Poison\b/, ["treat disease", "treat poison"]], [/^You Raise (?:your|the) Horde\b/, ["raise the horde"]]];
+    for (const [pattern, names] of NAMED) if (pattern.test(trigger)) return { names, spell: false, trigger, kind };
+    // ("You cast Harm or Heal", "you cast Force Fang": the spells by name, capitalized as the text has them.)
+    if ((match = /^You (?:Cast|cast) ((?:[A-Z][\w'’-]*)(?: (?:[A-Z][\w'’-]*|of|the))*(?: or (?:[A-Z][\w'’-]*)(?: (?:[A-Z][\w'’-]*|of|the))*)*)/.exec(trigger)) && !/^(?:A|An|The|Your|Spell)\b/.test(match[1])) {
+        return { names: match[1].split(/ or /).map((name) => name.trim().toLowerCase()), spell: false, trigger, kind };
+    }
     return null;
 }
 

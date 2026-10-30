@@ -531,3 +531,14 @@ test("spell-like feats: a spell in italics, its UUID without .Item., and a spell
     assert.equal(believer.rank, 4);
     assert.equal(spellLike(action("<p>You manifest your armaments; you can spend 1 Mythic Point to also gain the effects of the @UUID[Compendium.pf2e.spells-srd.Item.wzctak6BxOW8xvFV]{Enlarge} spell.</p>"), DCS), null);
 });
+
+test("reminders: a passive's action or spell named in words", async () => {
+    const { ownUseTrigger, usesTrigger } = await import("../src/compiler/event-reminders.js");
+    const passive = (html) => ({ name: "Passive", system: { description: { value: html }, actionType: { value: "passive" }, traits: { value: [] } } });
+    const channel = ownUseTrigger(passive("<p>When you cast @UUID[Compendium.pf2e.spells-srd.Item.Harm]{Harm} or @UUID[Compendium.pf2e.spells-srd.Item.Heal]{Heal} by spending 2 actions, you can …</p>"));
+    assert.deepEqual(channel.names, ["harm", "heal"]);
+    assert.ok(usesTrigger(channel, "Heal", "spell"));
+    assert.deepEqual(ownUseTrigger(passive("<p>Whenever you Cleave, you can …</p>")).names, ["cleave"]);
+    assert.deepEqual(ownUseTrigger(passive("<p>When you Treat a Disease or a Poison, you …</p>")).names, ["treat disease", "treat poison"]);
+    assert.equal(ownUseTrigger(passive("<p>When you cast a spell, you …</p>"))?.names?.length ?? 0, 0, "any spell, as before");
+});
