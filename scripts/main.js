@@ -1,0 +1,66 @@
+// PF2e Automatic Feat Resolution (2026-10-30, docs/feats.md): a character's feats and actions, compiled with the character's own DCs and
+// played by the ability module's cards. A feat it doesn't read stays PF2e's.
+
+import { compileFeat } from "../src/compiler/index.js";
+import { characterDCs } from "./character.js";
+
+const MODULE_ID = "pf2e-automatic-feat-resolution";
+const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
+
+const abilityApi = () => (game.modules.get(ABILITY_MODULE)?.active ? game.modules.get(ABILITY_MODULE).api ?? null : null);
+const isActiveGM = () => game.users.activeGM?.isSelf ?? game.user.isGM;
+
+// PF2e's own roll data for the paths in a feat's damage ("@item.flags.system.rulesSelections.damageType").
+const withRollData = (dcs, item) => (dcs ? { ...dcs, resolve: (formula) => Roll.replaceFormulaData(formula, item?.getRollData?.() ?? {}) } : null);
+
+function compileItem(item) {
+    const dcs = withRollData(characterDCs(item?.actor), item);
+    if (!dcs) return null;
+    try {
+        return compileFeat(item, { dcs, basicActions: abilityApi()?.basicActions });
+    } catch (error) {
+        console.warn(`${MODULE_ID} | ${item?.name} didn't compile.`, error);
+        return null;
+    }
+}
+
+const isFeatMessage = (message) => ["action", "feat"].includes(message.flags?.pf2e?.origin?.type) && !message.flags?.pf2e?.context?.type;
+
+// The player's own targets on the message of a character's feat or action, as it's posted (their client: the GM's card needs them).
+function recordTargets(message, _data, _options, userId) {
+    if (userId !== game.user.id || !isFeatMessage(message)) return;
+    const actor = message.speaker?.actor ? game.actors.get(message.speaker.actor) : null;
+    if (actor?.type !== "character" && message.speakerActor?.type !== "character") return;
+    const targets = [...game.user.targets].map((token) => token.document?.uuid).filter(Boolean);
+    if (targets.length) message.updateSource({ [`flags.${MODULE_ID}.targets`]: targets });
+}
+
+// A character's feat or action: its card when it reads into a save, a check or healing on its targets, or a Strike feat's (its hit's
+// results when the player's Strike hits). Its other readings stay PF2e's for now (D2).
+const CARD_KINDS = new Set(["save", "check", "healing"]);
+async function cardForFeat(message) {
+    if (!isFeatMessage(message) || !message.flags.pf2e.origin.uuid) return;
+    const play = abilityApi()?.live?.playAbility;
+    if (!play) return;
+    const item = await fromUuid(message.flags.pf2e.origin.uuid);
+    if (item?.actor?.type !== "character") return;
+    const plan = compileItem(item);
+    const sourceToken = message.token ?? item.actor.getActiveTokens(true, true)[0] ?? null;
+    if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
+    if (!plan?.resolution || !CARD_KINDS.has(plan.resolution.kind) || (plan.trigger?.event ?? "use") !== "use") return;
+    // (Damage still naming something the feat's roll data doesn't hold: PF2e's own card, not a wrong roll; D3.)
+    if (/"formula":"[^"]*@/.test(JSON.stringify(plan.resolution))) return;
+    const recorded = message.getFlag?.(MODULE_ID, "targets") ?? [];
+    const targets = recorded.map((uuid) => fromUuidSync(uuid)).filter(Boolean).map((token) => token.object ?? token);
+    return play(item, plan, sourceToken, new Set(targets));
+}
+
+Hooks.once("ready", () => {
+    if (!abilityApi()?.live?.playAbility) console.warn(`${MODULE_ID} | needs PF2e Automatic Ability Resolution 0.9.6 or later for its cards.`);
+    Hooks.on("preCreateChatMessage", recordTargets);
+    Hooks.on("createChatMessage", (message) => {
+        if (isActiveGM()) cardForFeat(message).catch((error) => console.error(`${MODULE_ID} | feat card`, error));
+    });
+    const module = game.modules.get(MODULE_ID);
+    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs });
+});
