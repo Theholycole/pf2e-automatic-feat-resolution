@@ -32,5 +32,20 @@ export default [
         uuid: pf2e("ONUvHtEccDmNEcVu"), name: "Spirit's Sacrifice",
         affect: { target: "you", effects: [{ kind: "heal", formula: "2*@actor.level" }] },
         notes: ["You don't die, and your wounded value drops to 1 if it's higher (by hand). The apparition is dispersed until your next daily preparations."]
+    },
+    {
+        uuid: pf2e("2q8vzxnlYYWcUGJd"), name: "You Can't Keep Us Down",
+        affect: { target: "each ally within 60 feet", effects: [{ kind: "heal", formula: "3*@actor.level" }] },
+        notes: ["Only the allies who are dying, or unconscious and wounded, are healed: target those and press Use my targets. Then each prone ally within 60 feet can Stand as a free action that doesn't trigger reactions."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-items.Item.ru7VGIoAlUM4kE7E", name: "Patch Up",
+        affect: { target: "1 ally", range: "5 feet", effects: [{ kind: "heal", formula: "(max(1,floor(@actor.level/2)))d8" }] },
+        notes: ["The ally is then immune to this underling's Patch Up for 10 minutes (Effect: Patch Up Immunity, by hand)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.cl8TzbIe9JTyRFPH", name: "Revitalizing Blood",
+        linked: { effect: "Compendium.pf2e-team-plus-barbarians.misc.Item.saANGEZnZQX0FTn4", label: "Effect: Revitalizing Blood", recipients: "target", target: "1 ally", within: 30 },
+        notes: ["You take persistent bleed damage equal to half your level (by hand). Each time it hurts you, the ally gets that many temporary Hit Points until the start of your next turn."]
     }
 ];

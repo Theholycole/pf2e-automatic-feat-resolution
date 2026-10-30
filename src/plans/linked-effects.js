@@ -33,5 +33,7 @@ export default [
     { uuid: "Compendium.pf2e.feats-srd.Item.wbKzD4D3VHbD6OiL", name: "Blanket Defense", linked: { effect: "Compendium.pf2e.feat-effects.Item.Effect: Blanket Defense", recipients: "self" }, notes: ["Raise a Shield first. Allies ending their turn adjacent to you get your raised shield's bonus."] },
     { uuid: "Compendium.pf2e-team-plus-tian-xia.misc.Item.4sDxSmAuYZxoB72x", name: "Secure Convoy", linked: { effect: "Compendium.pf2e-team-plus-tian-xia.misc.Item.ODEHKZ7u0CaZsR8P", recipients: "self" }, notes: [] },
     { uuid: "Compendium.pf2e-team-plus-oracles-remastered.items.Item.XvQ1DfNuSiwI5U1B", name: "Spirit Squire", linked: { effect: "Compendium.pf2e-team-plus-oracles-remastered.misc.Item.t3fbScIIFlfyffRK", recipients: "self" }, notes: [] },
-    { uuid: "Compendium.pf2e-team-plus-tian-xia.misc.Item.FZdhmClqFVa9cNag", name: "Hongali Support Benefit", linked: { effect: "Compendium.pf2e-team-plus-tian-xia.misc.Item.L6Uz6Hgz85dOQZFa", recipients: "self" }, notes: [] }
+    { uuid: "Compendium.pf2e-team-plus-tian-xia.misc.Item.FZdhmClqFVa9cNag", name: "Hongali Support Benefit", linked: { effect: "Compendium.pf2e-team-plus-tian-xia.misc.Item.L6Uz6Hgz85dOQZFa", recipients: "self" }, notes: [] },
+    // (2026-10-30, the loop: you and one ally.)
+    { uuid: "Compendium.pf2e.actionspf2e.Item.IBEbFlMmDbGsrN4G", name: "Raise the Walls", linked: { effect: "Compendium.pf2e.feat-effects.Item.Effect: Raise the Walls", recipients: "target", target: "you and 1 ally", within: 15 }, notes: ["Target yourself and the ally (within 15 feet) before Apply."] }
 ];
