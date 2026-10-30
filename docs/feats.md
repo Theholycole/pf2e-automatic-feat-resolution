@@ -296,7 +296,8 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **Six:** the marshal stances (Inspiring, Dread, Devrin's Cunning, Strategist), Helpful Tinkering (on the ally), Call of the Ancestor.
 - **The target's level** (`level: "target"`): "the hard DC for the target's level" — the check's `against: { dc: "level", adjustment }`,
   which the ability module's card works out for each target from its level (ability module, `levelDCOf`). Guiding Words, Invincible
-  Army, Quick Cuisine. The core reports it as a gap (it reads only "target" and "fixed") but resolves it, the card giving each degree.
+  Army, Quick Cuisine. Foundry test (feat a0f9022, ability 9afc236): Guiding Words DC 29 on a level-10 ally, its Effect applied;
+  Invincible Army on two allies at once, DC 29 and DC 26, PF2e asking each for the DC chosen and the damage type. The core reports it as a gap (it reads only "target" and "fixed") but resolves it, the card giving each degree.
 - **Left:** 83 options use a level's DC; most are exploration or downtime (Deep Meditation, Circadian Disciplinarian), or the DC of
   another creature than the target (Commitment to Protection: the threat's level, the ally gets the Effect).
 - **Foundry test** (2026-10-30, cdb2e28): Inspiring and Dread Marshal Stance (DC 22), Strategist Stance (DC 24, its critical-success

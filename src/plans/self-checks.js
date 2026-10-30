@@ -41,7 +41,7 @@ export default [
     {
         uuid: pf2e("2zxF682cNhgLMu26"), name: "Invincible Army",
         selfCheck: { statistic: "diplomacy", level: "target", adjustment: 2, target: "1 ally", outcomes: both({ nativeEffects: [effect("Effect: Invincible Army")] }) },
-        notes: ["You can roll Deception instead. PF2e's Effect asks which damage type. Against a very hard DC (3 more), two types, from a wider list: set it in the Effect."]
+        notes: ["You can roll Deception instead. On Apply, PF2e's Effect asks which DC you chose (hard, or very hard for two types from a wider list) and the damage type. A very hard DC is 3 more than the card's."]
     },
     {
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.u1Yj7NCED4myTRDu", name: "Quick Cuisine",
