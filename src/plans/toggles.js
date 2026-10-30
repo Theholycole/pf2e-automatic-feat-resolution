@@ -84,5 +84,15 @@ export default [
         uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.Ha4JUcgOaQRLarvk", name: "Unravel Into Runes",
         toggle: { rules: [{ key: "Resistance", type: "all-damage", value: "@actor.level" }], duration: { value: 4, unit: "rounds", expiry: "turn-start", sustained: false } },
         notes: ["You're incorporeal and can't make attacks (by hand). In an ally's space you can give it your runes' effects and a +4 status bonus to damage rolls; leaving its space, or it falling unconscious, ends this."]
+    },
+    {
+        uuid: pf2e("3aUlLF4V2KW7Hga5"), name: "Born in the Saddle",
+        toggle: { rules: [bonus("reflex", 1, "circumstance", undefined, "born-in-the-saddle")] },
+        notes: ["While you're mounted: your -2 circumstance penalty to Reflex saves is only -1. Post again when you dismount. If your mount is knocked prone, see the feat."]
+    },
+    {
+        uuid: pf2e("8pmd9gMl3TamFx3u"), name: "Deft Cooperation",
+        toggle: { rules: [bonus("attack", 1, "circumstance", undefined, "deft-cooperation-attack"), bonus("ac", 1, "circumstance", undefined, "deft-cooperation-ac")], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
+        notes: ["After you successfully Aid an ally's attack roll or AC: only against that enemy, until the end of your next turn."]
     }
 ];
