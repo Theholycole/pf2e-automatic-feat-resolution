@@ -135,3 +135,24 @@ test("self-healing and temporary Hit Points, with their time; a heal only someti
     assert.deepEqual(success(draw).map((effect) => [effect.formula, effect.duration.value, effect.duration.unit]), [["8", 1, "rounds"]]);
     assert.equal(compileFeat(feat("Test Rest", "<p>If you rest for 10 minutes, you regain Hit Points equal to your level.</p>"), { dcs: DCS }), null);
 });
+
+test("a feat that changes the character's own numbers for a while: the module's Effect, its rules and time", () => {
+    const stance = { ...feat("Rain of Embers Stance", "<p><strong>Requirements</strong> You're unarmored.</p><hr /><p>You enter a stance of fiery strikes. While in Rain of Embers Stance, you gain a +1 status bonus to AC and fire resistance equal to half your level (minimum 1).</p>", 1) };
+    stance.system.traits.value = ["stance"];
+    const plan = compileFeat(stance, { dcs: DCS });
+    assert.equal(plan.builtin, "feat-effect");
+    assert.deepEqual(plan.effect.rules, [{ key: "FlatModifier", selector: "ac", type: "status", value: 1 }, { key: "Resistance", type: "fire", value: 4 }]);
+    assert.equal(plan.effect.stance, true);
+    assert.equal(plan.effect.duration.unit, "encounter");
+    const shield = compileFeat(feat("Raise Symbol", "<p>You present your religious symbol emphatically. You gain a +2 circumstance bonus to saving throws until the start of your next turn. While it's raised, if you roll a success at a saving throw against a vitality or void effect, you get a critical success instead.</p>", 1), { dcs: DCS });
+    assert.deepEqual(shield.effect.rules, [{ key: "FlatModifier", selector: "saving-throw", type: "circumstance", value: 2 }]);
+    assert.deepEqual(shield.effect.duration, { value: 1, unit: "rounds", expiry: "turn-start", sustained: false });
+    assert.equal(shield.notes.length, 1, "the sometimes-sentence is the GM's");
+    const climb = compileFeat(feat("Grip", "<p>For 1 minute, you gain a +2 circumstance bonus to Athletics checks to Climb.</p>", 1), { dcs: DCS });
+    assert.deepEqual(climb.effect.rules, [{ key: "FlatModifier", selector: "athletics", type: "circumstance", value: 2, predicate: ["action:climb"] }]);
+    assert.equal(climb.effect.duration.unit, "minutes");
+    // Not: someone else's bonus, one against the triggering attack, one with no end and no stance.
+    assert.equal(compileFeat(feat("Eddies", "<p>All ranged attacks against you take a –1 circumstance penalty to the attack roll until the end of your next turn.</p>", 1), { dcs: DCS }), null);
+    assert.equal(compileFeat(feat("Dodge", "<p>You gain a +2 circumstance bonus to AC against the triggering attack.</p>", 1), { dcs: DCS }), null);
+    assert.equal(compileFeat(feat("Forever", "<p>You gain a +1 status bonus to AC.</p>", 1), { dcs: DCS }), null);
+});

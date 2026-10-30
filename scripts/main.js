@@ -4,6 +4,7 @@
 import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
+import { applyFeatEffect } from "./effects.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -54,11 +55,13 @@ function registerSetting() {
 const allCards = () => game.settings.get(MODULE_ID, SETTING) === "all";
 async function cardForFeat(message) {
     if (!isFeatMessage(message) || !message.flags.pf2e.origin.uuid) return;
-    const play = abilityApi()?.live?.playAbility;
-    if (!play) return;
     const item = await fromUuid(message.flags.pf2e.origin.uuid);
     if (item?.actor?.type !== "character") return;
     const plan = compileItem(item);
+    // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
+    if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
+    const play = abilityApi()?.live?.playAbility;
+    if (!play) return;
     const sourceToken = message.token ?? item.actor.getActiveTokens(true, true)[0] ?? null;
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;

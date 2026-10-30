@@ -40,6 +40,14 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
   - Its other rule sentences go to the GM as notes. A sentence that heals only sometimes ("At 15th level, you instead …", "If you rest …", "The first time each round …") is a note, never the amount.
 - **Live:** an automatic check, so it gets the card like a save.
 
+## Slice 5: the character's own numbers for a while, as the module's Effect (2026-10-30)
+
+- **The reader** (`src/compiler/self-effect.js`): "You gain a +1 circumstance bonus to AC until the start of your next turn", "For 1 minute, you gain a +2 circumstance bonus to Athletics checks to Climb", "While in Rain of Embers Stance, you gain a +1 status bonus to AC and fire resistance equal to half your level", "you take a –10-foot penalty to your Speed" become `{ builtin: "feat-effect", effect: { name, rules, duration, stance } }`. The rules are the ones PF2e's own Effects use: FlatModifier (with `action:<slug>` for "checks to Climb") and Resistance.
+  - Only a bonus with an end the text gives, or a stance's (until the encounter ends or another stance). A bonus "against the triggering attack", "against attacks you trigger this way", one for someone else ("all ranged attacks against you take …", "you and all allies") or one only sometimes ("If …", "When …") stays the GM's, as a note.
+  - Not a feat that links PF2e's own Effect: PF2e's button applies that (D9).
+- **Live** (`scripts/effects.js`): when the feat is used, the GM's client puts an Effect named after it on the character, with the rules, the time and the unread sentences in its description. Using it again replaces it; a stance replaces the module's other stance.
+- **Measured:** 9 options in the needs-work set (stances such as Rain of Embers, Cobra, Asp and Stumbling, Raise Symbol, Blood Shield, Unstable Gearshift). Few, because the easy wordings already have PF2e's own Effect; the rest of the self-buffs are "against the triggering …" reactions.
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.
@@ -57,3 +65,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 | D7 | A reaction read as used (slice 3) gets its card when the player uses it from the sheet. Should the card also show its trigger ("Used on: a creature … damages you with a melee Strike") for the GM to check? | Kept on the plan (`usedOn`), not shown. |
 | D8 | What's left (about 4,300 options) is mostly passives (849 "other rule text", 148 conditional bonuses, 65 resistances, 196 daily resources), companions (475) and stances with no Effect (about 60). These don't read into a card: PF2e automates them with rule elements on the feat or an Effect. Should the module ship its own rule elements for them (a compendium of Effects, or rules added to the feat when it's on a character), batch by batch as the ability module did monsters? | Not started. The text readers go on with the long tail meanwhile. |
 | D9 | 157 options have PF2e's own self-applied Effect (`selfEffect`), which PF2e already offers as a button on the feat's chat card. Should the module apply it on use instead of the button? | Left to PF2e's button. |
+| D10 | A feat read in slice 5 puts the module's Effect on the character as soon as it's used, with no card or button. Should it ask first (a button on the chat card), or apply it as PF2e's own stances do? | Applied on use, whatever the D2 setting. |
