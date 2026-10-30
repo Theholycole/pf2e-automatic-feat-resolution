@@ -3,6 +3,7 @@
 
 import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
+import { setUpRules } from "./rules.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -69,7 +70,11 @@ async function cardForFeat(message) {
     return play(item, plan, sourceToken, new Set(targets));
 }
 
-Hooks.once("init", () => registerSetting());
+Hooks.once("init", () => {
+    registerSetting();
+    // (The module's rule elements, docs/rules.md: before any actor prepares; PF2e's item classes are in CONFIG by the system's own init.)
+    setUpRules();
+});
 
 Hooks.once("ready", () => {
     if (!abilityApi()?.live?.playAbility) console.warn(`${MODULE_ID} | needs PF2e Automatic Ability Resolution 0.9.6 or later for its cards.`);
