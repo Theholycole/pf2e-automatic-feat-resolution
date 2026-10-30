@@ -13,8 +13,9 @@ import maneuvers from "./maneuvers.js";
 import saves from "./saves.js";
 import saves2 from "./saves-2.js";
 import checks from "./checks.js";
+import damage from "./damage.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
