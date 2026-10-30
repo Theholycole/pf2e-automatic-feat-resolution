@@ -22,6 +22,15 @@ export function eventTrigger(item) {
     // ("A creature Casts a Spell", "An enemy casts a spell that targets you …", "Another creature within 30 feet Casts a Spell": a spell another
     // creature casts, the Counterspells' trigger.)
     if (/^(?:A|An|Another|Your) (?:creature|enemy|foe|opponent)\b[^.]*?\b[Cc]asts? a [Ss]pell\b/.test(trigger)) return read("foe-casts");
+    // ("A creature within your reach critically fails a Strike against you": Dueling Riposte's.)
+    if (/\bcritically fails (?:a|an|its|their) (?:melee )?(?:Strike|attack(?: roll)?)\b[^.]*\bagainst you\b/i.test(trigger)) return read("critical-miss");
+    // (A creature or ally gaining a condition or falling to 0 Hit Points: "An ally within 30 feet gains the Frightened condition", "An ally
+    // within 30 feet would be reduced to 0 HP but not immediately killed", "A creature within 60 feet gains the Frightened condition".)
+    const conditions = conditionsOf(trigger);
+    if (conditions) {
+        const who = /^(?:An?|Another|Your|One of your) (?:adjacent )?all(?:y|ies)\b/i.test(trigger) ? "ally-condition" : /^(?:A|Another) creature\b/i.test(trigger) ? "creature-condition" : /^You (?:would )?(?:gain|become|are reduced|fall|would be reduced)\b/i.test(trigger) ? "self-condition" : null;
+        if (who) return { ...read(who), conditions };
+    }
     const ally = /\b(?:an|your|one of your|a) (?:adjacent )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
     if (ally) {
         if (/\b(?:is|are) (?:critically )?hit\b|\bhits (?:an|your|the) ally\b/i.test(trigger)) return read("ally-hit");
@@ -36,11 +45,23 @@ export function eventTrigger(item) {
     return null;
 }
 
+const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "off-guard", "paralyzed", "petrified", "prone", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded"];
+// "gains the Frightened condition", "would become Frightened, Drained, …", "becomes frightened or stupefied", "falls to 0 Hit Points" → the
+// conditions (with "0-hp" for the last), or null.
+function conditionsOf(trigger) {
+    if (/\b(?:falls to|is reduced to|would be reduced to|brings? [^.]*? to|drops to) 0 (?:Hit Points|HP)\b/i.test(trigger) && !/\bbrings an enemy\b/i.test(trigger)) return ["0-hp"];
+    const match = /\b(?:gains?|would gain|becomes?|would become)(?: the)? ((?:[A-Za-z-]+(?:,? (?:or|and) |, ))*[A-Za-z-]+)(?: condition)?\b/i.exec(trigger);
+    if (!match) return null;
+    const words = match[1].toLowerCase().split(/,? (?:or|and) |, /).map((word) => word.trim());
+    const found = words.filter((word) => CONDITION_WORDS.includes(word));
+    return found.length && found.length === words.length ? found : null;
+}
+
 // What PF2e's roll message means for a character it's aimed at: an attack roll → targeted, and hit / critical-hit by its degree; a
 // damage roll → damaged.
 export function eventsOf(contextType, outcome) {
     if (["attack-roll", "spell-attack-roll"].includes(contextType)) {
-        return ["targeted", ...(["success", "criticalSuccess"].includes(outcome) ? ["hit"] : []), ...(outcome === "criticalSuccess" ? ["critical-hit"] : [])];
+        return ["targeted", ...(["success", "criticalSuccess"].includes(outcome) ? ["hit"] : []), ...(outcome === "criticalSuccess" ? ["critical-hit"] : []), ...(outcome === "criticalFailure" ? ["critical-miss"] : [])];
     }
     if (contextType === "damage-roll") return ["damaged"];
     return [];

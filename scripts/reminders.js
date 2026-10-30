@@ -135,3 +135,28 @@ export async function onJoinEncounter(combatant) {
     const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-initiative");
     if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: an encounter is starting (before you roll initiative).`, due);
 }
+
+// A condition gained, or 0 Hit Points (slice 10): the creature's own feats that trigger on it ("You would gain the Fatigued condition",
+// "You would be reduced to 0 Hit Points"), and other characters' that trigger on an ally's or any creature's ("An ally within 30 feet gains
+// the Frightened condition", "A creature within 60 feet gains the Frightened condition"), in range.
+export async function onConditionGained(actor, slug) {
+    if (!game.settings.get(MODULE_ID, SETTING) || !actor) return;
+    const matches = (read, event) => read?.event === event && read.conditions?.includes(slug);
+    const forActor = (each, event) => [...each.itemTypes.feat, ...each.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => matches(read, event));
+    const words = slug === "0-hp" ? "is reduced to 0 Hit Points" : `gains ${slug}`;
+    if (actor.type === "character") {
+        const due = forActor(actor, "self-condition");
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong> ${escape(words)}.`, due);
+    }
+    const token = actor.getActiveTokens(true)[0] ?? null;
+    if (!token) return;
+    for (const other of canvas?.tokens?.placeables ?? []) {
+        const each = other.actor;
+        if (each?.type !== "character" || each === actor) continue;
+        const distance = distanceBetween(other, token);
+        const inRange = ({ read }) => !read.within || (distance !== null && distance <= read.within);
+        const ally = other.document.disposition === token.document.disposition ? forActor(each, "ally-condition") : [];
+        const due = [...ally, ...forActor(each, "creature-condition")].filter(inRange);
+        if (due.length) await whisper(each, `<strong>${escape(each.name)}</strong>: ${escape(actor.name)} ${escape(words)}.`, due);
+    }
+}

@@ -5,7 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
-import { onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
+import { onConditionGained, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -87,6 +87,13 @@ Hooks.once("ready", () => {
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {
         if (isActiveGM()) onTurnChange(combat, prior, current);
+    });
+    // (Slice 10: a condition gained, or 0 Hit Points.)
+    Hooks.on("createItem", (item) => {
+        if (isActiveGM() && item.type === "condition" && item.actor) onConditionGained(item.actor, item.slug).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
+    });
+    Hooks.on("updateActor", (actor, changed) => {
+        if (isActiveGM() && foundry.utils.getProperty(changed, "system.attributes.hp.value") === 0) onConditionGained(actor, "0-hp").catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
     Hooks.on("createCombatant", (combatant) => {
         if (isActiveGM()) onJoinEncounter(combatant).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
