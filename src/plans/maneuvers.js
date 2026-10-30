@@ -5,6 +5,10 @@
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const action = (id) => `Compendium.pf2e.actionspf2e.Item.${id}`;
+// Teams+ (its module's own packs).
+const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
+const feats = (id) => teams("pf2e-team-plus-feats", "pf2e-player-options", id);
+const tianXia = (id) => teams("pf2e-team-plus-tian-xia", "player-options", id);
 const untilYourNextTurnEnds = { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" };
 const demoralize = (uuid, name, target, notes = []) => ({ uuid, name, act: "demoralize", ...(target ? { target } : {}), notes });
 const each30 = "each enemy within 30 feet";
@@ -73,10 +77,22 @@ export default [
     { uuid: action("jl1euufxNpAhVt26"), name: "Disarming Interception", act: "disarm", notes: ["+2 status; a success disrupts the attack. On a critical success with a hand free, you can catch the weapon."] },
     // Reposition
     { uuid: pf2e("yFc0tN9HviAJnG1r"), name: "Divert Streamflow", act: "reposition", notes: ["Against the creature that damaged you; on a success you can Step as a free action."] },
+    { uuid: pf2e("E1WXnYE2QwhHQxQb"), name: "Sleeper Hold", act: "grapple", notes: ["Against the creature you have grabbed, with other results: success, clumsy 1 until the end of its next turn; critical success, unconscious for 1 minute (still standing). See the feat."] },
+    // Teams+
+    demoralize(feats("jCQB9VIAhEQcjW3L"), "Menacing Approach", null, ["Then Stride toward it; after a success the movement doesn't provoke its reactions. A single action if you're legendary in Intimidation."]),
+    demoralize(teams("pf2e-team-plus-barbarians", "items", "2vbX1nwyfYm8tnln"), "HIT ME!", null, ["Against the enemy attacking your ally; see the feat for a success."]),
+    demoralize(tianXia("PZ1nVWZLv1Ae17n6"), "Monstrous Turn", null, ["Before the attack, against the attacker."]),
+    demoralize(tianXia("pKNWK8e4cLuH7WR7"), "Intimidating Channel", null, ["After casting Channel Imperial Dragon."]),
+    demoralize(teams("pf2e-team-plus-inventors", "inventors-feats", "GCyGoDtYQ2AeHxcj"), "Maniacal Laughter!", "each enemy the unstable action affected", ["Crafting instead of Intimidation."]),
+    { uuid: feats("GJRq9nCzL1amXtY4"), name: "Monumental Shove", act: "shove", notes: ["On a success it moves further: the check's result ÷ 2, rounded up to 5 feet. See the feat for a critical success into an obstacle."] },
+    { uuid: feats("J1xFhXLePB7I61Pa"), name: "Mid-air Tackle", act: "grapple", target: "1 airborne creature", notes: ["Leap first (High Jump or Long Jump with 3 actions); see the feat for the extra results."] },
+    { uuid: tianXia("3LMWofoux3UQicIv"), name: "Clearing The Way", act: "disarm", notes: ["Step before or after. Stepping onto a weapon you disarmed, you can pick it up as a free action."] },
     // Strikes that end in a maneuver
     { uuid: pf2e("AGiIjgLOFuahmwiT"), name: "Shackles of Law", strike: { melee: true, onHit: { follow: "grapple" }, notes: ["The Grapple only if it deals damage. With a flail or spiked chain no free hand is needed, and a success counts as a critical success."] } },
     { uuid: pf2e("74MnTnoqSveet8Sy"), name: "Reflexive Grapple", strike: { strike: "lash", anyStrike: false, onHit: { follow: "grapple" }, notes: ["The penalty rises only after both."] } },
     { uuid: pf2e("ZTxiM8NExDmxHJDf"), name: "Pin to the Spot", strike: { melee: true, onHit: { conditions: [{ slug: "restrained", value: null, duration: null }] }, notes: ["Only if it deals damage: restrained as by a critical Grapple."] } },
+    { uuid: tianXia("x7j3E1HlpkpzxRoi"), name: "Dreadnought Slam", strike: { melee: true, onHit: { follow: "trip" }, notes: ["An unarmed Strike; the Trip only if it deals damage. The penalty rises only after both."] } },
+    { uuid: pf2e("hENWnoZNljeJnZBR"), name: "Elbow Breaker", strike: { melee: true, notes: ["An unarmed Strike against the creature you have grabbed. Critical hit: one held item falls. Hit: +2 circumstance to Disarm that item, and –2 circumstance to its checks with it, until it changes its grip."] } },
     { uuid: pf2e("1rbB6bYDqjR4gVTH"), name: "Unsteadying Strike", strike: { melee: true, notes: ["On a hit, until your next turn: –2 circumstance to its Fortitude DC against Grapple, Reposition and Shove, and to its Reflex DC against Disarm."] } },
     // A condition with no roll
     { uuid: pf2e("9zH7IOsmhRBEqXAV"), name: "Instant Opening", affect: { target: "1 creature", range: "30 feet", effects: [{ slug: "off-guard", duration: untilYourNextTurnEnds }] }, notes: ["Off-guard only to your attacks."] },
