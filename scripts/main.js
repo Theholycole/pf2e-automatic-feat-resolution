@@ -107,7 +107,7 @@ Hooks.once("ready", () => {
         if (("x" in changed || "y" in changed) && canvas?.grid) options[`${MODULE_ID}.from`] = tokenCenter(document);
     });
     Hooks.on("updateToken", (document, changed, options) => {
-        if (isActiveGM() && ("x" in changed || "y" in changed)) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null);
+        if (isActiveGM() && ("x" in changed || "y" in changed)) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null, changed);
     });
     Hooks.on("createCombatant", (combatant) => {
         if (isActiveGM()) onJoinEncounter(combatant).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));

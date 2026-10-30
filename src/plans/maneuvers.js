@@ -10,7 +10,9 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 const feats = (id) => teams("pf2e-team-plus-feats", "pf2e-player-options", id);
 const tianXia = (id) => teams("pf2e-team-plus-tian-xia", "player-options", id);
 const untilYourNextTurnEnds = { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" };
-const demoralize = (uuid, name, target, notes = []) => ({ uuid, name, act: "demoralize", ...(target ? { target } : {}), notes });
+// (Its immunity "for 1 minute" in the notes: the feat's own, not Demoralize's 10 minutes.)
+const ownImmunity = (notes) => (notes.some((note) => /\bimmune for 1 minute\b/.test(note)) ? { immunity: { duration: { value: 1, unit: "minutes" }, raw: "Each creature is then temporarily immune for 1 minute." } } : {});
+const demoralize = (uuid, name, target, notes = []) => ({ uuid, name, act: "demoralize", ...(target ? { target } : {}), ...ownImmunity(notes), notes });
 const each30 = "each enemy within 30 feet";
 
 export default [

@@ -185,13 +185,20 @@ async function remindFoeActs(foeToken, test, words, positions = null) {
     }
 }
 
-export const tokenCenter = (document) => ({ x: document.x + (document.width * canvas.grid.size) / 2, y: document.y + (document.height * canvas.grid.size) / 2 });
+// (Foundry 14: a token document's x and y follow the move's animation, even in its update hooks; its _source and the change don't.)
+export const tokenCenter = (document, changed = {}) => {
+    const source = document._source ?? document;
+    const x = changed.x ?? source.x;
+    const y = changed.y ?? source.y;
+    return { x: x + ((changed.width ?? source.width) * canvas.grid.size) / 2, y: y + ((changed.height ?? source.height) * canvas.grid.size) / 2 };
+};
 
-export function onTokenMoved(document, from) {
+export function onTokenMoved(document, from, changed = {}) {
     const token = document.object;
     if (!token || !from || token.actor?.type === "character") return;
-    // (Where it ends, from the document: during the move's animation token.center is still on the way; 2026-10-30 Foundry test.)
-    const to = tokenCenter(document);
+    // (Where it ends, from the change: during the move's animation token.center and the document's x and y are still on the way; 2026-10-30
+    // Foundry test.)
+    const to = tokenCenter(document, changed);
     remindFoeActs(token, (read) => read.moves || read.traits.includes("move"), "moves", [from, to]).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
 }
 

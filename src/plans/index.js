@@ -51,7 +51,7 @@ const sourceFor = (item) => ({ name: item.name, slug: item.system?.slug ?? null,
 
 // An act entry → the basic action's plan as the feat's (its card rolls the character's own check), or null without that action's plan.
 // entry.act: the action's slug; entry.target: who it's used on, as the card says it ("each enemy within 30 feet"); entry.notes.
-// entry.successAsCritical: a success counts as a critical success.
+// entry.successAsCritical: a success counts as a critical success; entry.immunity: { duration } of the feat's own immunity.
 export function handAct(item, entry, basicActions) {
     const base = basicActions?.[entry.act];
     if (!base) return null;
@@ -61,6 +61,8 @@ export function handAct(item, entry, basicActions) {
     if (entry.target) plan.targeting = { ...(plan.targeting ?? {}), target: entry.target };
     // (Tail Spin, 2026-10-30 Foundry test: "a success counts as a critical success" — the success applies the critical success's results.)
     if (entry.successAsCritical && plan.resolution?.outcomes?.criticalSuccess) plan.resolution.outcomes.success = structuredClone(plan.resolution.outcomes.criticalSuccess);
+    // (Dazzling Display, 2026-10-30 Foundry test: "immune for 1 minute", not Demoralize's 10 — entry.immunity, the feat's own duration.)
+    if (entry.immunity && plan.trigger?.immunity) plan.trigger.immunity = { ...plan.trigger.immunity, raw: entry.immunity.raw ?? plan.trigger.immunity.raw, duration: entry.immunity.duration };
     plan.notes = [...(entry.notes ?? [])];
     return plan;
 }

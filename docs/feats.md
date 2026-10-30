@@ -110,12 +110,15 @@ after it:
 - Disruptive Stare never reminded: PF2e 8.6 posts a spell's cast with context type "spell-cast", which the use, foe-spell, foe-action and
   save reminders skipped as a later roll. They take it as the use now.
 - Tail Spin's success applied only the success's results: an act entry's successAsCritical copies the critical success onto the success.
-- Hunting Snag missed some moves: the token's end point is read from its document, not token.center (still animating).
+- Hunting Snag missed some moves: in Foundry 14 token.center and the document's x and y follow the move's animation, even in the update
+  hooks. The start is read from the document's _source before the update, the end from the change.
 - The "needs 0.9.6" warning was logged at load before the ability module had set its live API: it is logged at the first card instead.
 - Hunter's Defense reminded for any attacker: a trigger's "creature with the animal, … trait" is read as by, matched to the attacker's traits.
 - Mask of Fear reminded at every turn start: a start-of-turn trigger's conditions ("with the Frightened condition") are read as having,
   checked on the character.
 - Stunning Finisher without a swashbuckler class DC: its note says to call for the save by hand.
+- Dazzling Display, Terrifying Howl and the other "immune for 1 minute" Demoralize feats applied Demoralize's 10-minute immunity: the
+  entry carries the feat's own.
 
 Known, not fixed: Dazzling Display's card covers the GM's targets, not "each enemy within 30 feet" by itself.
 
