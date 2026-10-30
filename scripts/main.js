@@ -82,6 +82,13 @@ async function cardForFeat(message) {
     const sourceToken = (item === posted ? message.token : null) ?? item.actor.getActiveTokens(true, true)[0] ?? null;
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
     if (plan?.builtin === "spell-like") return castSpellLike(item, plan, sourceToken, message);
+    // (The ability module's own reading of "You cast Enlarge", its UUID by id as Foundry has it: the same cast, at the plan's DC or the
+    // character's best; 2026-10-30 Foundry test, Dire Growth and Rat Form cast nothing.)
+    if (plan?.builtin === "cast-spell" && plan.spell?.uuid) {
+        const dcs = characterDCs(item.actor) ?? {};
+        const best = [dcs.class, dcs.spell].filter((value) => Number.isFinite(value));
+        return castSpellLike(item, { ...plan, dc: plan.dc ?? (best.length ? Math.max(...best) : null) }, sourceToken, message);
+    }
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
     if (!(plan.resolution && CARD_KINDS.has(plan.resolution.kind)) && !allCards()) return;
     // (Damage still naming something the feat's roll data doesn't hold: PF2e's own card, not a wrong roll; D3.)
