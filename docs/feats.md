@@ -193,6 +193,11 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - Reactions and free actions, played as the player posts them: concealed (Heat Wave, Eerie Flicker), prone ended as you Stand (Hop Up,
   Call to Battle), drained 1 or 1 more (Blood Calls Blood), dying ended with doomed 1 more (My Legend Must Be Told), and 7d10+28 healing
   on the triggering creature (Sorshen's Devotion).
+- **Foundry test (2026-10-30, c8a7c8e).** All 18 played as written: Whirling Throw 15 bludgeoning and prone on a critical success,
+  Mythic Containment grabbed and slowed 1, Denounce Tyranny a line per creature, Embrace of Destiny DC 24, Ghostly Condemnation a 5th-rank
+  Vision of Death at DC 24, each concealment, off-guard and dazzle on the right creatures for the right time, Hop Up's prone gone, Blood
+  Calls Blood drained 1 then 2, Sorshen's Devotion 63 healing. Fixed after it: My Legend Must Be Told ended dying and with it the
+  unconscious PF2e grants from dying, so it puts unconscious back; Whirling Throw's note says the thrown creature is no longer grabbed.
 - Movement and tempo: concealed (Plane Step until the end of your next turn, Tempo Duelist, Now You See Me until the end of your turn),
   quickened for the round (Tempo Shift); the Stride and the foes' off-guard are notes. Flourishing Finish in `checks-2.js`: Performance
   against the Will DC of each enemy within 30 feet, frightened 1, or 2 on a critical success.

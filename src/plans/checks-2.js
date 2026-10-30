@@ -16,7 +16,7 @@ export default [
     {
         uuid: pf2e("w0nSRBNwexM5Dh0D"), name: "Whirling Throw", target: "the creature you have grabbed",
         text: check("athletics", "fortitude", "the Fortitude DC of the creature you have grabbed") + results({ criticalSuccess: `The target takes ${thrown} damage and is ${prone}.`, success: `The target takes ${thrown} damage.`, criticalFailure: "The target is no longer grabbed or restrained by you." }),
-        notes: ["You throw it up to 10 feet plus 5 feet × your Strength modifier, by hand. –2 to the check against a creature one size larger (–4 larger still), +2 against one size smaller (+4 smaller still). Thrown less than the most, the damage is 1d6 per 10 feet plus your Strength modifier, unless it hit a solid obstacle."]
+        notes: ["Thrown, it's no longer grabbed or restrained by you: remove that. You throw it up to 10 feet plus 5 feet × your Strength modifier, by hand. –2 to the check against a creature one size larger (–4 larger still), +2 against one size smaller (+4 smaller still). Thrown less than the most, the damage is 1d6 per 10 feet plus your Strength modifier, unless it hit a solid obstacle."]
     },
     {
         uuid: pf2e("y3E0V6Nmq7HElfDT"), name: "Mythic Containment",
