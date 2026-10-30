@@ -281,6 +281,11 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - **On you and allies:** Indomitable Spirit and Channeled Protection (adjacent), Unbreaking Castle (your allies).
 - **Left:** actions linking several Effects or giving a choice (Raise the Walls' "one ally of your choice" with you, Roll the Bones of
   Fate), and those whose Effect follows a check. Count: 2,672 of 4,826 left.
+- **Foundry test** (2026-10-30): cards and targets right at first, but no Effect went on: PF2e's texts link these by name, and the
+  ability module's card looks them up by id. The feat module now resolves a name-form link to the pack's id before the card (`byName`,
+  `scripts/effects.js`), and the ability module's effect card shows the plan's notes. Re-test (feat 02bd59e, ability e1e3500): Plane-
+  Stepping Dash (Speed 25 → 30), Offer Story (AC and Will +1), Rend Armor (target's AC −2), Overdrive Ally, Indomitable Spirit (you and
+  the adjacent ally AC +4 and quickened, the ally 10 feet off not), Glimpse Vulnerability: all passed, no console errors.
 
 ## Tested in Foundry (2026-10-30)
 
