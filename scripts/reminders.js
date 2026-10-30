@@ -146,7 +146,7 @@ export async function onOwnUse(message) {
     const item = await fromUuid(origin.uuid).catch(() => null);
     const actor = item?.actor;
     if (actor?.type !== "character") return;
-    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].filter((each) => each !== item).map((each) => ({ item: each, read: ownUseTrigger(each) })).filter(({ read }) => usesTrigger(read, item.name, item.type));
+    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].filter((each) => each !== item).map((each) => ({ item: each, read: ownUseTrigger(each) })).filter(({ read }) => usesTrigger(read, item.name, item.type, item.system?.traits?.value ?? []));
     if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: you used ${escape(item.name)}.`, due);
 }
 

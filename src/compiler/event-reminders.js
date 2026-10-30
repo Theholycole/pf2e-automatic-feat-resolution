@@ -158,13 +158,23 @@ export function weaponFits(weapons, options = []) {
 // message when it uses one.
 export function ownUseTrigger(item) {
     const type = item?.system?.actionType?.value;
-    if (!["reaction", "free"].includes(type)) return null;
-    const found = /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
+    // (A passive feat that changes an action or spell when it's used, "When you use Fervor, …", "Whenever you Cast or Sustain a hex, …":
+    // its "When" clause; not a basic move or Interact, which would remind at every step; the loop, 2026-10-30.)
+    const passive = type === "passive" ? /(?:^|[.!?]\s+)When(?:ever)? (you\b[^,.]*),/i.exec(plainOf(item?.system?.description?.value ?? "")) : null;
+    if (passive && /^you (?:Stride|Step|Leap|Interact|use the Interact)\b/i.test(passive[1])) return null;
+    if (!passive && !["reaction", "free"].includes(type)) return null;
+    const found = passive ? [null, passive[1].replace(/^./, (letter) => letter.toUpperCase())] : /<strong>\s*Trigger\s*<\/strong>([\s\S]*?)<\/p>/i.exec(String(item?.system?.description?.value ?? ""));
     if (!found) return null;
     const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
-    const kind = type === "reaction" ? "reaction" : "free action";
+    const kind = passive ? "passive" : type === "reaction" ? "reaction" : "free action";
     let match;
-    if (/^You (?:Cast|cast) (?:a|an) (?:[\w-]+ )*?(?:spell|cantrip)\b/.test(trigger)) return { names: [], spell: true, trigger, kind };
+    // ("You cast an illusion spell", "a spell with the darkness trait", "a Harm or Heal spell": the traits or names it needs, if any.)
+    if ((match = /^You (?:Cast|cast) (?:a|an) ((?:[\w-]+ )*?)(?:[Ss]pell|cantrip)s?\b/.exec(trigger))) {
+        const words = match[1].trim().split(/\s+/).filter((word) => word && !["or", "and", "non-cantrip"].includes(word.toLowerCase()));
+        const names = words.filter((word) => /^[A-Z]/.test(word)).map((word) => word.toLowerCase());
+        const traits = [...words.filter((word) => /^[a-z]/.test(word)), ...[...trigger.matchAll(/\bwith the ([a-z-]+) trait\b/g)].map((each) => each[1])];
+        return { names, spell: true, spellTraits: traits, trigger, kind };
+    }
     if ((match = /^You (?:use|used) (?:the |your )?([A-Z][\w'’-]*(?: (?:[A-Z][\w'’-]*|of|the|a|for))*)/.exec(trigger))) return { names: [match[1].replace(/ (?:of|the|a|for)$/, "").toLowerCase()], spell: false, trigger, kind };
     if ((match = /^You (?:Cast|cast) ([a-z][\w'’ -]+?)(?=[.,]| and | to | on | with | using |$)/.exec(trigger)) && !/^(?:a|an|the|your)\b/.test(match[1])) return { names: [match[1].toLowerCase()], spell: false, trigger, kind };
     if ((match = /^You enter ((?:[A-Z][\w'’-]*\s?)+Stance)\b/.exec(trigger))) return { names: [match[1].trim().toLowerCase()], spell: false, trigger, kind };
@@ -173,10 +183,10 @@ export function ownUseTrigger(item) {
 }
 
 // Whether the character's own message (its item's name and type) is what the trigger names.
-export function usesTrigger(read, itemName, itemType) {
+export function usesTrigger(read, itemName, itemType, itemTraits = []) {
     if (!read) return false;
-    if (read.spell) return itemType === "spell";
     const name = String(itemName ?? "").toLowerCase().replace(/\s*\([^)]*\)\s*$/, "").trim();
+    if (read.spell) return itemType === "spell" && (!read.names.length || read.names.includes(name)) && (!read.spellTraits?.length || read.spellTraits.some((trait) => itemTraits.includes(trait)));
     return read.names.some((each) => name === each || name.startsWith(`${each} `));
 }
 
