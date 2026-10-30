@@ -174,6 +174,13 @@ creature, or the action also has a check, an area, a Strike or a spell.
 - Also: Embrace of Destiny in `saves-4.js` (Will against the class DC, the pull to an adjacent square by hand), and Ghostly Condemnation
   cast as a 5th-rank Vision of Death ("is subject to the effects of" now reads as a spell-like feat). Count: 2,825 of 4,826 left.
 
+## Hand-picked: more conditions with no roll (2026-10-30, the loop)
+
+- `src/plans/affects-2.js`: concealed on yourself until your next turn (Flickering Twirl, Fade Into Daydreams), on you and each adjacent
+  ally (Banner Twirl, ranged attacks only a note); off-guard on yourself (Statue, until you act); off-guard on the creature your Double
+  Slice hit twice (Flensing Slice, its bleed and resistances PF2e's Effect); dazzled on each enemy within 20 feet (Cleansing Light, its
+  Restoration by hand).
+
 ## Companions: eidolons, animal companions and familiars (2026-10-30, Cole's choice)
 
 - **How they're built.** PF2e has no actor type for an eidolon or an animal companion. PF2e Companion Compendia makes them "character" actors: an eidolon has the Eidolon class and an ancestry with the eidolon trait, an animal companion has the minion trait. A familiar has its own type, "familiar", and the only link PF2e keeps: `system.master.id`. Neither Companion Compendia nor Summoners+ links an eidolon to its summoner.
