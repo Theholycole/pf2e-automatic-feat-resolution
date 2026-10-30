@@ -47,5 +47,15 @@ export default [
         uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.cl8TzbIe9JTyRFPH", name: "Revitalizing Blood",
         linked: { effect: "Compendium.pf2e-team-plus-barbarians.misc.Item.saANGEZnZQX0FTn4", label: "Effect: Revitalizing Blood", recipients: "target", target: "1 ally", within: 30 },
         notes: ["You take persistent bleed damage equal to half your level (by hand). Each time it hurts you, the ally gets that many temporary Hit Points until the start of your next turn."]
+    },
+    {
+        uuid: action("jjxxWxnlEqWjTUur"), name: "Restorative Teleportation",
+        affect: { target: "you", effects: [{ kind: "heal", formula: "1d6 + @actor.level + @actor.abilities.int.mod" }] },
+        notes: ["When you arrive by teleportation; once per minute."]
+    },
+    {
+        uuid: pf2e("24giyNqSjqrEnhN9"), name: "Call From Death's Door",
+        affect: { target: "1 ally", effects: [{ kind: "end-condition", slug: "dying" }, { kind: "heal", formula: "2*@actor.level" }] },
+        notes: ["Spend a Mythic Point. The ally's wounded value doesn't go up for this."]
     }
 ];
