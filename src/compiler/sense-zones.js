@@ -17,3 +17,11 @@ export function senseReaches(sense, { source = [], target = [], crossed = [] } =
     if (sense === "wavesense") return source.some((zone) => zone.water) && target.some((zone) => zone.water);
     return true;
 }
+
+// The conditions a creature has while inside an area: those the area gives, and deafened in a silent one (unless it says not).
+export const CONDITIONS = ["blinded", "concealed", "dazzled", "deafened", "fatigued", "immobilized", "invisible", "off-guard", "prone"];
+export function insideConditions({ silent = false, deafens = true, conditions = [] } = {}) {
+    const all = new Set((conditions ?? []).filter((slug) => CONDITIONS.includes(slug)));
+    if (silent && deafens) all.add("deafened");
+    return [...all];
+}

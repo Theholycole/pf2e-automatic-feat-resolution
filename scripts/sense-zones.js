@@ -2,7 +2,7 @@
 // hearing or echolocation into, out of or through it), or blocks chosen senses. The detection modes ask senseReaches
 // (src/compiler/sense-zones.js) with the areas the two tokens are in and the ones the line between them crosses.
 
-import { BLOCKABLE, senseReaches } from "../src/compiler/sense-zones.js";
+import { BLOCKABLE, CONDITIONS, insideConditions, senseReaches } from "../src/compiler/sense-zones.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 export const BEHAVIOR = `${MODULE_ID}.senses`;
@@ -13,12 +13,24 @@ export function registerSenseZones() {
     const Base = foundry.data?.regionBehaviors?.RegionBehaviorType;
     if (!Base || !CONFIG.RegionBehavior) return console.warn(`${MODULE_ID} | No region behaviors to register the Senses area with.`);
     const fields = foundry.data.fields;
+    const label = (slug) => game.i18n?.localize?.(CONFIG.PF2E?.conditionTypes?.[slug] ?? "") || slug.replace(/(^|-)(\w)/g, (_all, dash, letter) => `${dash ? " " : ""}${letter.toUpperCase()}`);
     class SensesBehavior extends Base {
+        // (A creature entering has the area's conditions, gone as it leaves; on the active GM's client.)
+        static events = {
+            tokenEnter: async function (event) {
+                if (game.users.activeGM?.isSelf) await addConditions(event.data?.token, this.parent, this);
+            },
+            tokenExit: async function (event) {
+                if (game.users.activeGM?.isSelf) await removeConditions(event.data?.token, this.parent);
+            }
+        };
         static defineSchema() {
             return {
                 water: new fields.BooleanField({ label: "Water", hint: "Wavesense works for creatures in this area, sensing creatures also in water." }),
                 silent: new fields.BooleanField({ label: "No sound passes", hint: "Hearing and echolocation don't reach into, out of or through this area." }),
-                blocks: new fields.SetField(new fields.StringField({ choices: LABELS }), { label: "Senses blocked", hint: "These senses don't reach into, out of or through this area." })
+                blocks: new fields.SetField(new fields.StringField({ choices: LABELS }), { label: "Senses blocked", hint: "These senses don't reach into, out of or through this area." }),
+                deafens: new fields.BooleanField({ initial: true, label: "Silence deafens", hint: "With No sound passes: creatures inside are deafened while there." }),
+                conditions: new fields.SetField(new fields.StringField({ choices: () => Object.fromEntries(CONDITIONS.map((slug) => [slug, label(slug)])) }), { label: "Conditions inside", hint: "Creatures inside have these conditions while there; they end as the creature leaves." })
             };
         }
     }
@@ -83,4 +95,26 @@ export function guardOwnModes() {
         mode._canDetect = (visionSource, target, ...rest) => original(visionSource, target, ...rest) && reaches(sense, visionSource?.object, target);
         mode._featSenseZones = true;
     }
+}
+
+// The area's conditions on a creature inside, each marked as the area's so leaving takes away only those (2026-10-30, Cole: "the no sound
+// region giving deafened while inside it"). One it already has from elsewhere isn't added again.
+const fromArea = (actor, behavior) => (actor?.itemTypes?.condition ?? []).filter((item) => item.flags?.[MODULE_ID]?.senseArea === behavior.uuid);
+
+async function addConditions(token, behavior, system) {
+    const actor = token?.actor;
+    if (!actor || !behavior) return;
+    const wanted = insideConditions({ silent: system.silent, deafens: system.deafens, conditions: [...(system.conditions ?? [])] });
+    const items = [];
+    for (const slug of wanted) {
+        if (actor.itemTypes?.condition?.some((item) => item.slug === slug)) continue;
+        const source = game.pf2e?.ConditionManager?.getCondition?.(slug)?.toObject?.();
+        if (source) items.push(foundry.utils.mergeObject(source, { flags: { [MODULE_ID]: { senseArea: behavior.uuid } } }));
+    }
+    if (items.length) await actor.createEmbeddedDocuments("Item", items);
+}
+
+async function removeConditions(token, behavior) {
+    const held = fromArea(token?.actor, behavior);
+    if (held.length) await token.actor.deleteEmbeddedDocuments("Item", held.map((item) => item.id));
 }

@@ -486,4 +486,8 @@ test("sense regions: water, silence and blocked senses", async () => {
     assert.equal(senseReaches("scent", { crossed: [silent] }), true, "not a sound");
     assert.equal(senseReaches("scent", { source: [{ blocks: ["scent"] }] }), false);
     assert.equal(senseReaches("tremorsense", {}), true);
+    const { insideConditions } = await import("../src/compiler/sense-zones.js");
+    assert.deepEqual(insideConditions({ silent: true }), ["deafened"], "silence deafens");
+    assert.deepEqual(insideConditions({ silent: true, deafens: false }), []);
+    assert.deepEqual(insideConditions({ conditions: ["dazzled", "nonsense"] }), ["dazzled"]);
 });
