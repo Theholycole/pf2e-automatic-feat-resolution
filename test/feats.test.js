@@ -247,3 +247,13 @@ test("a hand entry that uses a basic action, or puts a condition on its target w
     assert.equal(opening.resolution.outcomes.success.effects[0].slug, "off-guard");
 });
 
+test("a Strike feat whose hit adds nothing the readers take: the Strike's card, its rules as notes, never a companion's Strike", () => {
+    const plain = compileFeat(feat("Returning Throw", "<p>Make a ranged Strike with a thrown weapon. If your hands are full when the weapon returns, it falls to the ground in your space.</p>", 1), { dcs: DCS });
+    assert.equal(plain.builtin, "strike-activity");
+    assert.equal(plain.plain, true);
+    assert.ok(plain.notes.some((note) => /falls to the ground/.test(note)));
+    assert.equal(compileFeat(feat("Pounce Order", "<p>Your companion makes a Strike against an enemy.</p>", 1), { dcs: DCS }), null);
+    const passive = { ...feat("Lingering", "<p>Make a Strike with a bomb; it lingers.</p>"), system: { ...feat("x", "").system, description: { value: "<p>Make a Strike with a bomb; it lingers.</p>" }, actionType: { value: "passive" } } };
+    assert.equal(compileFeat(passive, { dcs: DCS }), null);
+});
+

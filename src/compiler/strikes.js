@@ -12,6 +12,8 @@ export const RULE_WORDS = /@\w+\[|\[\[|\b(?:Strikes?|Strides?|Steps?|Leaps?|dama
 // PF2e's conditions, for the ones a hit gives (a word like "immobilizing" isn't one).
 const CONDITIONS = new Set(["blinded", "broken", "clumsy", "concealed", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "encumbered", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "hidden", "immobilized", "invisible", "observed", "off-guard", "paralyzed", "persistent-damage", "petrified", "prone", "quickened", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "undetected", "unnoticed", "wounded"]);
 // The user makes the Strike: "Make a melee Strike", "make two dagger Strikes", "Stride, then Strike", "Strike an adjacent creature", "You Strike".
+// Another creature's Strike: a companion's, a squadmate's, the target's.
+const OTHERS = /\b(?:eidolon|companion|familiar|ally|allies|mount|squadmates?|underling|boss|construct|minion|summon|apparition|spirit|wisp|innovation|clone|duplicate|image)\b/i;
 const USER_STRIKES = /\b(?:[Mm]ake|makes) (?:a|an|one|two|three|up to (?:two|three)|a single|another) (?:[\w'-]+ ){0,4}Strikes?\b|\b(?:then|and|you|You) Strike\b|(?:^|[.:]\s+)Strike\b|\bStrike (?:with your|an?|the|one|each|your)\b/;
 const NUMBERS = { once: 1, one: 1, a: 1, an: 1, twice: 2, two: 2, three: 3, "three times": 3 };
 const HIT = /^(?:If (?:the|your|this|that|either|the first) (?:Strike|attack)(?: is successful| succeeds| hits)|If (?:it|you) (?:hits?|successfully hits?|succeed)|On a hit|On a successful Strike|If it's a hit)(?: and (?:deals?|damages?)[^,]*)?,?\s*/i;
@@ -155,7 +157,14 @@ export function characterStrike(item, { compileSave = null } = {}) {
         if (/\bcircumstance bonus to (?:your|its|the|this) attack roll|\bcounts? as (?:two|three) attacks|\bpenalty (?:to|on) (?:your|its|the|this|each) (?:attack roll|Strike)/i.test(words)) continue;
         if (words) unread.push(words);
     }
-    if (!read) return null;
+    if (!read) {
+        // (2026-10-30) A Strike feat whose hit adds nothing the readers take: the Strike's card still, the feat's own rules as notes,
+        // when the Strike is plainly the character's own ("Make a melee Strike", "You Step and then Strike"), not a companion's.
+        const own = plainOf(body).split(/(?<=[.!?])\s+/).find((words) => USER_STRIKES.test(words));
+        if (!["action", "reaction", "free"].includes(item.system?.actionType?.value)) return null;
+        if (!own || !/^(?:Make|Then|You|Strike|Attempt|Step|Stride|Interact|Leap|Spend|Choose)\b|\byou\b/.test(own) || OTHERS.test(own)) return null;
+        plan.plain = true;
+    }
     // What isn't read: the GM's, on the card.
     // (Not the flavour: a sentence with no game word in it.)
     plan.notes.push(...unread.filter((words) => RULE_WORDS.test(words) && (!/^(?:You|It) (?:make|makes) (?:a|an) /i.test(words) || /\b(?:if|unless|instead|only)\b/i.test(words))));
