@@ -31,7 +31,8 @@ export function eventTrigger(item) {
     const weapons = [...new Set([...trigger.matchAll(/\b(firearm|crossbow|bow|sword|axe|hammer|flail|polearm|spear|knife|club|brawling|sling|dart|pick|shield|unarmed|ranged|melee|thrown)s?\b/gi)].map((match) => match[1].toLowerCase()))];
     const own = (event) => ({ ...read(event), weapons });
     if (/^(?:You critically (?:hit|succeed (?:at|on) (?:a|an|your)\b[^.]*?\bStrike)|Your\b[^.]*?\bStrike critically hits)\b/i.test(trigger)) return own("own-critical-hit");
-    if (/^(?:You hit (?:a|an)\b[^.]*?\bStrike|You succeed at a (?:melee |ranged )?Strike|Your\b[^.]*?\bStrike hits)\b/i.test(trigger)) return own("own-hit");
+    if (/^(?:You hit (?:a|an)\b[^.]*?\bStrike|You succeed at a (?:melee |ranged )?Strike|You successfully Strike|Your\b[^.]*?\bStrike hits)\b/i.test(trigger)) return own("own-hit");
+    if (/^You score a critical hit\b/i.test(trigger)) return own("own-critical-hit");
     if (/^(?:You miss with (?:a|an|your)\b[^.]*?\bStrike|You (?:or your [\w ]+? )?(?:roll|gets?) a failure on a Strike)\b|^You misfire\b|^Your attack with a firearm misfires\b/i.test(trigger)) return own("own-miss");
     // (The character's own save: "You succeed or critically succeed at a Reflex saving throw", "You fail (but don't critically fail) a saving
     // throw against …", "You critically succeed on a Fortitude save against a poison effect": the degrees and saves it names; the loop,
@@ -179,6 +180,8 @@ export function ownUseTrigger(item) {
     if ((match = /^You (?:Cast|cast) ([a-z][\w'’ -]+?)(?=[.,]| and | to | on | with | using |$)/.exec(trigger)) && !/^(?:a|an|the|your)\b/.test(match[1])) return { names: [match[1].toLowerCase()], spell: false, trigger, kind };
     if ((match = /^You enter ((?:[A-Z][\w'’-]*\s?)+Stance)\b/.exec(trigger))) return { names: [match[1].trim().toLowerCase()], spell: false, trigger, kind };
     if ((match = /^You (Shield Block|Raise a Shield|Leap|Stride|Step|Sustain a Spell|Interact)\b/.exec(trigger))) return { names: [match[1].toLowerCase()], spell: false, trigger, kind };
+    // ("Whenever you Refocus", "When you Rage", "When you Change Shape", "When you Hunt Prey": a class action named as a verb; the loop.)
+    if ((match = /^You (Refocus|Rage|Change Shape|Hunt Prey|Devise a Stratagem|Overdrive|Spellstrike|Demoralize|Feint|Recall Knowledge|Seek|Treat Wounds|Battle Medicine|Administer First Aid|Exploit Vulnerability|Exploit a Vulnerability)\b/i.exec(trigger))) return { names: [match[1].toLowerCase().replace("exploit a vulnerability", "exploit vulnerability")], spell: false, trigger, kind };
     return null;
 }
 
