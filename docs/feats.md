@@ -412,3 +412,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   each asks its choice): all pass.
 - Kinetic Dampening's Effect came on with no resistance: PF2e reads "@actor.level-2" as the path "actor.level-2". A rule's formula needs
   spaces around a minus after a path ("@actor.level - 2").
+
+### Round 14 (2026-10-30)
+
+- Kinetic Dampening (resistance 5 at 8th level, to your next turn) and Unravel Into Runes (resistance to all damage equal to your level,
+  4 rounds) pass. Ironblood Surge is taken out: PF2e's own feat already carries its +1 AC and Strength-modifier resistance behind a
+  toggle ("ironblood-surge", in Ironblood Stance), and its modifier, with the same slug, shadowed the module's.
