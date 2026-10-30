@@ -56,3 +56,14 @@ test("a passive about an action's roll: a Note on that roll, with the degrees it
     assert.deepEqual(readNotes(passive("<p>When you Steal Spell, you keep it longer.</p>")), [], "another action whose name starts the same");
     assert.deepEqual(readNotes({ ...passive("<p>When you Demoralize, …</p>"), system: { actionType: { value: "action" }, description: { value: "<p>When you Demoralize, …</p>" }, rules: [] } }), [], "passives only");
 });
+
+test("a passive about a Strike's degree or initiative: a Note on the attack roll or initiative", () => {
+    const passive = (html) => ({ type: "feat", system: { actionType: { value: "passive" }, description: { value: html }, rules: [] } });
+    const [critical] = readNotes(passive("<p>Your critical hits unnerve your foes. When you critically hit an enemy and deal damage, the target is Frightened 1.</p>"));
+    assert.equal(critical.selector, "strike-attack-roll");
+    assert.deepEqual(critical.outcome, ["criticalSuccess"]);
+    assert.equal(critical.text, "<p>When you critically hit an enemy and deal damage, the target is Frightened 1.</p>");
+    const [initiative] = readNotes(passive("<p>When you roll initiative and can see a giant, you can Hunt Prey as a free action.</p>"));
+    assert.equal(initiative.selector, "initiative");
+    assert.equal(initiative.outcome, undefined);
+});

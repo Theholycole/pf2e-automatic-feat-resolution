@@ -74,6 +74,15 @@ const ACTION_NAMES = Object.keys(ACTION_STATISTICS).map((slug) => slug.split("-"
 const NOTE_LEAD = new RegExp(String.raw`^(?:When|Whenever|If|Each time) you (successfully |critically succeed (?:at|on|to) |succeed (?:at|on|to) |critically fail (?:at|on|to) |fail (?:at|on|to) |roll a (?:success|critical success|failure|critical failure) (?:at|on|to) )?(?:an? |your |the )?(?:check to |checks? to |attempt to )?(${ACTION_NAMES.join("|")})\b(?! [A-Z])`);
 const OUTCOMES = { successfully: ["success", "criticalSuccess"], succeed: ["success", "criticalSuccess"], "critically succeed": ["criticalSuccess"], fail: ["failure", "criticalFailure"], "critically fail": ["criticalFailure"], "roll a success": ["success"], "roll a critical success": ["criticalSuccess"], "roll a failure": ["failure"], "roll a critical failure": ["criticalFailure"] };
 
+// The leads that aren't a skill action: a Strike's degrees (its attack roll), initiative. Each selector once per passive.
+const OTHER_LEADS = [
+    [/^(?:When|Whenever|If) you critically hit\b/, "strike-attack-roll", ["criticalSuccess"]],
+    [/^(?:When|Whenever|If) you (?:hit|succeed at a Strike)\b/, "strike-attack-roll", ["success", "criticalSuccess"]],
+    [/^(?:When|Whenever|If) you miss\b/, "strike-attack-roll", ["failure", "criticalFailure"]],
+    [/^(?:When|Whenever) you (?:make a (?:[\w-]+ )?Strike|Strike)\b/, "strike-attack-roll", null],
+    [/^(?:When|Whenever|If) you roll (?:Perception for )?initiative\b/, "initiative", null]
+];
+
 const plainLabels = (html) => String(html).replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1").replace(/\[\[\/act ([\w-]+)[^\]]*\]\](?:\{([^}]*)\})?/g, (_all, slug, label) => label ?? slug.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()));
 
 export function readNotes(item) {
@@ -86,6 +95,13 @@ export function readNotes(item) {
         if (/^(?:Prerequisites?|Requirements?|Access|Special|Frequency|Trigger)\b/i.test(plain)) continue;
         const sentences = plain.split(/(?<=[.!?])\s+(?=[A-Z])/);
         for (const [index, sentence] of sentences.entries()) {
+            // ("When you critically hit with a butterfly sword, …", "When you roll initiative, …": the attack roll's or initiative's.)
+            const other = OTHER_LEADS.find(([lead]) => lead.test(sentence));
+            if (other && !seen.has(other[1])) {
+                seen.add(other[1]);
+                notes.push({ key: "Note", selector: other[1], ...(other[2] ? { outcome: other[2] } : {}), title: "{item|name}", text: `<p>${sentences.slice(/\b(?:this way|such an?|such)\b/i.test(sentence) ? 0 : index).join(" ")}</p>` });
+                continue;
+            }
             const match = NOTE_LEAD.exec(sentence);
             if (!match) continue;
             // ("When you Climb, Force Open, High Jump, Long Jump, or Swim", "If you Hide or Sneak": each.)
@@ -99,7 +115,7 @@ export function readNotes(item) {
             const degree = match[1]?.trim().replace(/ (?:at|on|to)$/, "") ?? "";
             const outcome = OUTCOMES[degree] ?? null;
             // ("If you Hide or Sneak in this way, …": the paragraph's earlier sentences say which way.)
-            const text = sentences.slice(/\bthis way\b/i.test(sentence) ? 0 : index).join(" ");
+            const text = sentences.slice(/\b(?:this way|such an?|such)\b/i.test(sentence) ? 0 : index).join(" ");
             for (const slug of slugs) {
                 for (const selector of ACTION_STATISTICS[slug]) {
                     notes.push({ key: "Note", selector, predicate: [`action:${slug}`], ...(outcome ? { outcome } : {}), title: "{item|name}", text: `<p>${text}</p>` });

@@ -53,6 +53,11 @@ Each batch is a reviewed list in `src/rules/batch-*.js`: the compendium UUID, th
   - Read by `readNotes` in `src/rules/read.js` over the needs-work set and reviewed. Examples: Crush Their Spirits and Menacing Prowess on Demoralize, Improved Knockback on Shove, Knowledge is Power on Recall Knowledge's critical success, Slippery Prey on Escape, Quick Stabilization on Administer First Aid, Second-Hand Sleight on Steal and Palm an Object.
   - Not automation of the result: a reminder at the moment it applies, the GM's to play. A passive that already has a Note is left alone; "Steal Spell" isn't Steal.
 
+### Batch 4 (2026-10-30): 26 options, Notes on the attack roll and initiative
+
+- The same reader, for a passive about a Strike's degree ("When you critically hit with a butterfly sword, …", "If you hit your hunted prey with a ranged weapon, …", "When you make a ranged Strike, …"): a Note on `strike-attack-roll` with the degrees named. And "When you roll initiative, …": a Note on `initiative`. A sentence that leans on the one before ("such a foe", "in this way") brings its paragraph.
+- By hand: Leave an Opening's first sentence, "When you hit hard enough", is flavour; its Note is for the critical hit its rule names.
+
 ### Looked at, not batched
 
 - **Stances:** 99 of the 117 stances already have PF2e's own Effect. Most of the other 18 change terrain, cover or allies rather than numbers on the character, so they stay notes for the GM.
