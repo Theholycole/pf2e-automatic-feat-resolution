@@ -156,3 +156,13 @@ test("a feat that changes the character's own numbers for a while: the module's 
     assert.equal(compileFeat(feat("Dodge", "<p>You gain a +2 circumstance bonus to AC against the triggering attack.</p>", 1), { dcs: DCS }), null);
     assert.equal(compileFeat(feat("Forever", "<p>You gain a +1 status bonus to AC.</p>", 1), { dcs: DCS }), null);
 });
+
+test("a reaction or free action triggered by the character's own turn: a reminder at its start or end", async () => {
+    const { turnTrigger, turnReminders } = await import("../src/compiler/turn-reminders.js");
+    const free = (trigger) => ({ name: "X", system: { actionType: { value: "free" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>You Sustain a spell.</p>` } } });
+    assert.deepEqual(turnTrigger(free("Your turn begins.")), { when: "start", trigger: "Your turn begins.", kind: "free action" });
+    assert.equal(turnTrigger(free("Your turn ends and you have a status penalty to your Speed"))?.when, "end");
+    assert.equal(turnTrigger(free("You start your turn with the Frightened condition."))?.when, "start");
+    assert.equal(turnTrigger(free("You fail a Will save.")), null);
+    assert.equal(turnReminders([free("Your turn begins."), free("Your turn ends.")], "end").length, 1);
+});

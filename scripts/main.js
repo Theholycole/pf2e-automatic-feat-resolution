@@ -5,6 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
+import { onTurnChange, registerReminderSetting } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -75,6 +76,7 @@ async function cardForFeat(message) {
 
 Hooks.once("init", () => {
     registerSetting();
+    registerReminderSetting();
     // (The module's rule elements, docs/rules.md: before any actor prepares; PF2e's item classes are in CONFIG by the system's own init.)
     setUpRules();
 });
@@ -82,6 +84,10 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
     if (!abilityApi()?.live?.playAbility) console.warn(`${MODULE_ID} | needs PF2e Automatic Ability Resolution 0.9.6 or later for its cards.`);
     Hooks.on("preCreateChatMessage", recordTargets);
+    // (Slice 6: reminders at a character's turn.)
+    Hooks.on("combatTurnChange", (combat, prior, current) => {
+        if (isActiveGM()) onTurnChange(combat, prior, current);
+    });
     Hooks.on("createChatMessage", (message) => {
         if (isActiveGM()) cardForFeat(message).catch((error) => console.error(`${MODULE_ID} | feat card`, error));
     });

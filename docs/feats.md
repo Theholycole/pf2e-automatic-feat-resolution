@@ -48,6 +48,12 @@ It started in the ability module (2026-10-30) and moved here the same day, when 
 - **Live** (`scripts/effects.js`): when the feat is used, the GM's client puts an Effect named after it on the character, with the rules, the time and the unread sentences in its description. Using it again replaces it; a stance replaces the module's other stance.
 - **Measured:** 9 options in the needs-work set (stances such as Rain of Embers, Cobra, Asp and Stumbling, Raise Symbol, Blood Shield, Unstable Gearshift). Few, because the easy wordings already have PF2e's own Effect; the rest of the self-buffs are "against the triggering …" reactions.
 
+## Slice 6: reminders at the character's turn (2026-10-30)
+
+- **The reader** (`src/compiler/turn-reminders.js`): a reaction or free action whose trigger is the character's own turn starting or ending ("Your turn begins.", "Your turn ends.", "You start your turn with the Frightened condition.").
+- **Live** (`scripts/reminders.js`): on each change of turn, the GM's client whispers the character's owners and the GM a list of those feats, linked, with their triggers: the last combatant's "turn ends" ones and the new combatant's "turn begins" ones. A world setting, "Turn reminders for characters' feats", on by default (D11).
+- **Measured:** 56 options in the needs-work set (Effortless Concentration, Aura Expertise, Master of Many Styles, Flow of War, Suppress Eidolon and others).
+
 ## Measured (2026-10-30, after slice 4)
 
 On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4,826 options that need work. Of those, 486 now read into a live card: 289 saves, 168 Strike feats and 29 checks. 43 more read into a PF2e Effect, which gets a card only with the world setting (D2). 48 read as having no effect in a fight.
@@ -66,3 +72,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 | D8 | What's left (about 4,300 options) is mostly passives (849 "other rule text", 148 conditional bonuses, 65 resistances, 196 daily resources), companions (475) and stances with no Effect (about 60). These don't read into a card: PF2e automates them with rule elements on the feat or an Effect. Should the module ship its own rule elements for them (a compendium of Effects, or rules added to the feat when it's on a character), batch by batch as the ability module did monsters? | Not started. The text readers go on with the long tail meanwhile. |
 | D9 | 157 options have PF2e's own self-applied Effect (`selfEffect`), which PF2e already offers as a button on the feat's chat card. Should the module apply it on use instead of the button? | Left to PF2e's button. |
 | D10 | A feat read in slice 5 puts the module's Effect on the character as soon as it's used, with no card or button. Should it ask first (a button on the chat card), or apply it as PF2e's own stances do? | Applied on use, whatever the D2 setting. |
+| D11 | Turn reminders (slice 6) are whispered to the character's owners and the GM at each turn start or end where a feat triggers. On by default, or off until a group turns them on? | On by default; a world setting turns them off. |
