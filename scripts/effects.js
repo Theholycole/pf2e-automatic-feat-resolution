@@ -41,16 +41,20 @@ export async function applyFeatEffect(item, plan) {
     return created ?? null;
 }
 
+// A compendium UUID by name, as PF2e's texts link some ("…feat-effects.Item.Effect: Formation Training") → by id, the pack's entry of that
+// name; null when the pack has none.
+export function byName(uuid) {
+    const parts = /^Compendium\.([\w-]+)\.([\w-]+)\.Item\.(.+)$/.exec(String(uuid ?? ""));
+    if (!parts || /^[A-Za-z0-9]{16}$/.test(parts[3])) return uuid;
+    const entry = game.packs.get(`${parts[1]}.${parts[2]}`)?.index?.getName?.(parts[3]);
+    return entry ? `Compendium.${parts[1]}.${parts[2]}.Item.${entry._id}` : null;
+}
+
 // A passive's PF2e Effect (2026-10-30, docs/rules.md, "Toggled Effects"): on each actor that hasn't it, off each that has. Its UUID by name
 // in the text ("…feat-effects.Item.Effect: Formation Training") is the pack's entry of that name.
 export async function togglePassiveEffect(item, plan, actors) {
-    let uuid = plan.effect;
-    const parts = /^Compendium\.([\w-]+)\.([\w-]+)\.Item\.(.+)$/.exec(uuid);
-    if (parts && !/^[A-Za-z0-9]{16}$/.test(parts[3])) {
-        const entry = game.packs.get(`${parts[1]}.${parts[2]}`)?.index?.getName?.(parts[3]);
-        if (!entry) return null;
-        uuid = `Compendium.${parts[1]}.${parts[2]}.Item.${entry._id}`;
-    }
+    const uuid = byName(plan.effect);
+    if (!uuid) return null;
     const effect = await fromUuid(uuid);
     if (!effect) return null;
     const lines = [];

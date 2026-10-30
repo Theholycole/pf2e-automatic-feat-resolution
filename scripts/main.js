@@ -7,7 +7,7 @@ import { setUpRules } from "./rules.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
-import { applyFeatEffect, togglePassiveEffect } from "./effects.js";
+import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
 import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
@@ -93,6 +93,8 @@ async function cardForFeat(message) {
     if (!play) return warnOnce();
     const sourceToken = (item === posted ? message.token : null) ?? item.actor.getActiveTokens(true, true)[0] ?? null;
     if (plan?.builtin === "strike-activity") return play(item, plan, sourceToken);
+    // (An Effect linked by name: by id, which the ability module's card looks up; 2026-10-30 Foundry test, "Effect: Rend Armor wasn't found".)
+    if (plan?.resolution?.kind === "effect") plan = { ...plan, resolution: { ...plan.resolution, applications: plan.resolution.applications.map((application) => ({ ...application, uuid: byName(application.uuid) ?? application.uuid })) } };
     if (plan?.builtin === "spell-like") return castSpellLike(item, plan, sourceToken, message);
     // (The ability module's own reading of "You cast Enlarge", its UUID by id as Foundry has it: the same cast, at the plan's DC or the
     // character's best; 2026-10-30 Foundry test, Dire Growth and Rat Form cast nothing.)
@@ -158,13 +160,8 @@ function edgeDistance(source, token) {
 async function castSpellLike(item, plan, sourceToken, message) {
     const cast = spellApi()?.castFromItem;
     if (!cast) return;
-    let uuid = plan.spell.uuid;
-    const parts = /^Compendium\.([\w-]+)\.([\w-]+)\.Item\.(.+)$/.exec(uuid);
-    if (parts && !/^[A-Za-z0-9]{16}$/.test(parts[3])) {
-        const entry = game.packs.get(`${parts[1]}.${parts[2]}`)?.index?.getName?.(parts[3]);
-        if (!entry) return;
-        uuid = `Compendium.${parts[1]}.${parts[2]}.Item.${entry._id}`;
-    }
+    const uuid = byName(plan.spell.uuid);
+    if (!uuid) return;
     const recorded = (message.getFlag?.(MODULE_ID, "targets") ?? []).map((each) => fromUuidSync(each)).filter(Boolean).map((token) => token.object ?? token);
     await cast({ actor: item.actor, token: sourceToken, spell: uuid, rank: plan.rank, dc: plan.dc, targets: recorded.length ? recorded : null,
         item: { name: item.name, uuid: item.uuid, img: item.img }, ...(plan.actions ? { actions: plan.actions } : {}) });
