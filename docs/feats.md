@@ -204,6 +204,11 @@ creature, or the action also has a check, an area, a Strike or a spell.
   Vision of Death at DC 24, each concealment, off-guard and dazzle on the right creatures for the right time, Hop Up's prone gone, Blood
   Calls Blood drained 1 then 2, Sorshen's Devotion 63 healing. Fixed after it: My Legend Must Be Told ended dying and with it the
   unconscious PF2e grants from dying, so it puts unconscious back; Whirling Throw's note says the thrown creature is no longer grabbed.
+- **Re-test (2026-10-30, 4b6e5c0).** My Legend Must Be Told left the character unconscious and doomed 1 with dying gone; Plane Step,
+  Tempo Duelist, Now You See Me and Tempo Shift for the right times; Flourishing Finish on the two enemies only (frightened 1 and 2);
+  Seething Frenzy 8 temporary Hit Points on the eidolon from its own sheet; the passives' reminders (Fast Channel on Heal and Harm, Invert
+  Harm on Harm only, Great Cleave, Volatile Grease, none on an unrelated spell); Imperious Calamity cast Summon Elemental Herald at DC 24
+  from its UUID without ".Item." (cast as arcane from the spell module's entry, not the dragon's tradition). No errors.
 - Movement and tempo: concealed (Plane Step until the end of your next turn, Tempo Duelist, Now You See Me until the end of your turn),
   quickened for the round (Tempo Shift); the Stride and the foes' off-guard are notes. Flourishing Finish in `checks-2.js`: Performance
   against the Will DC of each enemy within 30 feet, frightened 1, or 2 on a critical success.
