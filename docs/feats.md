@@ -437,3 +437,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Toggled passives (feat 057ff5d): Elemental Weapon Systems and Sonar Alert System on the construct, Perfect Appendages (its Strike),
   Scout and Incredible Scout on the party (the scout's own initiative is unchanged, as PF2e's Effect gives the bonus to the others): all
   pass, on and off.
+
+### Round 18 (2026-10-30)
+
+- Toggled passives (feat 4a729d6): Eater of Avatars, Hypersenses (PF2e asks the sense), Moonscarred (12 hours, its temporary Hit
+  Points), Affliction Mithridatism (asks the result), Verse of Preparation: all pass. Teams+'s Verse of Preparation Effect works out its
+  temporary Hit Points from each ally's own level (5 and 2 in the test), not the bard's: its note says so.
