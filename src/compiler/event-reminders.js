@@ -22,6 +22,16 @@ export function eventTrigger(item) {
     // ("A creature Casts a Spell", "An enemy casts a spell that targets you …", "Another creature within 30 feet Casts a Spell": a spell another
     // creature casts, the Counterspells' trigger.)
     if (/^(?:A|An|Another|Your) (?:creature|enemy|foe|opponent)\b[^.]*?\b[Cc]asts? a [Ss]pell\b/.test(trigger)) return read("foe-casts");
+    // (A foe near the character moving or using a manipulate, concentrate or move action: "A creature within your reach leaves a square during
+    // a move action it's using", "A creature within 10 feet of you uses a manipulate action or a move action", "A creature moves to be within
+    // 15 feet of you", "A creature within your reach uses a concentrate action" — Reactive Strike's kind. Reach counted as 10 feet.)
+    const near = /^(?:A|An|Another) (?:creature|enemy|foe|opponent)\b/i.test(trigger) && (within || /\bwithin your reach\b|\badjacent to you\b|\bwithin \d+ feet of you\b/i.test(trigger));
+    if (near && !/\ball(?:y|ies)\b/i.test(trigger)) {
+        const reach = within ?? 10;
+        const traits = [...trigger.matchAll(/\b(manipulate|concentrate|move|auditory|visual) action\b/gi)].map((match) => match[1].toLowerCase());
+        const moves = /\bleaves a square\b|\bmoves\b|\bmove action\b/i.test(trigger);
+        if (traits.length || moves) return { ...read("foe-acts"), within: reach, traits: [...new Set(traits)], moves };
+    }
     // ("A creature within your reach critically fails a Strike against you": Dueling Riposte's.)
     if (/\bcritically fails (?:a|an|its|their) (?:melee )?(?:Strike|attack(?: roll)?)\b[^.]*\bagainst you\b/i.test(trigger)) return read("critical-miss");
     // (A creature or ally gaining a condition or falling to 0 Hit Points: "An ally within 30 feet gains the Frightened condition", "An ally

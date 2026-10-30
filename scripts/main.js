@@ -5,7 +5,7 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { applyFeatEffect } from "./effects.js";
-import { onConditionGained, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
+import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -95,6 +95,13 @@ Hooks.once("ready", () => {
     Hooks.on("updateActor", (actor, changed) => {
         if (isActiveGM() && foundry.utils.getProperty(changed, "system.attributes.hp.value") === 0) onConditionGained(actor, "0-hp").catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
+    // (Slice 11: a foe's token moving near a character; where it started, kept before the move.)
+    Hooks.on("preUpdateToken", (document, changed, options) => {
+        if (("x" in changed || "y" in changed) && document.object) options[`${MODULE_ID}.from`] = { ...document.object.center };
+    });
+    Hooks.on("updateToken", (document, changed, options) => {
+        if (isActiveGM() && ("x" in changed || "y" in changed)) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null);
+    });
     Hooks.on("createCombatant", (combatant) => {
         if (isActiveGM()) onJoinEncounter(combatant).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
@@ -108,6 +115,8 @@ Hooks.once("ready", () => {
         onForeignSpell(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
         // (Slice 9: before a save the GM's targets are asked for.)
         onSaveAsked(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
+        // (Slice 11: a foe's manipulate, concentrate or move action near a character.)
+        onFoeAction(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
     const module = game.modules.get(MODULE_ID);
     if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs });

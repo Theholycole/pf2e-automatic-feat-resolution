@@ -185,6 +185,9 @@ test("a reaction triggered by what others do: the event an attack or damage roll
     assert.deepEqual([frightened.event, frightened.conditions, frightened.within], ["ally-condition", ["frightened", "drained", "sickened"], 30]);
     assert.deepEqual(eventTrigger(reaction("You would be reduced to 0 Hit Points but not immediately killed.")).conditions, ["0-hp"]);
     assert.equal(eventTrigger(reaction("You would gain the Fatigued condition.")).event, "self-condition");
+    const snag = eventTrigger(reaction("A creature within your reach uses a move action or leaves a square during a move action it's using."));
+    assert.deepEqual([snag.event, snag.within, snag.traits, snag.moves], ["foe-acts", 10, ["move"], true]);
+    assert.deepEqual(eventTrigger(reaction("A creature within your reach uses a concentrate action.")).traits, ["concentrate"]);
     assert.deepEqual([eventTrigger(reaction("A creature within 30 feet casts a spell.")).event, eventTrigger(reaction("A creature within 30 feet casts a spell.")).within], ["foe-casts", 30]);
 });
 

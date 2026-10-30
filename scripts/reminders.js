@@ -160,3 +160,36 @@ export async function onConditionGained(actor, slug) {
         if (due.length) await whisper(each, `<strong>${escape(each.name)}</strong>: ${escape(actor.name)} ${escape(words)}.`, due);
     }
 }
+
+// A foe near a character moving, or using a manipulate, concentrate or move action (slice 11): each character on the scene whose
+// disposition isn't the foe's, with feats that trigger on it ("A creature within your reach leaves a square during a move action"), when
+// the foe's token starts or ends its move in range, or its action's or spell's message (its traits) is posted.
+async function remindFoeActs(foeToken, test, words, positions = null) {
+    // (In an encounter only: out of one, every walk past would remind.)
+    if (!game.settings.get(MODULE_ID, SETTING) || !foeToken?.actor || !game.combat?.started) return;
+    for (const token of canvas?.tokens?.placeables ?? []) {
+        const actor = token.actor;
+        if (actor?.type !== "character" || actor === foeToken.actor || token.document.disposition === foeToken.document.disposition) continue;
+        const distances = positions ? positions.map((point) => canvas.grid.measurePath([token.center, point]).distance) : [distanceBetween(token, foeToken)];
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-acts" && test(read) && distances.some((distance) => distance !== null && distance <= read.within));
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(foeToken.name)} ${escape(words)} near you.`, due);
+    }
+}
+
+export function onTokenMoved(document, from) {
+    const token = document.object;
+    if (!token || !from || token.actor?.type === "character") return;
+    const to = token.center;
+    remindFoeActs(token, (read) => read.moves || read.traits.includes("move"), "moves", [from, to]).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
+}
+
+export async function onFoeAction(message) {
+    const origin = message.flags?.pf2e?.origin;
+    if (!origin?.uuid || message.flags?.pf2e?.context?.type) return;
+    const token = message.token?.object ?? null;
+    if (!token || token.actor?.type === "character") return;
+    const item = await fromUuid(origin.uuid).catch(() => null);
+    const traits = (item?.system?.traits?.value ?? []).filter((trait) => ["manipulate", "concentrate", "move", "auditory", "visual"].includes(trait));
+    if (!traits.length) return;
+    await remindFoeActs(token, (read) => read.traits.some((trait) => traits.includes(trait)), `uses ${item.name} (${traits.join(", ")})`);
+}
