@@ -79,7 +79,8 @@ export function guardOwnModes() {
         const mode = CONFIG.Canvas.detectionModes[id];
         if (!mode || mode._featSenseZones) continue;
         const original = mode._canDetect.bind(mode);
-        mode._canDetect = (visionSource, target) => original(visionSource, target) && reaches(sense, visionSource?.object, target);
+        // (Every argument passed on: PF2e's tremorsense takes the level too; 2026-10-30 Foundry test.)
+        mode._canDetect = (visionSource, target, ...rest) => original(visionSource, target, ...rest) && reaches(sense, visionSource?.object, target);
         mode._featSenseZones = true;
     }
 }

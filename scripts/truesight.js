@@ -32,36 +32,51 @@ const actorOf = (uuid) => {
 
 const center = (token) => token.object?.center ?? { x: token.x + (token.width * canvas.grid.size) / 2, y: token.y + (token.height * canvas.grid.size) / 2 };
 
-// The scene's illusions: { key, name, rank, dc, point, casterUuid, tokenId? }.
-function illusionsOn(scene) {
+// The scene's illusions: { key, name, rank, dc, point, casterUuid, tokenId? }. Keys without dots: Foundry's flags would nest them.
+const keyOf = (kind, uuid) => `${kind}-${String(uuid).replace(/\./g, "_")}`;
+async function originSpell(effect) {
+    const uuid = effect.system?.context?.origin?.item;
+    if (!uuid) return null;
+    try {
+        return await fromUuid(uuid);
+    } catch {
+        return null;
+    }
+}
+async function illusionsOn(scene) {
     const found = [];
     for (const token of scene.tokens) {
         const actor = token.actor;
         if (!actor) continue;
         if (traitsOf(actor).has("illusion")) {
-            found.push({ key: `token:${token.uuid}`, name: token.name, rank: illusionRank({ level: actor.level }), dc: spellDCOf(actor), point: center(token), tokenId: token.id });
+            found.push({ key: keyOf("token", token.uuid), name: token.name, rank: illusionRank({ level: actor.level }), dc: spellDCOf(actor), point: center(token), tokenId: token.id });
         }
         for (const effect of actor.itemTypes?.effect ?? []) {
             const origin = effect.origin ?? actorOf(effect.system?.context?.origin?.actor);
-            const spell = (() => {
-                try {
-                    return effect.system?.context?.origin?.item ? fromUuidSync(effect.system.context.origin.item) : null;
-                } catch {
-                    return null;
-                }
-            })();
+            // (Its spell's traits, the whole document: a compendium spell's index entry has none; 2026-10-30 Foundry test.)
+            const spell = await originSpell(effect);
             if (!traitsOf(effect).has("illusion") && !traitsOf(spell).has("illusion")) continue;
-            found.push({ key: `effect:${effect.uuid}`, name: `${effect.name} on ${token.name}`, rank: illusionRank({ rank: effect.system?.level?.value ?? spell?.rank }), dc: spellDCOf(origin), point: center(token), tokenId: token.id, casterUuid: origin?.uuid ?? null });
+            found.push({ key: keyOf("effect", effect.uuid), name: `${effect.name} on ${token.name}`, rank: illusionRank({ rank: effect.system?.level?.value ?? spell?.rank }), dc: spellDCOf(origin), point: center(token), tokenId: token.id, casterUuid: origin?.uuid ?? null });
         }
     }
-    const areas = [...(scene.templates ?? []), ...(scene.regions ?? [])];
+    // (PF2e's Invisibility gives only the Invisible condition: checked as an illusion, its caster's DC and rank when it says where it came
+    // from, else the roll to compare by hand.)
+    for (const token of scene.tokens) {
+        const condition = token.actor?.itemTypes?.condition?.find((each) => each.slug === "invisible");
+        if (!condition) continue;
+        const origin = actorOf(condition.system?.context?.origin?.actor);
+        const spell = await originSpell(condition);
+        found.push({ key: keyOf("invisible", condition.uuid), name: `${token.name}'s invisibility`, rank: illusionRank({ rank: spell?.rank }), dc: spellDCOf(origin), point: center(token), tokenId: token.id, casterUuid: origin?.uuid ?? null });
+    }
+    // (Templates are regions in Foundry 14.)
+    const areas = [...(scene.regions ?? [])];
     for (const area of areas) {
         const origin = area.flags?.pf2e?.origin ?? {};
         if (!(origin.traits ?? []).includes("illusion")) continue;
         const caster = actorOf(origin.actor);
         const bounds = area.object?.bounds;
         const point = bounds ? { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 } : { x: area.x ?? area.shapes?.[0]?.x ?? 0, y: area.y ?? area.shapes?.[0]?.y ?? 0 };
-        found.push({ key: `area:${area.uuid}`, name: origin.name ?? area.name ?? "An illusion", rank: illusionRank({ rank: origin.castRank ?? origin.rank }), dc: spellDCOf(caster), point, casterUuid: caster?.uuid ?? null });
+        found.push({ key: keyOf("area", area.uuid), name: origin.name ?? area.name ?? "An illusion", rank: illusionRank({ rank: origin.castRank ?? origin.rank }), dc: spellDCOf(caster), point, casterUuid: caster?.uuid ?? null });
     }
     return found;
 }
@@ -92,10 +107,13 @@ export function registerTruesight() {
     });
 }
 
+// (Checks under way, so two map changes at once don't roll twice.)
+const rolling = new Set();
+
 // Each creature with truesight on the scene against each illusion in its range it hasn't checked.
 async function check(scene) {
     if (!enabled() || !scene || !canvas?.grid || scene !== canvas.scene) return;
-    const illusions = illusionsOn(scene);
+    const illusions = await illusionsOn(scene);
     if (!illusions.length) return;
     for (const token of scene.tokens) {
         const actor = token.actor;
@@ -104,9 +122,16 @@ async function check(scene) {
         const done = actor.getFlag(MODULE_ID, FLAG) ?? {};
         const from = center(token);
         for (const illusion of illusions) {
+            const running = `${actor.uuid}|${illusion.key}`;
+            if (rolling.has(running)) continue;
             if (done[illusion.key] !== undefined || illusion.tokenId === token.id || illusion.casterUuid === actor.uuid) continue;
             if (canvas.grid.measurePath([from, illusion.point]).distance > sight.range) continue;
-            await roll(actor, token, illusion);
+            rolling.add(running);
+            try {
+                await roll(actor, token, illusion);
+            } finally {
+                rolling.delete(running);
+            }
         }
     }
 }

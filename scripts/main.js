@@ -162,10 +162,16 @@ Hooks.once("init", () => {
     registerSenseZones();
 });
 
-Hooks.once("setup", () => {
+// (In init, after PF2e's own: by setup the world's tokens had prepared without them; 2026-10-30 Foundry test. PF2e's hearing and tremorsense,
+// set by its init, are stopped by the Senses areas too.)
+Hooks.once("init", () => {
     wrapDetectionModes();
-    // (PF2e's hearing and tremorsense, set by its own init: stopped by the Senses areas too.)
     guardOwnModes();
+});
+// (A scene's tokens prepared before the modes were in place, if any: prepared again.)
+Hooks.on("canvasReady", () => {
+    for (const token of canvas.scene?.tokens ?? []) token.reset?.();
+    canvas.perception?.update?.({ initializeVision: true });
 });
 
 Hooks.once("ready", () => {
@@ -187,11 +193,11 @@ Hooks.once("ready", () => {
     });
     Hooks.on("updateToken", (document, changed, options) => {
         // (Not forced movement or a teleport: a Shove's push isn't a move action; 2026-10-30 Foundry test.)
-        const forced = options?.["pf2e-resolution-core"]?.forcedMovement || options?.teleport || Object.values(options?.movement ?? {}).some((each) => ["displace", "teleport"].includes(each?.method ?? each?.action));
+        const forced = options?.["pf2e-resolution-core"]?.forcedMovement || Object.values(options?.movement ?? {}).some((each) => ["displace", "teleport"].includes(each?.method ?? each?.action));
         if (isActiveGM() && ("x" in changed || "y" in changed) && !forced) onTokenMoved(document, options[`${MODULE_ID}.from`] ?? null, changed);
     });
     // (Truesight, docs/feats.md: a secret counteract check against each illusion that comes within range, once per illusion.)
-    for (const hook of ["createToken", "createMeasuredTemplate", "createRegion"]) Hooks.on(hook, (document) => isActiveGM() && truesightSoon(document.parent));
+    for (const hook of ["createToken", "createRegion"]) Hooks.on(hook, (document) => isActiveGM() && truesightSoon(document.parent));
     Hooks.on("updateToken", (document, changed) => isActiveGM() && ("x" in changed || "y" in changed) && truesightSoon(document.parent));
     Hooks.on("createItem", (item) => isActiveGM() && item.type === "effect" && truesightSoon());
     Hooks.on("canvasReady", () => isActiveGM() && truesightSoon());
