@@ -128,6 +128,12 @@ async function cardForFeat(message) {
         const best = [dcs.class, dcs.spell].filter((value) => Number.isFinite(value));
         return castSpellLike(item, { ...plan, dc: plan.dc ?? (best.length ? Math.max(...best) : null) }, sourceToken, message);
     }
+    // (A save at a DC the character hasn't got, Primal Howl's spell DC on a master with no spellcasting: said to the GM, not silent;
+    // round 77 Foundry test.)
+    if (!plan) {
+        const missing = missingDC(item);
+        if (missing) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: no ${missing} was found for ${item.actor.name}, so there's no card. Call for the save by hand, at the DC you set.</p>` });
+    }
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
     if (!(plan.resolution && CARD_KINDS.has(plan.resolution.kind)) && !allCards()) return;
     // (Damage still naming something the feat's roll data doesn't hold: PF2e's own card, not a wrong roll; D3.)
@@ -153,6 +159,21 @@ async function cardForFeat(message) {
     // ("You and your allies", Defiant Banner: the character with the GM's targets.)
     if (/^you and\b/i.test(plan.targeting?.target ?? "") && source) targets.push(source);
     return play(item, plan, sourceToken, new Set(targets));
+}
+
+// The DC a feat's save is against that the character lacks ("spell DC", "class DC"), or null.
+function missingDC(item) {
+    const html = String(item?.system?.description?.value ?? "");
+    const against = [...html.matchAll(/@Check\[[^\]]*\bagainst:([\w-]+)/g)].map((match) => match[1]);
+    if (!against.length) return null;
+    const dcs = characterDCs(item.actor) ?? {};
+    const has = (value) => Number.isFinite(value);
+    for (const kind of against) {
+        if (kind === "spell" && !has(dcs.spell)) return "spell DC";
+        if (kind === "class" && !has(dcs.class)) return "class DC";
+        if (kind === "class-spell" && !has(dcs.class) && !has(dcs.spell)) return "class or spell DC";
+    }
+    return null;
 }
 
 // "You regain 1 Focus Point, up to your usual maximum": the pool on the character's sheet, and a line in the chat saying so.
