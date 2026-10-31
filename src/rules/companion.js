@@ -44,6 +44,9 @@ export const COMPANION_RULES = [
     { uuid: pf2e("lpG7ZXFDZygmkbH4"), name: "Bloodletting Claws", rules: [{ key: "Note", selector: "unarmed-attack-roll", outcome: ["criticalSuccess"], predicate: [{ or: ["item:damage:type:slashing", "item:damage:type:piercing"] }, "item:melee"], title: "Bloodletting Claws", text: "The target takes @Damage[(1d6+@item.system.runes.potency)[persistent,bleed]] damage." }] },
     // (Round 49: "When one of your companions rolls a success on a saving throw, it gets a critical success instead.")
     { uuid: pf2e("WlFJyOz73m67HmW2"), name: "Heightened Instincts", rules: [{ key: "AdjustDegreeOfSuccess", selector: "saving-throw", adjustment: { success: "one-degree-better" } }] },
+    // (Round 52: a companion's skill and creature type.)
+    { uuid: pf2e("mXNwdRSM9kZrT2Um"), name: "Fell Rider", rules: [{ key: "ActiveEffectLike", mode: "upgrade", path: "system.skills.intimidation.rank", value: 1 }] },
+    { uuid: pf2e("espST21gwaZQFxpw"), name: "Undead Companion", rules: [{ key: "ActorTraits", add: ["undead"], remove: ["animal"] }, { key: "ActiveEffectLike", mode: "override", path: "system.attributes.hp.negativeHealing", value: true }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
 ];
 
