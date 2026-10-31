@@ -246,7 +246,8 @@ test("a reaction used before the character's own roll: a reminder before the sav
     assert.equal(preRollTrigger(reaction("You're about to roll initiative.")).event, "pre-initiative");
     assert.equal(preRollTrigger(reaction("You have the dying condition and are about to attempt a recovery check.")).event, "pre-recovery");
     assert.equal(preRollTrigger(reaction("You fail a Will save.")), null, "after the roll: a note on it");
-    assert.equal(preRollTrigger(reaction("Your ally is about to roll a saving throw.")), null);
+    // (Round 46: an ally's roll is asked of the roller, as another's pre-check.)
+    assert.equal(preRollTrigger(reaction("Your ally is about to roll a saving throw.")).event, "pre-check-other");
     assert.ok(asksForSave('<a class="inline-check" data-pf2-check="reflex" data-pf2-dc="25">'));
 });
 
@@ -692,4 +693,17 @@ test("before your own roll: which checks a pre-check feat fits", async () => {
     assert.equal(fitsCheck(knowledge, { type: "skill-check", statistic: "nature", options: ["action:recall-knowledge"] }), true);
     assert.equal(fitsCheck(knowledge, { type: "skill-check", statistic: "nature", options: [] }), false);
     assert.equal(preRollTrigger(reaction("You would attempt a roll affected by a misfortune effect.")), null);
+});
+
+test("before another's roll: who and which checks", async () => {
+    const { preRollTrigger, fitsOthersCheck } = await import("../src/compiler/event-reminders.js");
+    const reaction = (name, trigger) => ({ type: "feat", name, system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Text.</p>` } } });
+    const hinder = preRollTrigger(reaction("Hinder", "An enemy is about to use an action that requires a skill check or attack roll"));
+    assert.equal(hinder.who, "enemy");
+    assert.equal(fitsOthersCheck(hinder, { type: "attack-roll" }), true);
+    assert.equal(fitsOthersCheck(hinder, { type: "saving-throw" }), false);
+    assert.equal(preRollTrigger(reaction("Aid", "An ally is about to use an action that requires a skill check or attack roll.")), null);
+    assert.equal(preRollTrigger(reaction("Black Cat Curse", "A creature within 30 feet you can see would succeed at a save.")), null);
+    const muzzle = preRollTrigger(reaction("Plug Muzzle", "A creature within your reach would make a Strike with a ranged weapon or ranged unarmed attack."));
+    assert.equal(fitsOthersCheck(muzzle, { type: "attack-roll", ranged: false }), false);
 });

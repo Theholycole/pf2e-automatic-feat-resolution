@@ -629,3 +629,10 @@ A reaction or free action used before the character's own roll ("You attempt a m
 yet", "You are about to attempt a check", "You attempt a flat check for Steady Spellcasting"): as PF2e starts that check (Check.roll),
 in an encounter, the roller is asked first (Roll; Roll, don't ask this encounter; Stop, I'll use it first). Not one that hangs on a
 fortune or misfortune effect. 9 feats (scripts/pre-roll.js).
+
+## Round 46: before another's roll (2026-10-31)
+
+"An enemy is about to use an action that requires a skill check or attack roll" (Hinder), "A creature within 60 feet is about to attempt
+an attack roll or skill check" (Harbinger's Caw), "An ally is about to roll a saving throw" (Divine Rebuttal): as that roll starts, in
+an encounter, its roller is asked first, the feat's character named, with the same three buttons. By side (the tokens' dispositions),
+range, and "against you" (the Strike's target). Not Aid (it needs preparing first), not "would succeed" (after the roll). 11 feats.

@@ -1,8 +1,10 @@
 // Before your own roll (round 45, the loop): a reaction or free action used "You attempt a melee Strike against your opponent, but haven't
 // rolled yet", "You are about to attempt a check" (src/compiler/event-reminders.js preRollTrigger, event "pre-check"). As PF2e starts the
-// check, in an encounter, the roller is asked first: roll, roll and don't ask again this encounter, or stop to use the feat.
+// check, in an encounter, the roller is asked first: roll, roll and don't ask again this encounter, or stop to use the feat. And another
+// character's, "An enemy is about to use an action that requires a skill check or attack roll" (event "pre-check-other"): the roller,
+// a creature it's for, is asked the same, the feat's character named.
 
-import { fitsCheck, preRollTrigger } from "../src/compiler/event-reminders.js";
+import { fitsCheck, fitsOthersCheck, preRollTrigger } from "../src/compiler/event-reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const SETTING = "eventReminders";
@@ -12,7 +14,7 @@ const optionsOf = (context) => [...(context?.options ?? [])];
 
 function dueFor(context) {
     const actor = context?.actor;
-    if (actor?.type !== "character" || !game.combat?.started) return [];
+    if (!actor || !game.combat?.started) return [];
     if (!game.combat.combatants.some((each) => each.actor === actor)) return [];
     const roll = {
         type: context.type,
@@ -22,23 +24,49 @@ function dueFor(context) {
         ranged: context.item?.isRanged ?? optionsOf(context).includes("item:ranged")
     };
     if (context.type === "skill-check") roll.statistic = (context.domains ?? []).find((domain) => ["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"].includes(domain)) ?? roll.statistic;
-    return [...actor.itemTypes.feat, ...actor.itemTypes.action]
+    const own = actor.type === "character" ? [...actor.itemTypes.feat, ...actor.itemTypes.action]
         .filter((item) => !quiet.has(`${game.combat.id}.${actor.id}.${item.id}`))
-        .map((item) => ({ item, read: preRollTrigger(item) }))
-        .filter(({ read }) => fitsCheck(read, roll));
+        .map((item) => ({ item, read: preRollTrigger(item), by: null }))
+        .filter(({ read }) => fitsCheck(read, roll)) : [];
+    return [...own, ...othersDue(context, roll)];
+}
+
+// (Another character's, "A creature within 60 feet is about to attempt an attack roll": each in the encounter that isn't the roller, by its
+// side and how far its token is; round 46.)
+function othersDue(context, roll) {
+    const roller = context?.actor;
+    if (!roller || !game.combat?.started) return [];
+    const rollerToken = context.token?.object ?? roller.getActiveTokens?.(true)?.[0] ?? null;
+    const out = [];
+    for (const combatant of game.combat.combatants) {
+        const actor = combatant.actor;
+        if (actor?.type !== "character" || actor === roller) continue;
+        const token = combatant.token?.object ?? null;
+        const side = rollerToken && token ? (rollerToken.document.disposition === token.document.disposition ? "ally" : "enemy") : null;
+        for (const item of [...actor.itemTypes.feat, ...actor.itemTypes.action]) {
+            if (quiet.has(`${game.combat.id}.${actor.id}.${item.id}`)) continue;
+            const read = preRollTrigger(item);
+            if (!fitsOthersCheck(read, roll)) continue;
+            if (read.who !== "creature" && read.who !== side) continue;
+            if (read.within && !(token && rollerToken && (token.distanceTo?.(rollerToken) ?? Infinity) <= read.within)) continue;
+            if (read.againstYou && context.target?.actor !== actor) continue;
+            out.push({ item, read, by: actor });
+        }
+    }
+    return out;
 }
 
 async function ask(actor, due) {
     const DialogV2 = foundry.applications?.api?.DialogV2;
     if (!DialogV2) return "roll";
-    const list = due.map(({ item, read }) => `<li><strong>${escape(item.name)}</strong> (${escape(read.kind)}): ${escape(read.trigger)}</li>`).join("");
+    const list = due.map(({ item, read, by }) => `<li>${by ? `${escape(by.name)}: ` : ""}<strong>${escape(item.name)}</strong> (${escape(read.kind)}): ${escape(read.trigger)}</li>`).join("");
     return DialogV2.wait({
         window: { title: `${actor.name}: before you roll` },
-        content: `<p>You can use this before the roll:</p><ul>${list}</ul>`,
+        content: `<p>${due.some(({ by }) => by) ? "Before this roll, these can be used (ask their players):" : "You can use this before the roll:"}</p><ul>${list}</ul>`,
         buttons: [
             { action: "roll", label: "Roll", default: true },
             { action: "quiet", label: "Roll, don't ask this encounter" },
-            { action: "stop", label: "Stop, I'll use it first" }
+            { action: "stop", label: "Stop, use it first" }
         ],
         rejectClose: false
     }).catch(() => "roll");
@@ -55,7 +83,7 @@ export function registerPreRoll() {
                 if (due.length) {
                     const answer = await ask(context.actor, due);
                     if (answer === "stop") return null;
-                    if (answer === "quiet") for (const { item } of due) quiet.add(`${game.combat.id}.${context.actor.id}.${item.id}`);
+                    if (answer === "quiet") for (const { item, by } of due) quiet.add(`${game.combat.id}.${(by ?? context.actor).id}.${item.id}`);
                 }
             }
         } catch (error) {

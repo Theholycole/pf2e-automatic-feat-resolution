@@ -241,6 +241,11 @@ export function preRollTrigger(given) {
     // 2026-10-30.)
     // ("You and your mystic duo roll initiative in the same encounter", "When a fight begins": Esoteric Coordination's, Primary Threat's; round 38.)
     if (/^You (?:and [^.]+? )?roll (?:for )?initiative\b|^When a fight begins\b|^(?:A|The) fight begins\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
+    // (Another's roll about to be made, "An enemy is about to use an action that requires a skill check or attack roll", "A creature within
+    // 60 feet is about to attempt an attack roll or skill check": asked of the roller, before its dice; round 46. Not Aid, which needs your
+    // preparing to first.)
+    const other = othersRoll(trigger, item);
+    if (other) return { ...other, trigger, kind };
     if (!/^You(?:'re| are| would| attempt| have)\b/i.test(trigger) && !/^You and\b/i.test(trigger)) return null;
     // ("You attempt a basic Reflex save", "You attempt a saving throw against a disease or poison effect that affects an area": Feline Dance's,
     // Absorb Toxin's, used as the save is rolled; round 37.)
@@ -264,6 +269,31 @@ export function preRollTrigger(given) {
     if (skill) return { event: "pre-check", check: skill, ...action, trigger, kind };
     if (/\b(?:skill )?checks?\b|\broll\b/i.test(trigger)) return { event: "pre-check", check: /\bskill check\b/i.test(trigger) || action.action ? "skill" : "any", ...action, trigger, kind };
     return null;
+}
+
+function othersRoll(trigger, item) {
+    if ((item?.system?.slug ?? "") === "aid" || /^Aid$/i.test(item?.name ?? "")) return null;
+    const match = /^(An ally|Your ally|An enemy|A foe|A creature|Any creature)\b([^.;]*?)\b(?:is about to|would|attempts? .* but hasn['’]t (?:yet )?rolled)\s+([^.;]*)/i.exec(trigger);
+    if (!match) return null;
+    const what = match[3];
+    // (After the roll, "would succeed at a save": not before it.)
+    if (/^(?:succeed|fail|critically|be |take |deal )/i.test(what) || /\bor you would\b/i.test(trigger)) return null;
+    const checks = [];
+    if (/\battack rolls?\b|\bStrikes?\b/i.test(what)) checks.push("attack");
+    if (/\bskill checks?\b|\bcheck to (?:Escape|[A-Z])/i.test(what)) checks.push("skill");
+    if (/\bsaving throws?\b|\bsaves?\b/i.test(what)) checks.push("save");
+    if (!checks.length) return null;
+    const who = /ally/i.test(match[1]) ? "ally" : /enemy|foe/i.test(match[1]) ? "enemy" : "creature";
+    const within = /\bwithin (\d+) feet\b/i.exec(match[2])?.[1] ?? (/\bwithin your reach\b/i.test(match[2]) ? "5" : null);
+    return { event: "pre-check-other", who, checks, ...(within ? { within: Number(within) } : {}), ...(/\bagainst you\b/i.test(what) ? { againstYou: true } : {}), ...(/\bEscape\b/.test(what) ? { action: "escape" } : {}), ...(/\branged\b/i.test(what) ? { ranged: true } : {}) };
+}
+
+// Whether another's pre-check read fits a roll about to happen: its kind of check, and (the scripts check who and how far).
+export function fitsOthersCheck(read, roll) {
+    if (read?.event !== "pre-check-other" || !roll) return false;
+    if (read.action && !(roll.options ?? []).includes(`action:${read.action}`)) return false;
+    const kind = roll.type === "attack-roll" ? "attack" : roll.type === "skill-check" ? "skill" : roll.type === "saving-throw" ? "save" : null;
+    return Boolean(kind) && read.checks.includes(kind) && (!read.ranged || roll.ranged === true);
 }
 
 const SKILLS = new Set(["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"]);
