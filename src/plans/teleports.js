@@ -20,5 +20,13 @@ export default [
     // (Round 101.)
     { uuid: pf2e("E3NsAdbp7kkOvfnr"), name: "Quick Positioning", teleport: { within: 10, move: { verb: "Step", lines: ["Up to twice"] } } },
     { uuid: pf2e("Pay7XmMLgLtzxklN"), name: "Tight Follower", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Closer to your designated ally, ending within 10 feet of them"] } } },
-    { uuid: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.2XWMN181rq3h8K5j", name: "Crash Together", teleport: { speedTimes: 0.5, move: { verb: "Stride", lines: ["In the same direction as your Castling Crashers partner"] } } }
+    { uuid: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.2XWMN181rq3h8K5j", name: "Crash Together", teleport: { speedTimes: 0.5, move: { verb: "Stride", lines: ["In the same direction as your Castling Crashers partner"] } } },
+    // (Round 102: Strides three times, Steps twice, and moves beside another action.)
+    { uuid: pf2e("lEtQVtPtoJtHVgGx"), name: "Incredible Sprint", teleport: { speedTimes: 3, move: { verb: "Stride", lines: ["Three times"] } } },
+    { uuid: pf2e("kvhouG3yJ2vQkzah"), name: "Rabid Sprint", teleport: { speedTimes: 3, move: { verb: "Stride", lines: ["Three times, on all fours"] } } },
+    { uuid: pf2e("aIm2qi4JZerthZmF"), name: "Elf Step", teleport: { within: 10, move: { verb: "Step", lines: ["5 feet twice"] } } },
+    { uuid: pf2e("etaixAdHNlHnLH0i"), name: "Guarded Advance", teleport: { within: 10, move: { verb: "Step", lines: ["Twice, and Raise a Shield, in any order"] } } },
+    { uuid: pf2e("Nb8MUoTpyX9u8di4"), name: "Guarded Advance (Knight Vigilant)", teleport: { within: 5, move: { verb: "Step", lines: ["Before or after you Raise a Shield"] } } },
+    { uuid: pf2e("Q47qXtK2cevjYUXe"), name: "Running Recharge", teleport: { speedTimes: 0.5, move: { verb: "Stride", lines: ["Or Step instead"] } }, notes: ["Your Spellstrike is recharged too."] },
+    { uuid: pf2e("vXH0HWMHzevA1Wox"), name: "Winding Flow", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Two of Stand, Step and Stride, in any order, not the same one twice"] } } }
 ];
