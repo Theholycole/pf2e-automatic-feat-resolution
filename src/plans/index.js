@@ -107,14 +107,17 @@ const NONE = () => ({ damage: { mode: "none", multiplier: 0, sourceComponentIds:
 // An affect entry → a plan with no roll: its conditions on each target. entry.affect: { effects: [{ slug, value, duration }], target,
 // range }.
 // (An effect with its own kind, Rallying Cry's temporary Hit Points: as given, its "@actor.level" the character's; 2026-10-30 Foundry test.)
+// (Every character number, as a damage tag's: Plant Banner's level, Instant Recovery's Constitution; worked out where it can be.)
+const characterFormula = (formula, dcs, item) => {
+    const filled = fillCharacterNumbers(`@Damage[${formula}]`, dcs, item);
+    const inner = /^@Damage\[(.*)\]$/s.exec(filled)?.[1] ?? String(formula);
+    return inner.replace(/@actor\.level\b/g, String(dcs?.level ?? "@actor.level"));
+};
+const withCharacterNumbers = (effects, dcs, item) => effects.map((effect) => (effect.formula ? { ...effect, formula: characterFormula(effect.formula, dcs, item) } : { ...effect }));
+
 export function handAffect(item, entry, dcs = null) {
     const affect = entry.affect ?? {};
-    // (Every character number, as a damage tag's: Plant Banner's level, Instant Recovery's Constitution; worked out where it can be.)
-    const level = (formula) => {
-        const filled = fillCharacterNumbers(`@Damage[${formula}]`, dcs, item);
-        const inner = /^@Damage\[(.*)\]$/s.exec(filled)?.[1] ?? String(formula);
-        return inner.replace(/@actor\.level\b/g, String(dcs?.level ?? "@actor.level"));
-    };
+    const level = (formula) => characterFormula(formula, dcs, item);
     const effects = (affect.effects ?? []).map((effect) => (effect.kind ? { ...effect, ...(effect.formula ? { formula: level(effect.formula) } : {}) }
         : { kind: "condition", slug: effect.slug, value: effect.value ?? null, duration: effect.duration ?? null }));
     return {
@@ -143,7 +146,7 @@ export function handSelfCheck(item, entry, dcs = null) {
     // (check.level "target": "the hard DC for the target's level" — each target's own, the ability module's card works it out.)
     const byTarget = check.level === "target";
     if (!byTarget && (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length)) return null;
-    const row = (degree) => ({ ...NONE(), effects: [...(check.outcomes?.[degree]?.effects ?? [])], ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
+    const row = (degree) => ({ ...NONE(), effects: withCharacterNumbers(check.outcomes?.[degree]?.effects ?? [], dcs, item), ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
     return {
         modelVersion: 13,
         source: sourceFor(item),

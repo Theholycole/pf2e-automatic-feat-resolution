@@ -26,3 +26,13 @@ test("a grant that hangs on something is left to the player (round 50, Fisheye)"
     assert.deepEqual(grantsIn(feat("<p>You gain the @UUID[Compendium.pf2e.feats-srd.Item.abc]{Breath Control} feat for 1 hour.</p>")), []);
     assert.equal(grantsIn(feat("<p>You're strong. You gain the @UUID[Compendium.pf2e.feats-srd.Item.abc]{Combat Climber} skill feat.</p>")).length, 1);
 });
+
+test("a level-DC check's heal fills the character's numbers (round 51, Circadian Disciplinarian)", async () => {
+    const { handSelfCheck } = await import("../src/plans/index.js");
+    const { default: selfChecks } = await import("../src/plans/self-checks.js");
+    const entry = selfChecks.find((each) => each.name === "Circadian Disciplinarian");
+    const plan = handSelfCheck({ name: "Circadian Disciplinarian", system: { traits: { value: [] } } }, entry, { level: 8, abilities: { con: 3 } });
+    assert.equal(plan.resolution.outcomes.criticalSuccess.effects[0].formula, "3*8");
+    assert.equal(plan.resolution.outcomes.success.effects[0].formula, "12");
+    assert.ok(!JSON.stringify(plan.resolution).includes("@"));
+});
