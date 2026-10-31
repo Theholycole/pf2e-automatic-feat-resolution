@@ -18,6 +18,11 @@ export const COMPANION_RULES = [
     { uuid: pf2e("RkaE55TeCvwmQq7E"), name: "Wing Rider", rules: [{ key: "BaseSpeed", selector: "fly", value: 25 }] },
     { uuid: pf2e("HxTqYtXRqFkkLfDQ"), name: "Gigantic Megafauna Companion", rules: [{ key: "CreatureSize", value: "huge" }] },
     { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.MYqJqQAi6B5WlZpK", name: "Climbing Limbs+", rules: [{ key: "BaseSpeed", selector: "climb", value: "@actor.system.movement.speeds.land.value" }] },
+    // (Batch 11: more evolution feats said outright.)
+    { uuid: pf2e("h8OB6zcdIqUPS6PC"), name: "Airborne Form", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.movement.speeds.land.value" }] },
+    { uuid: pf2e("N02sHmzuF9XQj93m"), name: "Resilient Shell", rules: [{ key: "Resistance", type: "physical", value: "ternary(gte(@actor.level,17),6,5)" }] },
+    { uuid: pf2e("U6lS758rtYGR6aw9"), name: "Amphibious Form", rules: [{ key: "ActorTraits", add: ["amphibious"] }] },
+    { uuid: pf2e("cTTOH6yJibgvRlLX"), name: "Demon-Hunting Companion", rules: [sense("scent", "imprecise", 30)] },
     // (An apocalypse mount's fly Speed as its land Speed.)
     { uuid: pf2e("XHbdG50JIO8pEaQ4"), name: "Night Terror", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.movement.speeds.land.value" }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }

@@ -5,7 +5,7 @@ import { BATCHES, compendiumUuid, rulesFor } from "../src/rules/index.js";
 import { readRules, sentenceRules, readNotes, readTriggerNotes } from "../src/rules/read.js";
 
 // The rule elements the module adds (docs/rules.md): only ones PF2e builds from data alone, that never write back to their own source.
-const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike", "EphemeralEffect", "CreatureSize"]);
+const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike", "EphemeralEffect", "CreatureSize", "ActorTraits"]);
 
 test("every batch entry: a compendium item, rules PF2e builds from data alone", () => {
     const seen = new Set();

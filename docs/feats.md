@@ -555,3 +555,8 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Round 34: Improvisational Defender and Ankle Biter pass. PF2e 8.6.1 has no penalty (and no toggle) for a nonlethal Strike with a lethal
   weapon, so Stage Fighting, Nonlethal Takedown and Protector of the Wilds were dropped. Decision for Cole: should the module add that -2
   itself (a nonlethal toggle on Strikes), which those three would then cancel?
+
+### Batch 11 (2026-10-31)
+
+- On the eidolon or companion: Airborne Form's fly Speed as its land Speed, Resilient Shell's physical resistance 5 (6 at 17th level),
+  Amphibious Form's amphibious trait, Demon-Hunting Companion's scent (imprecise, 30 feet).
