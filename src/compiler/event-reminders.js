@@ -254,9 +254,16 @@ export function preRollTrigger(given) {
 // Whether a posted message's text asks for a save: PF2e's inline save links.
 export const asksForSave = (content) => /data-pf2-check="(?:fortitude|reflex|will)"/.test(String(content ?? ""));
 
-// The saves a posted message's inline links ask for: [{ save, basic }], basic when the link's markup says so.
-export function savesAsked(content) {
-    return [...String(content ?? "").matchAll(/<a\b[^>]*data-pf2-check="(fortitude|reflex|will)"[^>]*>[\s\S]*?<\/a>/g)].map((match) => ({ save: match[1], basic: /basic/i.test(match[0]) }));
+// The saves a posted message's inline links ask for: [{ save, basic }]. PF2e 8.6 marks a basic save only by its label's text ("Basic
+// Reflex", localised) and the damaging-effect roll option it adds; not the link's flavor or label attributes (round 37b).
+export function savesAsked(content, basicWord = "basic") {
+    const word = new RegExp(`\\b${String(basicWord).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    return [...String(content ?? "").matchAll(/<a\b([^>]*data-pf2-check="(fortitude|reflex|will)"[^>]*)>([\s\S]*?)<\/a>/g)].map((match) => {
+        const options = /data-pf2-roll-options="([^"]*)"/.exec(match[1])?.[1] ?? "";
+        const label = /<span class="label">([\s\S]*?)<\/span>\s*(?:<i|$)/.exec(match[3])?.[1] ?? match[3];
+        const text = label.replace(/<[^>]+>/g, " ");
+        return { save: match[2], basic: /(?:^|,)\s*damaging-effect\s*(?:,|$)/.test(options) || word.test(text) || /\bbasic\b/i.test(text) };
+    });
 }
 
 // Whether a pre-save read fits the saves asked: any save when it names none; its save, and a basic one when it says basic.

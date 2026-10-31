@@ -192,7 +192,7 @@ export async function onSaveAsked(message) {
     if (!game.settings.get(MODULE_ID, SETTING) || !message.author?.isSelf || !isUse(message) || !asksForSave(message.content)) return;
     const source = message.actor ?? message.token?.actor ?? null;
     if (!source || source.type === "character") return;
-    const asked = savesAsked(message.content);
+    const asked = savesAsked(message.content, game.i18n?.localize?.("PF2E.InlineCheck.Basic") ?? "basic");
     for (const token of game.user.targets) {
         const actor = token.actor;
         if (actor?.type !== "character") continue;

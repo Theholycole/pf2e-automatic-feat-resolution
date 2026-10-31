@@ -655,4 +655,9 @@ test("round 37 fixes: not on a critical hit, the save a pre-save feat names, a c
     assert.ok(!fitsSave(feline, will));
     assert.ok(!fitsSave(feline, savesAsked('<a data-pf2-check="reflex">Reflex</a>')));
     assert.ok(fitsSave(preRollTrigger(reaction("You attempt a saving throw against a magical effect, but you haven't rolled yet.")), will));
+    // (PF2e 8.6's own markup: the label's text and the damaging-effect option, not the flavor attribute.)
+    const pf2e = (options, flavor, label) => `<a class="inline-check with-repost" ${options ? `data-pf2-roll-options="${options}" ` : ""}data-pf2-repost-flavor="${flavor}" data-pf2-check="reflex" data-pf2-dc="24"><i inert class="fa-solid fa-person-running"></i><span class="label"><span data-visibility="gm">DC 24</span> ${label}</span><i class="fa-solid fa-comment repost"></i></a>`;
+    assert.deepEqual(savesAsked(pf2e("damaging-effect", "Test Blast", "Basic Reflex")), [{ save: "reflex", basic: true }]);
+    assert.deepEqual(savesAsked(pf2e("", "Basic Trap", "Reflex")), [{ save: "reflex", basic: false }]);
+    assert.deepEqual(savesAsked(pf2e("", "Explosion", "Réflexe basique"), "basique"), [{ save: "reflex", basic: true }]);
 });
