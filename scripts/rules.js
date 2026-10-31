@@ -4,6 +4,8 @@
 // own source (no ChoiceSet, GrantItem, toggleable RollOption, Strike), since theirs isn't in the item's data.
 
 import { rulesFor } from "../src/rules/index.js";
+import { companionRulesFrom } from "../src/rules/companion.js";
+import { companionsOf, findMaster, isCompanion } from "../src/compiler/companion.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ITEM_TYPES = ["feat", "heritage", "background"];
@@ -31,4 +33,30 @@ export function setUpRules() {
             return original.apply(this, args);
         };
     }
+    // (A master's feats' rules for its companion, on the companion's ancestry: src/rules/companion.js.)
+    const ancestry = CONFIG.PF2E?.Item?.documentClasses?.ancestry;
+    const original = ancestry?.prototype?.prepareRuleElements;
+    if (typeof original !== "function") return;
+    ancestry.prototype.prepareRuleElements = function (...args) {
+        if (Array.isArray(this.system?.rules) && this.actor && (isCompanion(this.actor) || this.slug === "eidolon" || this.system?.traits?.value?.includes?.("eidolon"))) {
+            const own = this.system.rules.filter((rule) => !ours.has(rule));
+            const master = game.ready ? findMaster(this.actor, { actors: [...(game.actors ?? [])], users: [...(game.users ?? [])] }) : null;
+            const added = companionRulesFrom(master).map((rule) => {
+                const copy = foundry.utils.deepClone(rule);
+                ours.add(copy);
+                return copy;
+            });
+            this.system.rules = [...own, ...added];
+        }
+        return original.apply(this, args);
+    };
+    // (Its master isn't known before the world is ready, and its feats change: the companions prepare again.)
+    const again = (master) => {
+        if (master?.type !== "character" || isCompanion(master)) return;
+        for (const companion of companionsOf(master, { actors: [...game.actors], users: [...game.users] })) companion.reset?.();
+    };
+    Hooks.once("ready", () => {
+        for (const actor of game.actors ?? []) if (isCompanion(actor)) actor.reset?.();
+    });
+    for (const hook of ["createItem", "deleteItem"]) Hooks.on(hook, (item) => again(item?.parent));
 }

@@ -448,3 +448,86 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 
 - Deft Cooperation (+1 attack and AC to the end of your next turn) passes. Born in the Saddle's +1 to Reflex applied unmounted too; it's
   now predicated on PF2e's Effect: Mounted ("self:effect:mounted"), whose -2 it softens to -1.
+
+### Allies' Effects from an action (2026-10-31)
+
+- An action that gives an ally a bonus PF2e has no Effect for (Protect Ally's +1 AC, Transfusion's fast healing) is a toggle with
+  `who: "target"`: the module's own Effect on each of the player's targets, its formulas worked out from the character's numbers when it's
+  made (Bloom of Health's half level), with the character as its origin. Posting it again with the same target takes it off. With no target,
+  the GM is told to target first. Plans: Protect Ally, Transfusion, Bloom of Health, Little Buddy, Snap Falling Fruit, Redirecting Draft
+  (the last two only against the triggering attack, so a note says to delete them after).
+
+### Round 20 (2026-10-31)
+
+- Protect Ally, Transfusion, Bloom of Health (fast healing 4 at 8th level, a number), Snap Falling Fruit, Redirecting Draft: all pass, on
+  the target only, on and off; with nothing targeted, the GM is told to target first. Little Buddy did nothing: an NPC's action, and the
+  module played only characters' and familiars'. An NPC's is now played only when it's an ally's Effect (the ability module plays the rest).
+
+### Stances by hand (2026-10-31)
+
+- A toggle can be a stance (`stance: true`): the module's Stance Effect, which another of the module's stances ends. Haft Striker Stance and
+  Forest's Heart add their Strikes (Strike rules; the haft's runes by hand), Jester's Gambol its resistance against animals, beasts, fey,
+  fungi and plants (by the damage's origin traits), Flair Rider Stance its lesser cover and Reflex while mounted.
+
+### A bonus for one moment (2026-10-31)
+
+- Duck and Weave, Stoic as Hell, Alien Brain, Focus Anger: the module's Effect to the start of your next turn or the end of this one, what
+  it's only against a note (delete it after the triggering save). Defend Summoner: on the summoner, targeted.
+
+### Rounds 21-23 (2026-10-31)
+
+- Little Buddy passes from an NPC (Wolf +1 attack, +2 damage, off again); other NPC actions get nothing from this module.
+- The four stances pass (the Haft and Roots and Vines Strikes, Jester's Gambol's resistance against the Wolf but not the Ogre, Flair Rider
+  only while mounted). Switching stances took no stance (the old one counted as the toggle's own): fixed, the line says which ended.
+- Duck and Weave, Stoic as Hell, Alien Brain, Focus Anger, Defend Summoner (from an eidolon, on its target) pass. PF2e's "saving-throw"
+  selector also raises the Will DC shown; the bonus ends with the turn, so that's left.
+- Then: Brains! (Recall Knowledge, 1 hour), Masked Casting (saves while Averting Gaze), Free the Bound (the ally's Escape, as Tip the
+  Scales's selectors), Sharpened Senses (Seek).
+- Round 24: all four pass (each only on its action's roll: Recall Knowledge, Escape, Seek).
+- Then: Reclaim Power (your level per thrall, posted once per thrall), Fated Not to Die (ends dying; the Shields heal by hand).
+- Round 25: Reclaim Power passes. Fated Not to Die took unconscious with dying (PF2e grants it from dying): unconscious again after, as My Legend Must Be Told.
+- Round 26: Fated Not to Die passes (dying gone, unconscious kept, 0 HP).
+- Then: Quicken Heartbeat (quickened through your next turn; slowed by hand), Raise Neck (reach 10 on the nagaji fangs, AdjustStrike).
+- Round 27: Quicken Heartbeat passes. Raise Neck's "reach-10" was ignored (a character weapon trait is only "reach"): now "reach".
+- Round 28: Raise Neck passes (reach 5 → 10). Forest's Heart's "reach-30" has no label of its own, but PF2e reads it: reach 30.
+
+### Cole's answers (2026-10-31)
+
+- D12: yes, Effect cards (an Effect with no roll card, Protect Ally's) are on automatically.
+- One-moment bonuses lasting to the end of the turn, with a note to delete them after the triggering attack or save: good enough.
+- NPC actions played only for an ally's Effect (Little Buddy): yes.
+- What's left: not just reminders. Use the suite's other modules where they model the rule: the environment module's difficult
+  terrain (PF2e's system.movement.terrain entries, read by its terrain costs) and weather first.
+
+### Difficult terrain, through the environment module (2026-10-31)
+
+- Rule batch 8: 17 passives and heritages that ignore difficult terrain get PF2e's own terrain entries (ActiveEffectLike on
+  system.movement.terrain.difficult/greater.ignored, as Unimpeded Journey has), by environment (aquatic, swamp, forest) or feature
+  (undergrowth, rubble, snow, ice, crowd). PF2e applies the "all" ones itself; the environment module's terrain costs apply the rest. Left by
+  hand: ones that hang on a choice (Favored Terrain, One with the Land, Acclimated Mount) or a moment (Lotus Above the Wind, Convergent
+  Tides), and water without a feature (Shore Step).
+
+### Weather, temperature and falls, through the environment module (2026-10-31)
+
+- src/plans/environment.js: the feat module's api answers the environment module's three asks as the item module does
+  (temperatureProtections, weatherIgnores, fallEases), for Climate Adaptation, Legendary Survivalist, Badlands Orc (temperature), Cloud
+  Gazer, Murksight, Murksight+, Storm Born (weather), Skyborn Tengu, Windweb Tripkee and Cat Fall by Acrobatics rank (falls). The
+  environment module asks both (its branch claude/project-thread-7muc17, foundry.js fromSuite). Left: the ones on a choice (Environmental
+  Adaptability, Favored Terrain) or for allies (Environmental Guide, Angel Eidolon's aura).
+- Round 29: the entries land (Crushing Step only in medium or heavy armor) and snow, deep snow pass. Jungle Runner's forest/undergrowth matched nothing: the core's undergrowth names no environment. Now all/undergrowth (undergrowth is a forest's anyway).
+- Round 30 (with the environment module branch bc55cf2): Jungle Runner, Climate Adaptation, Badlands Orc, Murksight (rain: concealment lifted, its sight penalty stays, as the core has precipitation), Cat Fall by rank, Skyborn Tengu: all pass.
+
+### A master's feats on its companion (2026-10-31)
+
+- src/rules/companion.js: the rules an evolution feat on the summoner's sheet gives the eidolon (Expanded Senses' senses, Vibration Sense's
+  tremorsense or wavesense, Burrowing Form's burrow Speed, Ever-Vigilant Senses' +2 Perception, Faydhaan's saves against water). scripts/
+  rules.js puts them on the companion's ancestry as it prepares, when findMaster finds the master with the feat; companions prepare again
+  once the world is ready and when the master gains or loses an item.
+- Round 31: Expanded Senses, Vibration Sense, Burrowing Form, Ever-Vigilant Senses on the eidolon from the summoner's sheet: all pass, at once and after a reload, gone with the feat; the summoner gets none. Then Chiardmar Steed (+5 status Speed on the horse; its first 10 feet of difficult terrain each turn by hand).
+
+### Condition feats (2026-10-31)
+
+- src/plans/condition-feats.js, scripts/conditions.js: Friend of Fear (a frightened gained is 1 lower, never below what it was) and Calm and
+  Centered (a frightened or stupefied lowered goes 1 further), played by the active GM as PF2e changes the condition, with a GM line. The
+  value before rides in the update's options, so a player's change counts too. And Fearsense's scent (rule batch 8).
+- Round 32: Calm and Centered and Fearsense pass. Friend of Fear went 2 too low: the ability module's Bravery reading (scripts/bravery.js) already lowers a gained frightened for it, so it's dropped here (its whisper says "Bravery"). PF2e's end-of-turn frightened decrease didn't fire in the test world, so Calm and Centered there is untested.

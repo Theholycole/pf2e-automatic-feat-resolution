@@ -57,5 +57,21 @@ export default [
         uuid: pf2e("24giyNqSjqrEnhN9"), name: "Call From Death's Door",
         affect: { target: "1 ally", effects: [{ kind: "end-condition", slug: "dying" }, { kind: "heal", formula: "2*@actor.level" }] },
         notes: ["Spend a Mythic Point. The ally's wounded value doesn't go up for this."]
+    },
+    {
+        uuid: pf2e("IkqhUNVXUmi8ePEJ"), name: "Reclaim Power",
+        affect: { target: "you", effects: [{ kind: "heal", formula: "@actor.level" }] },
+        notes: ["This is one thrall's healing: post Reclaim Power again for each more thrall you destroy (up to three). With all three, also lower one of your clumsy, enfeebled, frightened, sickened or stupefied values by 1."]
+    },
+    {
+        uuid: action("gU93T2UqxLsX9gyF"), name: "Fated Not to Die",
+        // (Unconscious again after dying ends, as My Legend Must Be Told: PF2e's dying takes its unconscious with it; 2026-10-31 Foundry test.)
+        affect: { target: "you", effects: [{ kind: "end-condition", slug: "dying", stabilize: true }, { kind: "condition", slug: "unconscious", value: null, duration: null }] },
+        notes: ["You stay unconscious at 0 Hit Points. If the harrow card you draw is from the suit of Shields, you wake and regain 1d6 + your level Hit Points (by hand)."]
+    },
+    {
+        uuid: pf2e("i8MnyasCDo3j65Xd"), name: "Quicken Heartbeat",
+        affect: { target: "you", effects: [{ slug: "quickened", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" } }] },
+        notes: ["Quickened during your next turn, the extra action only to Stride or Strike. If you're slowed, reduce slowed by 1 instead (don't apply this)."]
     }
 ];

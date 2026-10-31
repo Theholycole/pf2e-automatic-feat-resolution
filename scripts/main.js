@@ -4,12 +4,14 @@
 import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
+import { registerConditionFeats } from "./conditions.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
 import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
+import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
 import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -24,7 +26,8 @@ const isActiveGM = () => game.users.activeGM?.isSelf ?? game.user.isGM;
 const withRollData = (dcs, item) => (dcs ? { ...dcs, resolve: (formula) => Roll.replaceFormulaData(formula, item?.getRollData?.() ?? {}) } : null);
 
 function compileItem(item) {
-    const dcs = withRollData(characterDCs(item?.actor), item);
+    // (An NPC's: no class or spell DC of a character's, only its ally's Effect is played; cardForFeat.)
+    const dcs = withRollData(characterDCs(item?.actor) ?? (item?.actor?.type === "npc" ? {} : null), item);
     if (!dcs) return null;
     try {
         return compileFeat(item, { dcs, basicActions: abilityApi()?.basicActions });
@@ -42,7 +45,7 @@ const isFeatMessage = (message) => ["action", "feat"].includes(message.flags?.pf
 function recordTargets(message, _data, _options, userId) {
     if (userId !== game.user.id || !isFeatMessage(message)) return;
     const actor = message.speaker?.actor ? game.actors.get(message.speaker.actor) : null;
-    if (!PLAYS.has(actor?.type) && !PLAYS.has(message.speakerActor?.type)) return;
+    if (!PLAYS.has(actor?.type) && !PLAYS.has(message.speakerActor?.type) && actor?.type !== "npc") return;
     const targets = [...game.user.targets].map((token) => token.document?.uuid).filter(Boolean);
     if (targets.length) message.updateSource({ [`flags.${MODULE_ID}.targets`]: targets });
 }
@@ -67,7 +70,10 @@ const allCards = () => game.settings.get(MODULE_ID, SETTING) === "all";
 async function cardForFeat(message) {
     if (!isFeatMessage(message) || !message.flags.pf2e.origin.uuid) return;
     const posted = await fromUuid(message.flags.pf2e.origin.uuid);
-    if (!PLAYS.has(posted?.actor?.type)) return;
+    // (An NPC's action is the ability module's, but for an ally's Effect, which it doesn't play: Teams+'s underlings' Little Buddy; 2026-10-31
+    // Foundry test.)
+    const npc = posted?.actor?.type === "npc";
+    if (!PLAYS.has(posted?.actor?.type) && !npc) return;
     // (2026-10-30, "Companions": Constricting Hold on the summoner's sheet is the eidolon's, with its numbers and from its token.)
     const world = { actors: [...game.actors], users: [...game.users] };
     let item = actingItem(posted, world);
@@ -77,15 +83,19 @@ async function cardForFeat(message) {
         item = actingItem(posted, world, { companion: true });
         if (item !== posted) plan = compileItem(item);
     }
+    if (npc && !(plan?.builtin === "feat-effect" && plan.who === "target")) return;
+    // (On the player's targets, who "target": as a passive's PF2e Effect is.)
+    const targetActors = () => (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
+    const untargeted = () => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });
+    if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : untargeted();
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     // (A Focus or Mythic Point back: added to the pool, up to its maximum; 2026-10-30, the loop.)
     if (plan?.builtin === "regain-point") return regainPoint(item, plan);
     // (A passive's PF2e Effect for its moment, on and off: on the character, or on the player's targets; 2026-10-30, docs/rules.md.)
     if (plan?.builtin === "passive-effect") {
-        const targets = (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
-        const actors = plan.who === "you" ? [item.actor] : targets;
-        if (!actors.length) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });
+        const actors = plan.who === "you" ? [item.actor] : targetActors();
+        if (!actors.length) return untargeted();
         return togglePassiveEffect(item, plan, actors);
     }
     const play = abilityApi()?.live?.playAbility;
@@ -187,6 +197,8 @@ Hooks.once("init", () => {
     registerSenses();
     registerTruesight();
     registerSenseZones();
+    // (Friend of Fear, Calm and Centered: a condition's value as it changes, src/plans/condition-feats.js.)
+    registerConditionFeats();
 });
 
 // (In init, after PF2e's own: by setup the world's tokens had prepared without them; 2026-10-30 Foundry test. PF2e's hearing and tremorsense,
@@ -245,5 +257,6 @@ Hooks.once("ready", () => {
         onFoeAction(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
     const module = game.modules.get(MODULE_ID);
-    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs });
+    // (What its feats ease of the weather, the temperature and falls, for the environment module: src/plans/environment.js.)
+    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs, temperatureProtections, weatherIgnores, fallEases });
 });

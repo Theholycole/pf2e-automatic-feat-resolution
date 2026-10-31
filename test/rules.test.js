@@ -78,3 +78,12 @@ test("a reaction triggered by the character's own roll: a note on that roll, for
     assert.equal(readTriggerNotes(reaction("You roll initiative."))[0].selector, "initiative");
     assert.deepEqual(readTriggerNotes(reaction("You attempt a saving throw against a magical effect, but you haven't rolled yet.")), [], "before the roll");
 });
+
+test("a master's feats' rules for its companion: PF2e's safe keys, labelled with the feat", async () => {
+    const { COMPANION_RULES, companionRulesFrom } = await import("../src/rules/companion.js");
+    for (const entry of COMPANION_RULES) for (const rule of entry.rules) assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
+    const summoner = { items: [{ name: "Expanded Senses", sourceId: "Compendium.pf2e.feats-srd.Item.rPzEnABFjkbOARiB" }, { name: "Other", sourceId: "Compendium.pf2e.feats-srd.Item.nothingHere00000" }] };
+    assert.deepEqual(companionRulesFrom(summoner).map((rule) => rule.selector), ["low-light-vision", "darkvision", "scent"]);
+    assert.equal(companionRulesFrom(summoner)[2].range, 30);
+    assert.deepEqual(companionRulesFrom(null), []);
+});

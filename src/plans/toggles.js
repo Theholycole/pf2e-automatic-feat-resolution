@@ -95,5 +95,111 @@ export default [
         uuid: pf2e("8pmd9gMl3TamFx3u"), name: "Deft Cooperation",
         toggle: { rules: [bonus("attack", 1, "circumstance", undefined, "deft-cooperation-attack"), bonus("ac", 1, "circumstance", undefined, "deft-cooperation-ac")], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
         notes: ["After you successfully Aid an ally's attack roll or AC: only against that enemy, until the end of your next turn."]
+    },
+    // Actions whose bonus goes on an ally, with no PF2e Effect for it (2026-10-31, the loop): who "target", the module's Effect on each of the
+    // player's targets, its numbers the character's. Posting it again with the same target takes it off.
+    {
+        uuid: pf2e("ASWqQ6RB7cfCsUo0"), name: "Protect Ally",
+        toggle: { who: "target", rules: [bonus("ac", 1, "circumstance", undefined, "protect-ally")], duration: ROUND },
+        notes: ["On one adjacent ally, until the start of your next turn; it ends early once the ally isn't adjacent to you. Only one ally at a time."]
+    },
+    {
+        uuid: pf2e("q4wFELOV4BQO4cDd"), name: "Transfusion",
+        toggle: { who: "target", rules: [{ key: "FastHealing", value: 1 }], duration: { value: 5, unit: "rounds", expiry: "turn-start", sustained: false } },
+        notes: ["Spend 5 sanguimancy Hit Points (by hand). Each 5 more raises the fast healing by 1, to 8 at most: edit the Effect's value."]
+    },
+    {
+        uuid: pf2e("Fe5m807oeqJw3YUd"), name: "Bloom of Health",
+        toggle: { who: "target", rules: [{ key: "FastHealing", value: "floor(@actor.level / 2)" }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
+        notes: ["On your knights who hear you: target them first."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-items.Item.FVp2POzJHwBGZVi4", name: "Little Buddy",
+        toggle: { who: "target", rules: [bonus("attack", 1, "status", undefined, "little-buddy-attack"), bonus("damage", 2, "status", undefined, "little-buddy-damage")] },
+        notes: ["For the rest of the encounter: delete the Effect when it ends. The ally is then immune to Little Buddy for 1 day."]
+    },
+    {
+        uuid: pf2e("YKPaD42aJf2C5V3B"), name: "Snap Falling Fruit",
+        toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "snap-falling-fruit")], duration: THIS_TURN },
+        notes: ["Only against the triggering physical ranged attack (target yourself if it's you): delete the Effect after it. If it misses, you knock it out of the air."]
+    },
+    {
+        uuid: pf2e("G3NBWaItq6oLEJxx"), name: "Redirecting Draft",
+        toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "redirecting-draft")], duration: THIS_TURN },
+        notes: ["Only against the triggering ranged physical Strike (target yourself if it's you): delete the Effect after it."]
+    },
+    // Stances with no rules of PF2e's for them (2026-10-31, the loop): the module's own Stance Effect, as a stance the reader finds is; posting
+    // another stance from the module ends it, posting it again ends it too.
+    {
+        uuid: pf2e("pKNnFOuHBkJEvmS1"), name: "Haft Striker Stance",
+        toggle: { stance: true, rules: [{ key: "Strike", slug: "haft-striker-haft", label: "Haft", category: "simple", group: "club", traits: ["agile", "finesse"], damage: { base: { damageType: "bludgeoning", dice: 1, die: "d4" } } }] },
+        notes: ["While you wield a two-handed hammer, spear or polearm. The haft shares the weapon's fundamental runes, which this Strike doesn't show: add them by hand."]
+    },
+    {
+        uuid: pf2e("2LjTxYTlRL7RwhOS"), name: "Forest's Heart",
+        toggle: { stance: true, rules: [{ key: "Strike", slug: "forests-heart-roots", label: "Roots and Vines", category: "unarmed", group: "brawling", traits: ["finesse", "grapple", "reach-30"], damage: { base: { damageType: "bludgeoning", dice: 4, die: "d8" } } }] },
+        notes: ["No extra dice from striking runes; your handwraps' item bonus to attack and property runes do apply."]
+    },
+    {
+        uuid: pf2e("dzPwwXHW5NzYGG5h"), name: "Jester's Gambol",
+        toggle: { stance: true, rules: [{ key: "Resistance", type: "all-damage", value: "floor(@actor.level / 2)", predicate: [{ or: ["origin:trait:animal", "origin:trait:beast", "origin:trait:fey", "origin:trait:fungus", "origin:trait:plant"] }], label: "Jester's Gambol" }] },
+        notes: ["You ignore difficult terrain (by hand)."]
+    },
+    {
+        uuid: pf2e("dyjYNaE6Nc6zpsUM"), name: "Flair Rider Stance",
+        toggle: { stance: true, rules: [bonus("ac", 1, "circumstance", ["self:effect:mounted"], "flair-rider-cover-ac"), bonus("reflex", 3, "circumstance", ["self:effect:mounted"], "flair-rider-reflex")] },
+        notes: ["While mounted (PF2e's Effect: Mounted): lesser cover from your mount (+1 AC and Reflex), and the +3 to Reflex also cancels Mounted's -2."]
+    },
+    // A bonus for one moment, used as a reaction or an action (2026-10-31, the loop): the module's Effect, to the end of the turn or the start
+    // of your next; what it's only against is a note.
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.EkvtLALpIufz8rx7", name: "Duck and Weave",
+        toggle: { rules: [bonus("ac", 2, "circumstance", undefined, "duck-and-weave")], duration: ROUND },
+        notes: ["Only against the one creature within 30 feet you chose. Until then you can't Strike or take hostile actions against any other creature."]
+    },
+    {
+        uuid: pf2e("9Co9SUJmey3LrlLl"), name: "Stoic as Hell",
+        toggle: { rules: [bonus("saving-throw", 2, "circumstance", undefined, "stoic-as-hell"), bonus("will-dc", 2, "circumstance", undefined, "stoic-as-hell-dc")], duration: THIS_TURN },
+        notes: ["Only against the triggering emotion or controlled effect: delete the Effect after it. If you critically succeed (or it critically fails against your Will DC), you're also immune to the effect for 1 hour."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.HHcEB8E1PidijRqC", name: "Alien Brain",
+        toggle: { rules: [bonus("saving-throw", 2, "status", undefined, "alien-brain")], duration: THIS_TURN },
+        notes: ["Only against the triggering mental effect: delete the Effect after it. It's +3 if you're frustrated 3 (edit the value). On a critical success against a creature's effect, it becomes stupefied (by hand)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.fOeKR7JM4UOK0ZOd", name: "Focus Anger",
+        toggle: { rules: [bonus("saving-throw", 2, "circumstance", undefined, "focus-anger")], duration: THIS_TURN },
+        notes: ["Only against the triggering mental save: delete the Effect after it. Then you enter your monster form."]
+    },
+    {
+        uuid: pf2e("xlparPCGhkgjdhx2"), name: "Defend Summoner",
+        toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "defend-summoner")], duration: ROUND },
+        notes: ["Target your summoner. Only while you're within your eidolon's reach."]
+    },
+    {
+        uuid: pf2e("Fpsd8Y8qJ3Tdbiyz"), name: "Brains!",
+        toggle: { rules: [bonus("skill-check", 1, "status", ["action:recall-knowledge"], "brains")], duration: { value: 1, unit: "hours", expiry: "turn-start", sustained: false } },
+        notes: ["+2 instead if the humanoid had a higher modifier to the skill you're using (edit the value)."]
+    },
+    {
+        uuid: pf2e("4xeDjt8eARzAGARP"), name: "Masked Casting",
+        toggle: { rules: [bonus("saving-throw", 2, "circumstance", undefined, "masked-casting")], duration: ROUND },
+        notes: ["Avert Gaze too (its own action). The +2 is also to checks to disbelieve illusions, by hand; it lasts while you Avert your Gaze this way."]
+    },
+    {
+        uuid: pf2e("9oU92ttNdXEKFOGh"), name: "Free the Bound",
+        toggle: { who: "target", rules: [bonus(["athletics", "acrobatics", "unarmed-attack-roll"], 1, "circumstance", ["action:escape"], "free-the-bound")], duration: THIS_TURN },
+        notes: ["Target the ally about to Escape. Unless it critically fails, it can Strike an enemy within reach as a reaction; both count toward its multiple attack penalty, which goes up only after both."]
+    },
+    {
+        uuid: pf2e("jP0D4CIyloiBaEh4"), name: "Sharpened Senses",
+        toggle: { rules: [bonus("perception", 2, "circumstance", ["action:seek"], "sharpened-senses")], duration: THIS_TURN },
+        notes: ["Seek now; the +2 only if you use one of your senses from Natural Senses."]
+    },
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.MLOkyKi1Y3N6y56Q", name: "Raise Neck",
+        toggle: { rules: [{ key: "AdjustStrike", mode: "add", property: "weapon-traits", value: "reach", definition: ["item:slug:fangs"] }], duration: THIS_TURN },
+        notes: ["Your nagaji fangs Strike has reach 10 feet until the end of your turn (PF2e's reach trait: 10 feet for a Medium creature)."]
     }
 ];

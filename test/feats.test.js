@@ -567,6 +567,18 @@ test("toggled Effects: a passive's PF2e Effect, on the character or its target",
     assert.equal(leak.effect, "Compendium.pf2e-team-plus-magic.misc.Item.ehRD6fl2IfuURuaM");
 });
 
+test("an ally's Effect from an action: the module's own, on the player's targets", async () => {
+    const action = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Choose an ally.</p>" }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
+    const protect = compileFeat(action("Protect Ally", "Compendium.pf2e.feats-srd.Item.ASWqQ6RB7cfCsUo0"), { dcs: DCS });
+    assert.equal(protect.builtin, "feat-effect");
+    assert.equal(protect.who, "target");
+    assert.deepEqual(protect.effect.rules[0], { key: "FlatModifier", selector: "ac", type: "circumstance", value: 1, slug: "protect-ally" });
+    const bloom = compileFeat(action("Bloom of Health", "Compendium.pf2e.feats-srd.Item.Fe5m807oeqJw3YUd"), { dcs: DCS });
+    assert.equal(bloom.effect.rules[0].value, "floor(@actor.level / 2)");
+    const shadow = compileFeat({ ...action("Shadow Master", "Compendium.pf2e.feats-srd.Item.BqcAwmNjDlKEI84X"), system: { ...action().system, actionType: { value: "passive" } } }, { dcs: DCS });
+    assert.equal(shadow.who, undefined);
+});
+
 test("linked Effects by hand: an action's Effect the reader leaves, on the character, its target or its allies", async () => {
     const action = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Stride once.</p>" }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
     const dash = compileFeat(action("Plane-Stepping Dash", "Compendium.pf2e.feats-srd.Item.s6C5jtru8j0sONa6"), { dcs: DCS });
@@ -594,4 +606,19 @@ test("checks against the target's level's DC: Guiding Words, each ally's own", a
     const words = compileFeat(action("Guiding Words", "Compendium.pf2e.feats-srd.Item.LmsjuqB3rrZTqqa6"), { dcs: DCS });
     assert.deepEqual(words.resolution.check.against, { dc: "level", adjustment: 2 });
     assert.equal(words.targeting.target, "1 ally");
+});
+
+test("condition feats: Friend of Fear lowers a gain, Calm and Centered a decrease", async () => {
+    const { CONDITION_FEATS, conditionAfter } = await import("../src/plans/condition-feats.js");
+    const [calm] = CONDITION_FEATS;
+    const fear = { name: "Friend of Fear", slugs: ["frightened"], gained: -1 };
+    assert.ok(!CONDITION_FEATS.some((entry) => entry.name === "Friend of Fear"), "the ability module's Bravery reading has it");
+    assert.deepEqual(conditionAfter([fear], "frightened", 0, 2), { value: 1, by: ["Friend of Fear"] });
+    assert.deepEqual(conditionAfter([fear], "frightened", 0, 1), { value: 0, by: ["Friend of Fear"] });
+    assert.deepEqual(conditionAfter([fear], "frightened", 1, 3), { value: 2, by: ["Friend of Fear"] });
+    assert.equal(conditionAfter([fear], "frightened", 2, 1), null, "a decrease isn't a gain");
+    assert.equal(conditionAfter([fear], "stupefied", 0, 2), null);
+    assert.deepEqual(conditionAfter([calm], "stupefied", 2, 1), { value: 0, by: ["Calm and Centered"] });
+    assert.deepEqual(conditionAfter([calm], "frightened", 3, 2), { value: 1, by: ["Calm and Centered"] });
+    assert.equal(conditionAfter([calm], "frightened", 1, 2), null);
 });
