@@ -4,11 +4,17 @@
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const action = (id) => `Compendium.pf2e.actionspf2e.Item.${id}`;
+const misc = (id) => `Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.${id}`;
 
 export default [
     { uuid: pf2e("KwbteWlCzFT5veZO"), name: "Dart Between", teleport: { within: 60 }, notes: ["A space you can see. Not with another creature along, even in an extradimensional container. On arrival you can Part the Veil as a free action; hidden with cover or concealment, you stay hidden."] },
     { uuid: pf2e("27ruxnDDCc2rQpMX"), name: "Plane Hop", teleport: { speedTimes: 1 }, notes: ["Any point you could reach with your Speed."] },
     { uuid: action("FomdyTNeKcV1dQMx"), name: "Fey Jump", teleport: { within: 60 }, notes: ["An empty space you can see. With another creature along, the action is lost."] },
     { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.G1vSjlohvJMNkPjR", name: "World-Warp Rig", teleport: { speedTimes: 2 }, notes: ["Within line of sight. In Overdrive, you can have all creatures in a 5-foot emanation take fire damage equal to your level, at your departure and your arrival: by hand."] },
-    { uuid: pf2e("hOZP7qOMsNYOe90o"), name: "Wandering Thoughts", teleport: { within: 15 }, notes: ["A square you can see, while your Psyche is Unleashed, after you Cast a Spell."] }
+    { uuid: pf2e("hOZP7qOMsNYOe90o"), name: "Wandering Thoughts", teleport: { within: 15 }, notes: ["A square you can see, while your Psyche is Unleashed, after you Cast a Spell."] },
+    // (Moves the readers leave, their Stride linked or after another step: the move card, teleport.move its verb and lines; round 100.)
+    { uuid: pf2e("meQJfsKVar9tm6c9"), name: "Running Reload", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Or Step or Sneak instead", "Then Interact to reload"] } } },
+    { uuid: misc("34Mp77lZxHkFQbsT"), name: "Quick Footed", teleport: { speedTimes: 1, move: { verb: "Stride", lines: [] } }, notes: ["First increase your frustrated condition by 1."] },
+    { uuid: misc("JXJwAHcjmuEvqGyN"), name: "Winding Movements", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["You don't provoke reactions from this Stride"] } }, notes: ["First increase your frustrated condition by 1."] },
+    { uuid: misc("WQNkkfjLe4i4Vj7c"), name: "Beneath My Feet", teleport: { speedTimes: 2, move: { verb: "Stride", lines: ["Through the spaces of creatures at least one size smaller, Trampling each"] } }, notes: ["Each creature you Trample (once each) takes bludgeoning damage equal to one of your monster form's Strikes, basic Reflex save: by hand."] }
 ];
