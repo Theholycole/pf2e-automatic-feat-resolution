@@ -10,6 +10,7 @@ import { registerCompanionGrowth } from "./companion-growth.js";
 import { registerGrants } from "./grants.js";
 import { registerPreRoll } from "./pre-roll.js";
 import { registerManeuverMap } from "./maneuver-map.js";
+import { registerRetaliation } from "./retaliation.js";
 import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
@@ -236,6 +237,8 @@ Hooks.once("ready", () => {
     registerPreRoll();
     // (A maneuver's lower multiple attack penalty, Agile Maneuvers: scripts/maneuver-map.js; round 54.)
     registerManeuverMap();
+    // (Damage back on a creature that hits or grabs you, Inviolable: scripts/retaliation.js; round 57.)
+    registerRetaliation();
     Hooks.on("preCreateChatMessage", recordTargets);
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {
