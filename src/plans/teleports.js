@@ -16,5 +16,9 @@ export default [
     { uuid: pf2e("meQJfsKVar9tm6c9"), name: "Running Reload", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Or Step or Sneak instead", "Then Interact to reload"] } } },
     { uuid: misc("34Mp77lZxHkFQbsT"), name: "Quick Footed", teleport: { speedTimes: 1, move: { verb: "Stride", lines: [] } }, notes: ["First increase your frustrated condition by 1."] },
     { uuid: misc("JXJwAHcjmuEvqGyN"), name: "Winding Movements", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["You don't provoke reactions from this Stride"] } }, notes: ["First increase your frustrated condition by 1."] },
-    { uuid: misc("WQNkkfjLe4i4Vj7c"), name: "Beneath My Feet", teleport: { speedTimes: 2, move: { verb: "Stride", lines: ["Through the spaces of creatures at least one size smaller, Trampling each creature whose space you enter"] } }, notes: ["Each creature you Trample (once each) takes bludgeoning damage equal to one of your monster form's Strikes, basic Reflex save: by hand."] }
+    { uuid: misc("WQNkkfjLe4i4Vj7c"), name: "Beneath My Feet", teleport: { speedTimes: 2, move: { verb: "Stride", lines: ["Through the spaces of creatures at least one size smaller, Trampling each creature whose space you enter"] } }, notes: ["Each creature you Trample (once each) takes bludgeoning damage equal to one of your monster form's Strikes, basic Reflex save: by hand."] },
+    // (Round 101.)
+    { uuid: pf2e("E3NsAdbp7kkOvfnr"), name: "Quick Positioning", teleport: { within: 10, move: { verb: "Step", lines: ["Up to twice"] } } },
+    { uuid: pf2e("Pay7XmMLgLtzxklN"), name: "Tight Follower", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Closer to your designated ally, ending within 10 feet of them"] } } },
+    { uuid: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.2XWMN181rq3h8K5j", name: "Crash Together", teleport: { speedTimes: 0.5, move: { verb: "Stride", lines: ["In the same direction as your Castling Crashers partner"] } } }
 ];
