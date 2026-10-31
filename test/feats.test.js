@@ -669,3 +669,12 @@ test("round 38: a typo'd turn start, a duo's initiative", async () => {
     assert.equal(turnTrigger(free("You turn begins.")).when, "start");
     assert.equal(preRollTrigger(free("You and your mystic duo roll initiative in the same encounter.")).event, "pre-initiative");
 });
+
+test("round 38: a condition lost, a foe starting its turn near you", async () => {
+    const { eventTrigger } = await import("../src/compiler/event-reminders.js");
+    const make = (type, text) => ({ name: "X", system: { actionType: { value: type }, description: { value: text } } });
+    const bounce = eventTrigger(make("free", "<p><strong>Trigger</strong> You lose the Dying condition.</p><hr /><p>You Stand.</p>"));
+    assert.deepEqual([bounce.event, bounce.conditions], ["self-condition-lost", ["dying"]]);
+    const bane = eventTrigger(make("passive", "<p>Whenever an enemy starts its turn adjacent to you, it takes 2 void damage.</p>"));
+    assert.deepEqual([bane.event, bane.within], ["foe-turn-start", 5]);
+});

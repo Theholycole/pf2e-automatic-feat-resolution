@@ -574,3 +574,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Round 37: all nine remind. Fixed after it: "hits, but does not critically hit you" isn't reminded on a critical hit (notCritical);
   a pre-save feat naming a save (and "basic") is reminded only when the card asks for that save (savesAsked, the inline links);
   "would succeed" counts a critical success.
+
+### Round 38 (2026-10-31)
+
+- More triggers: "You turn begins" (Flash of Omniscience's typo), "You and your mystic duo roll initiative" (Esoteric Coordination),
+  "You lose the Dying condition" (Bounce Back: event self-condition-lost, on a condition's deletion), "Whenever an enemy starts its turn
+  adjacent to you" (Bonekeeper's Bane: event foe-turn-start, on each change of turn, to characters of another disposition in range).

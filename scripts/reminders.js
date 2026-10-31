@@ -59,6 +59,27 @@ export function onTurnChange(combat, prior, current) {
     const now = current?.combatantId ? combat.combatants.get(current.combatantId) : combat.combatant;
     if (before && before !== now) remind(before, "end").catch((error) => console.error(`${MODULE_ID} | turn reminder`, error));
     if (now) remind(now, "start").catch((error) => console.error(`${MODULE_ID} | turn reminder`, error));
+    if (now) foeTurnStart(now).catch((error) => console.error(`${MODULE_ID} | turn reminder`, error));
+}
+
+// A foe starting its turn near a character ("Whenever an enemy starts its turn adjacent to you"; round 38).
+async function foeTurnStart(combatant) {
+    const foe = combatant.token?.object ?? null;
+    if (!foe) return;
+    for (const token of canvas?.tokens?.placeables ?? []) {
+        const actor = token.actor;
+        if (actor?.type !== "character" || token === foe || token.document.disposition === foe.document.disposition) continue;
+        const distance = distanceBetween(token, foe);
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-turn-start" && distance !== null && distance <= read.within);
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(combatant.name)} starts its turn near you.`, due);
+    }
+}
+
+// A condition lost by a character ("You lose the Dying condition"; round 38).
+export async function onConditionLost(actor, slug) {
+    if (!game.settings.get(MODULE_ID, SETTING) || actor?.type !== "character") return;
+    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-condition-lost" && read.conditions?.includes(slug));
+    if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong> loses ${escape(slug)}.`, due);
 }
 
 // When PF2e posts an attack or damage roll aimed at a character (the GM's client): the character's reactions and free actions that

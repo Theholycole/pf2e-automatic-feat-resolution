@@ -14,7 +14,7 @@ import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
-import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
+import { onConditionGained, onConditionLost, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -226,6 +226,9 @@ Hooks.once("ready", () => {
         if (isActiveGM()) onTurnChange(combat, prior, current);
     });
     // (Slice 10: a condition gained, or 0 Hit Points.)
+    Hooks.on("deleteItem", (item) => {
+        if (isActiveGM() && item.type === "condition" && item.actor) onConditionLost(item.actor, item.slug).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
+    });
     Hooks.on("createItem", (item) => {
         if (isActiveGM() && item.type === "condition" && item.actor) onConditionGained(item.actor, item.slug).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });

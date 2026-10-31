@@ -98,6 +98,10 @@ export function eventTrigger(given) {
     if (/\bcritically (?:fails|misses) (?:a|an|its|their) (?:melee )?(?:Strike|attack(?: roll)?)\b[^.]*\bagainst (?:you|your AC)\b/i.test(trigger)) return read("critical-miss");
     // (A creature or ally gaining a condition or falling to 0 Hit Points: "An ally within 30 feet gains the Frightened condition", "An ally
     // within 30 feet would be reduced to 0 HP but not immediately killed", "A creature within 60 feet gains the Frightened condition".)
+    // ("You lose the Dying condition": Bounce Back's; "Whenever an enemy starts its turn adjacent to you": Bonekeeper's Bane's; round 38.)
+    const lost = /^You lose the ([A-Za-z-]+) condition\b/i.exec(trigger)?.[1]?.toLowerCase();
+    if (lost && CONDITION_WORDS.includes(lost)) return { ...read("self-condition-lost"), conditions: [lost] };
+    if (/^An? (?:enemy|foe|creature|opponent)\b[^.]*?\b(?:starts|begins) (?:its|their) turn (?:adjacent to you|within (?:your reach|\d+ feet of you))/i.test(trigger)) return { ...read("foe-turn-start"), within: within ?? (/\breach\b/i.test(trigger) ? 10 : 5) };
     const conditions = conditionsOf(trigger);
     if (conditions) {
         // ("An attack or effect would reduce you to 0 Hit Points", "You witness an ally being reduced to 0 Hit Points", "You Drop Prone or
