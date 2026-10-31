@@ -3,7 +3,7 @@
 // those the same way as the feat is gained: the spell into the actor's focus spellcasting, an action onto the actor or its companion; and
 // takes them away as the feat goes. Not a familiar's learned spell ("your familiar learns"), which is its master's prepared spell.
 
-const KIND = "(?:(?:warden|link|focus|hex|composition|conflux|devotion|domain|revelation|order|school|bloodline|ki|qi|cursebound|impulse) )?(?:spell|cantrip|hex|activity|action|reaction|free action|ability)";
+const KIND = "(?:(?:warden|link|focus|hex|composition|conflux|devotion|domain|revelation|order|school|bloodline|ki|qi|cursebound|impulse) )?(?:spell|cantrip|hex|activity|action|reaction|free action|ability|(?:skill |general |ancestry )?feat)";
 const WHO = { you: "self", "your familiar": "familiar", "your eidolon": "eidolon", "your animal companion": "companion", "your companion": "companion", "your mount": "companion" };
 const GRANT = new RegExp(`\\b(You|Your familiar|Your eidolon|Your animal companion|Your companion|Your mount|you|your familiar|your eidolon|your animal companion|your companion|your mount) (?:also |each )?(?:gain|gains|learn|learns) the @UUID\\[([^\\]]+)\\](?:\\{[^}]*\\})? (${KIND})\\b`, "g");
 

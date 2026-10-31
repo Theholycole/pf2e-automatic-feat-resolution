@@ -52,9 +52,9 @@ async function takeAway(feat) {
 
 export function registerGrants() {
     Hooks.on("createItem", (item) => {
-        if (isActiveGM() && item.type === "feat") give(item).catch((error) => console.error(`${MODULE_ID} | grants`, error));
+        if (isActiveGM() && ["feat", "background", "heritage"].includes(item.type)) give(item).catch((error) => console.error(`${MODULE_ID} | grants`, error));
     });
     Hooks.on("deleteItem", (item) => {
-        if (isActiveGM() && item.type === "feat") takeAway(item).catch((error) => console.error(`${MODULE_ID} | grants`, error));
+        if (isActiveGM() && ["feat", "background", "heritage"].includes(item.type)) takeAway(item).catch((error) => console.error(`${MODULE_ID} | grants`, error));
     });
 }
