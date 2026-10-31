@@ -235,7 +235,8 @@ export function preRollTrigger(given) {
     const kind = type === "reaction" ? "reaction" : "free action";
     // ("You roll initiative", "You roll for initiative, and you are observing …": asked as the character joins the encounter; the loop,
     // 2026-10-30.)
-    if (/^You roll (?:for )?initiative\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
+    // ("You and your mystic duo roll initiative in the same encounter", "When a fight begins": Esoteric Coordination's, Primary Threat's; round 38.)
+    if (/^You (?:and [^.]+? )?roll (?:for )?initiative\b|^When a fight begins\b|^(?:A|The) fight begins\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
     if (!/^You(?:'re| are| would| attempt| have)\b/i.test(trigger) && !/^You and\b/i.test(trigger)) return null;
     // ("You attempt a basic Reflex save", "You attempt a saving throw against a disease or poison effect that affects an area": Feline Dance's,
     // Absorb Toxin's, used as the save is rolled; round 37.)

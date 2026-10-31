@@ -661,3 +661,11 @@ test("round 37 fixes: not on a critical hit, the save a pre-save feat names, a c
     assert.deepEqual(savesAsked(pf2e("", "Basic Trap", "Reflex")), [{ save: "reflex", basic: false }]);
     assert.deepEqual(savesAsked(pf2e("", "Explosion", "Réflexe basique"), "basique"), [{ save: "reflex", basic: true }]);
 });
+
+test("round 38: a typo'd turn start, a duo's initiative", async () => {
+    const { turnTrigger } = await import("../src/compiler/turn-reminders.js");
+    const { preRollTrigger } = await import("../src/compiler/event-reminders.js");
+    const free = (trigger) => ({ name: "X", system: { actionType: { value: "free" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` } } });
+    assert.equal(turnTrigger(free("You turn begins.")).when, "start");
+    assert.equal(preRollTrigger(free("You and your mystic duo roll initiative in the same encounter.")).event, "pre-initiative");
+});
