@@ -28,7 +28,7 @@ export function compileFeat(item, options = {}) {
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
     // (hand.activity: a passive's activity, "If you rest for 10 minutes, you regain …", played as an action when it's posted.)
-    const written = hand?.text ? withText(item, hand.text, hand.activity ? { actionType: { value: "action" }, actions: { value: null } } : {}) : item;
+    const written = hand?.text ? withText(item, hand.text, hand.activity ? { actionType: { value: "action" }, actions: { value: typeof hand.activity === "number" ? hand.activity : null } } : {}) : item;
     // (An eidolon's action, "Your eidolon Strikes": the readers' "You Strike"; 2026-10-30, "Companions".)
     const own = !hand?.text && isEidolonItem(item) ? withText(item, eidolonWords(item.system?.description?.value ?? "")) : written;
     const filled = withCharacterDCs(own, dcs);
@@ -57,7 +57,7 @@ export function compileFeat(item, options = {}) {
         ?? regainPoint(filled);
     // (A text entry's notes: what its rewritten text leaves out.)
     // (A text entry's notes: what its rewritten text leaves out; its target, who the card is for when the rewrite can't say it.)
-    if (plan && hand?.text) return { ...plan, ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };
+    if (plan && hand?.text) return { ...plan, ...(hand.by ? { by: hand.by } : {}), ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };
     // (The ability module's "cast-spell" for a spell the feat only lets you pay for, Soul-Form's "you can spend 1 Mythic Point to also gain
     // the effects of Enlarge": not cast every time; as spellLike.)
     if (plan?.builtin === "cast-spell" && /\byou can (?:spend|choose)\b[^.]*@UUID\[[^\]]*spells/i.test(filled.system?.description?.value ?? "")) return null;

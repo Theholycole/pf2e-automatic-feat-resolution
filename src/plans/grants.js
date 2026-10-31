@@ -17,7 +17,14 @@ const sentenceAt = (html, at) => {
     return html.slice(start, end < 0 ? undefined : at + end).replace(/@\w+\[[^\]]*\](?:\{([^}]*)\})?/g, (_all, label) => label ?? "x").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 };
 
+// (Round 77: a grant the sentence doesn't say outright, "It gains the Primal Howl advanced maneuver": by hand, by the feat's uuid.)
+const HAND = new Map([
+    ["Compendium.pf2e.feats-srd.Item.Cp7UttoCxTyO1pDg", [{ uuid: "Compendium.pf2e.actionspf2e.Item.wnZhAUiYcs2mv8sZ", who: "companion", spell: false, kind: "advanced maneuver" }]]
+]);
+
 export function grantsIn(item) {
+    const hand = HAND.get(item?._stats?.compendiumSource ?? item?.sourceId ?? item?.flags?.core?.sourceId ?? item?.uuid);
+    if (hand) return hand.map((grant) => ({ ...grant }));
     if ((item?.system?.rules ?? []).some((rule) => rule.key === "GrantItem")) return [];
     const html = String(item?.system?.description?.value ?? "");
     const out = [];
