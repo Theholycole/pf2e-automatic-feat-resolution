@@ -516,3 +516,10 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   Adaptability, Favored Terrain) or for allies (Environmental Guide, Angel Eidolon's aura).
 - Round 29: the entries land (Crushing Step only in medium or heavy armor) and snow, deep snow pass. Jungle Runner's forest/undergrowth matched nothing: the core's undergrowth names no environment. Now all/undergrowth (undergrowth is a forest's anyway).
 - Round 30 (with the environment module branch bc55cf2): Jungle Runner, Climate Adaptation, Badlands Orc, Murksight (rain: concealment lifted, its sight penalty stays, as the core has precipitation), Cat Fall by rank, Skyborn Tengu: all pass.
+
+### A master's feats on its companion (2026-10-31)
+
+- src/rules/companion.js: the rules an evolution feat on the summoner's sheet gives the eidolon (Expanded Senses' senses, Vibration Sense's
+  tremorsense or wavesense, Burrowing Form's burrow Speed, Ever-Vigilant Senses' +2 Perception, Faydhaan's saves against water). scripts/
+  rules.js puts them on the companion's ancestry as it prepares, when findMaster finds the master with the feat; companions prepare again
+  once the world is ready and when the master gains or loses an item.
