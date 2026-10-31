@@ -189,5 +189,10 @@ export default [
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.aVhhPuhF87ACfFFd", name: "Assess Terrain",
         selfCheck: { statistic: "survival", dc: 15 },
         notes: ["Choose a 5-foot burst of natural difficult terrain within 30 feet. DC 15 for a 5-foot burst; an expert can take DC 20 for a 10-foot burst, a master DC 30 for a 20-foot burst (judge those against the roll by hand; legendary: 10 higher to include cold, earth, plant, water or wood terrain).", "Critical success: the difficult terrain is normal for you for up to 1 minute, and greater difficult terrain is difficult until the end of your next turn. Success: normal until the end of your next turn. Critical failure: the whole area is difficult (or greater difficult) terrain for you until the end of your next turn."]
+    },
+    {
+        uuid: pf2e("epzeES7xJxvIXDdj"), name: "Dance of Intercession",
+        selfCheck: { statistic: "performance", dc: 35 },
+        notes: ["You Stride up to half your Speed as you dance. The second use in a day is one degree worse, the third two degrees worse: adjust by hand.", "Critical success: cast the 3-action @UUID[Compendium.pf2e.spells-srd.Item.rfZpqmj0AIIdkVIs]{Heal} or @UUID[Compendium.pf2e.spells-srd.Item.wdA52JJnsuQWeyqz]{Harm} at rank 9 during the Stride, with no spell slot; success: rank 7; failure: rank 5. Critical failure: nothing more, and no more dances until your next daily preparations."]
     }
 ];
