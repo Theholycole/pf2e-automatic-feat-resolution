@@ -18,5 +18,10 @@ export default [
         uuid: "Compendium.pf2e-team-plus-oracles-remastered.items.Item.5Ikns5WszW9t6oxu", name: "Arrange the Board", target: "2 + twice your cursebound value creatures within 30 feet",
         text: `<p>Each target attempts a @Check[will|against:spell] save against your spell DC.</p><hr /><p><strong>Failure</strong> The target Steps in a direction of your choice.</p>`,
         notes: ["Allies can choose to fail. Move the tokens by hand."]
+    },
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.r0qPSxLoa1xRSWYL", name: "Forced Pact", target: "1 creature within 60 feet",
+        text: `<p>The target attempts a @Check[will|against:class-spell] save.</p><hr /><p><strong>Failure</strong> The pact holds: if you or the target uses an action with the chosen trait within the next minute, that creature takes 10d6 mental damage and the pact ends.</p><p><strong>Critical Failure</strong> As failure, but the target takes the damage whichever of you uses the action.</p>`,
+        notes: ["Choose attack, move, manipulate or concentrate. When the pact triggers, roll @Damage[10d6[mental]] for whoever takes it."]
     }
 ];

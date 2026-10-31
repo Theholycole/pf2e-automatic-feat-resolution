@@ -73,5 +73,11 @@ export default [
         uuid: pf2e("i8MnyasCDo3j65Xd"), name: "Quicken Heartbeat",
         affect: { target: "you", effects: [{ slug: "quickened", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" } }] },
         notes: ["Quickened during your next turn, the extra action only to Stride or Strike. If you're slowed, reduce slowed by 1 instead (don't apply this)."]
+    },
+    // (Round 57.)
+    {
+        uuid: pf2e("gBSPbQRXdagZTUwY"), name: "Kip Up",
+        affect: { target: "you", effects: [{ kind: "end-condition", slugs: ["prone"], recipient: "self" }] },
+        notes: ["Standing this way doesn't trigger reactions."]
     }
 ];
