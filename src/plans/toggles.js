@@ -295,5 +295,11 @@ export default [
         uuid: pf2e("NZgjqVV2HYzLCvvA"), name: "Aldori Parry",
         toggle: { rules: [bonus("ac", 1)], duration: ROUND },
         notes: ["Wielding only an Aldori dueling sword. +2 instead if your other hand or hands are free: raise it by hand."]
+    },
+    // (Round 98: PF2e's own "ignore-range-penalty:2", as its Triangulate gives it.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.9sXQf1SyppS5B6O1", name: "Automaton Aim",
+        toggle: { rules: [{ key: "RollOption", domain: "ranged-attack-roll", option: "ignore-range-penalty:2" }], duration: THIS_TURN },
+        notes: ["For your next ranged attack this turn: delete the Effect after it. Used a second time this turn, the third increment's –4 is 0 too: subtract it by hand."]
     }
 ];
