@@ -103,5 +103,16 @@ export default [
         uuid: pf2e("hSHteYr1g1gKHcwM"), name: "Fey Skin",
         text: "<p>You regain @Damage[(@actor.level)[healing]] Hit Points.</p>",
         activity: true, notes: ["After resting 10 minutes; on top of any Treat Wounds healing. (Its extra Hit Points and cold iron weakness are PF2e's own rules.)"]
+    },
+    // (Round 92: rest heals.)
+    {
+        uuid: pf2e("AAYN41WtyMZaLV1N"), name: "Native Waters",
+        text: "<p>You regain @Damage[(@actor.level)[healing]] Hit Points.</p>",
+        activity: true, notes: ["After your full rest in a natural body of your water (fresh or salt), on top of the rest's own healing. Doomed and fatigued go down by 2 instead of 1 then: by hand."]
+    },
+    {
+        uuid: pf2e("pXoDLlV18D0eGhdj"), name: "Nourishing Symbiosis",
+        text: "<p>You regain @Damage[24[healing]] Hit Points.</p>",
+        activity: true, notes: ["After the first 24 hours of a Long-Term Rest, on top of its own healing."]
     }
 ];
