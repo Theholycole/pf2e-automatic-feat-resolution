@@ -141,5 +141,11 @@ export default [
         uuid: pf2e("cErltcAC7OVnIyO1"), name: "Predictable!",
         selfCheck: { statistic: "perception", defense: "deception", target: "1 enemy" },
         notes: ["Use a hard DC of the foe's level instead if that's higher. Put PF2e's Effect: Predictable! on yourself from the feat: +2 to AC against it and your next save against it on a critical success, +1 on a success, –1 on a critical failure, until the start of your next turn."]
+    },
+    // (Round 84: against the hard DC of the creature's level; the result is the ally's, so PF2e's Effect goes on by hand.)
+    {
+        uuid: pf2e("gCUJYnWPQ9VM8eXk"), name: "Commitment to Protection",
+        selfCheck: { statistic: "warfare-lore", level: "target", adjustment: 2, target: "1 creature or hazard you can see" },
+        notes: ["Target the creature or hazard, not the ally. Then put @UUID[Compendium.pf2e.feat-effects.Item.eu7DEgjicyYyosCl]{Effect: Commitment to Protection} on an ally within 30 feet and pick the degree: +2 AC on a critical success, +1 on a success, −1 on a critical failure, against that creature's next attack. Legendary in Warfare Lore: a failure or critical failure is a success."]
     }
 ];
