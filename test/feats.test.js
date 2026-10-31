@@ -759,3 +759,9 @@ test("a roll-twice feat: the item module's fortune card (round 96)", () => {
     assert.equal(fey?.builtin, "roll-twice");
     assert.equal(fey.rollTwice.selector, "skill-check");
 });
+
+test("a move said as an order, \"Stride twice.\": the move card too (round 97)", () => {
+    const dash = compileFeat(feat("Determined Dash", "<p>Stride twice. During this movement you ignore difficult terrain.</p>"), { dcs: DCS, itemReaders: { movePlan, rerollPlan, withSpend, rollTwicePlan } });
+    assert.equal(dash?.builtin, "teleport");
+    assert.equal(dash.teleport.speedTimes, 2);
+});

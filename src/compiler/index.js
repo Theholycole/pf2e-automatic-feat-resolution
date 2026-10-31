@@ -40,7 +40,10 @@ function itemCardFor(item, readers) {
     // (Vision of Foresight's "a saving throw or skill check" the reader takes for a save alone: not its card. Liberate Self is a toggle,
     // src/plans/toggles.js: PF2e's Escape ignores fortune effects.)
     const twice = !reroll && typeof readers.rollTwicePlan === "function" && item.name !== "Vision of Foresight" ? readers.rollTwicePlan(plain, base) : null;
-    const card = reroll ?? twice ?? (typeof readers.movePlan === "function" && !NOT_MOVES.test(item.name) ? readers.movePlan(html, base) : null);
+    // (An eidolon's move, Beast's Charge's "Your eidolon Strides twice": not its summoner's token; the card moves its user's.)
+    // (A feat's move said as an order, Determined Dash's "Stride twice.": the reader's "You Stride twice."; its links as their names.)
+    const asMove = html.replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*\.([^.\]]+)\]/g, "$1").replace(/((?:^|[.!?>])\s*)(Stride|Step|Leap|Fly|Swim|Climb|Burrow)\b/g, "$1You $2");
+    const card = reroll ?? twice ?? (typeof readers.movePlan === "function" && !NOT_MOVES.test(item.name) && !isEidolonItem(item) ? readers.movePlan(html, base) ?? readers.movePlan(asMove, base) : null);
     // (Its cost, Rewrite Fate's "Spend a Mythic Point": the item module's card spends it, or refuses — its src/compiler/spend.js.)
     const spent = card && typeof readers.withSpend === "function" ? readers.withSpend(card, plain) : card;
     // (Rewrite Fate's "reroll the check or save": either roll, not a save alone.)
