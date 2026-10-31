@@ -268,5 +268,10 @@ export default [
         uuid: "Compendium.pf2e-team-plus-magic.items.Item.zAPlXKTaxdmY6xFL", name: "Eyes of Shadow",
         toggle: { who: "target", rules: [{ key: "Sense", selector: "darkvision" }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
         notes: ["Dismiss your shadow weapon. Target one creature within 30 feet; it ends early when you draw the shadow weapon again (post it again). The creature is then immune for 10 minutes."]
+    },
+    {
+        uuid: pf2e("C5CweUNPP7HlRfBM"), name: "Muscle Mimicry",
+        toggle: { rules: [bonus("athletics", 1)], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
+        notes: ["Only on your next use of the same maneuver the enemy succeeded at (+2 if it critically succeeded; raise it by hand). Remove it after that check."]
     }
 ];

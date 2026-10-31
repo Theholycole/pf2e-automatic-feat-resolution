@@ -158,5 +158,26 @@ export default [
         uuid: "Compendium.pf2e.actionspf2e.Item.lgpJoFrkzfkjAzeV", name: "Inscribe Shadow Pamor",
         affect: { target: "the creature your next Strike hits", effects: [{ slug: "dazzled", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
         notes: ["Post it after your next action, a Strike, hits: apply then. It can Interact to tear away the shadows (remove it), unless your Strike was a critical hit."]
+    },
+    // (Round 75: triggered combat feats.)
+    {
+        uuid: pf2e("xdv75qkv5TOFlHmM"), name: "Keep up the Good Fight",
+        affect: { target: "you", effects: [{ kind: "temp-hp", formula: "@actor.level", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }, wounded] },
+        notes: ["When a foe's Strike drops you to 0 Hit Points (from more than 1, and it wouldn't kill you): you're at 1 Hit Point instead of knocked out; set it by hand."]
+    },
+    {
+        uuid: pf2e("LT5rw7JfemZSXUKB"), name: "Tenacious Endurance",
+        affect: { target: "your animal companion", effects: [{ kind: "condition", slug: "wounded", value: 1, duration: null }] },
+        notes: ["Target your companion when it drops to 0 Hit Points and isn't wounded: it stays standing at 1 Hit Point (set it by hand)."]
+    },
+    {
+        uuid: pf2e("it5yM6sbwJJysm9U"), name: "Quick Root",
+        affect: { target: "you", effects: [{ kind: "end-condition", slugs: ["prone"], recipient: "self" }] },
+        notes: ["A force that moves you moves you half as far (at least 5 feet). Knocked prone: let it resolve, then post this to Stand."]
+    },
+    {
+        uuid: pf2e("E7PFg8xua1nGIqHQ"), name: "Competitive Eater",
+        affect: { target: "you", effects: [{ kind: "temp-hp", formula: "10 + @actor.level", duration: null }] },
+        notes: ["When you become fully satiated."]
     }
 ];
