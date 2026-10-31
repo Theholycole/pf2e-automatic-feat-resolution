@@ -506,3 +506,11 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   (undergrowth, rubble, snow, ice, crowd). PF2e applies the "all" ones itself; the environment module's terrain costs apply the rest. Left by
   hand: ones that hang on a choice (Favored Terrain, One with the Land, Acclimated Mount) or a moment (Lotus Above the Wind, Convergent
   Tides), and water without a feature (Shore Step).
+
+### Weather, temperature and falls, through the environment module (2026-10-31)
+
+- src/plans/environment.js: the feat module's api answers the environment module's three asks as the item module does
+  (temperatureProtections, weatherIgnores, fallEases), for Climate Adaptation, Legendary Survivalist, Badlands Orc (temperature), Cloud
+  Gazer, Murksight, Murksight+, Storm Born (weather), Skyborn Tengu, Windweb Tripkee and Cat Fall by Acrobatics rank (falls). The
+  environment module asks both (its branch claude/project-thread-7muc17, foundry.js fromSuite). Left: the ones on a choice (Environmental
+  Adaptability, Favored Terrain) or for allies (Environmental Guide, Angel Eidolon's aura).

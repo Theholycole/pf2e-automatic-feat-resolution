@@ -10,6 +10,7 @@ import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
 import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
+import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
 import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -253,5 +254,6 @@ Hooks.once("ready", () => {
         onFoeAction(message).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
     const module = game.modules.get(MODULE_ID);
-    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs });
+    // (What its feats ease of the weather, the temperature and falls, for the environment module: src/plans/environment.js.)
+    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs, temperatureProtections, weatherIgnores, fallEases });
 });
