@@ -114,11 +114,6 @@ export default [
         uuid: pf2e("pXoDLlV18D0eGhdj"), name: "Nourishing Symbiosis",
         text: "<p>You regain @Damage[24[healing]] Hit Points.</p>",
         activity: true, notes: ["After the first 24 hours of a Long-Term Rest, on top of its own healing."]
-    },
-    // (A heritage: the fruit's healing on whoever eats it.)
-    {
-        uuid: "Compendium.pf2e.heritages.Item.L6zfGzLMDLHbZ7VV", name: "Fruit Leshy",
-        affect: { target: "you or 1 ally who eats your fruit", effects: [{ kind: "heal", formula: "(ceil(@actor.level/2))d8" }] },
-        activity: true, notes: ["One fruit ripens at dawn; removing it and eating it are Interact actions, within the hour. A living creature that can eat fruit. The healing has the healing and vitality traits."]
     }
+    // (Not Fruit Leshy: a heritage can't be posted in PF2e 8.6, no chat card and no button, so its fruit's healing is the GM's; round 93 test.)
 ];
