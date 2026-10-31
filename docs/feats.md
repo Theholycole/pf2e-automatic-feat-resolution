@@ -481,3 +481,5 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   only while mounted). Switching stances took no stance (the old one counted as the toggle's own): fixed, the line says which ended.
 - Duck and Weave, Stoic as Hell, Alien Brain, Focus Anger, Defend Summoner (from an eidolon, on its target) pass. PF2e's "saving-throw"
   selector also raises the Will DC shown; the bonus ends with the turn, so that's left.
+- Then: Brains! (Recall Knowledge, 1 hour), Masked Casting (saves while Averting Gaze), Free the Bound (the ally's Escape, as Tip the
+  Scales's selectors), Sharpened Senses (Seek).

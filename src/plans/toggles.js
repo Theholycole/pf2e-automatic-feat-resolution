@@ -176,5 +176,25 @@ export default [
         uuid: pf2e("xlparPCGhkgjdhx2"), name: "Defend Summoner",
         toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "defend-summoner")], duration: ROUND },
         notes: ["Target your summoner. Only while you're within your eidolon's reach."]
+    },
+    {
+        uuid: pf2e("Fpsd8Y8qJ3Tdbiyz"), name: "Brains!",
+        toggle: { rules: [bonus("skill-check", 1, "status", ["action:recall-knowledge"], "brains")], duration: { value: 1, unit: "hours", expiry: "turn-start", sustained: false } },
+        notes: ["+2 instead if the humanoid had a higher modifier to the skill you're using (edit the value)."]
+    },
+    {
+        uuid: pf2e("4xeDjt8eARzAGARP"), name: "Masked Casting",
+        toggle: { rules: [bonus("saving-throw", 2, "circumstance", undefined, "masked-casting")], duration: ROUND },
+        notes: ["Avert Gaze too (its own action). The +2 is also to checks to disbelieve illusions, by hand; it lasts while you Avert your Gaze this way."]
+    },
+    {
+        uuid: pf2e("9oU92ttNdXEKFOGh"), name: "Free the Bound",
+        toggle: { who: "target", rules: [bonus(["athletics", "acrobatics", "unarmed-attack-roll"], 1, "circumstance", ["action:escape"], "free-the-bound")], duration: THIS_TURN },
+        notes: ["Target the ally about to Escape. Unless it critically fails, it can Strike an enemy within reach as a reaction; both count toward its multiple attack penalty, which goes up only after both."]
+    },
+    {
+        uuid: pf2e("jP0D4CIyloiBaEh4"), name: "Sharpened Senses",
+        toggle: { rules: [bonus("perception", 2, "circumstance", ["action:seek"], "sharpened-senses")], duration: THIS_TURN },
+        notes: ["Seek now; the +2 only if you use one of your senses from Natural Senses."]
     }
 ];
