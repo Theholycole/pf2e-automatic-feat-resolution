@@ -42,5 +42,12 @@ export default [
         attack: { roll: "built", proficiency: "martial", ability: "str", bonus: 2, against: "ac", target: "1 enemy", range: "120 feet",
             outcomes: { success: { damage: "(4d8 + @actor.abilities.con.mod)[spirit]" }, criticalSuccess: { damage: "2*(4d8 + @actor.abilities.con.mod)[spirit]", effects: [{ kind: "condition", slug: "frightened", value: 1, duration: null }] } } },
         notes: ["Only while raging. Your circumstance and status bonuses and penalties apply to the wisp's roll and damage too (not your Rage damage or weapon specialization). It counts toward your multiple attack penalty."]
+    },
+    // (Round 86: each warrior's Strike at your spell attack modifier.)
+    {
+        uuid: pf2e("Fd0DriV32X3S9B2z"), name: "The Dead Walk",
+        attack: { roll: "spell", against: "ac", target: "1 enemy adjacent to a warrior", range: "30 feet",
+            outcomes: { success: { damage: "4d6[spirit]" }, criticalSuccess: { damage: "2*(4d6)[spirit]" } } },
+        notes: ["Use the card once for each warrior: two, three while you're cursebound 2, four while cursebound 3. The warriors can flank with each other and with you and your allies, and disappear at the start of your next turn."]
     }
 ];

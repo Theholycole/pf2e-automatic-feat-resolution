@@ -158,5 +158,10 @@ export default [
         uuid: pf2e("iLFGrBeG2yas8cxm"), name: "By Your Name",
         selfCheck: { statistic: "crafting", level: "target", adjustment: 0, target: "1 creature whose name you know" },
         notes: ["Once per hour; not against the same target again for 24 hours.", "Success: for 1 minute you can Trace their name as a diacritic rune; when the base rune is invoked on them, they take a −2 circumstance penalty to saves against it. Critical success: also a status bonus to its damage equal to half your level."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.kcMcqQOa32dVJqvi", name: "Venomous Visionary",
+        selfCheck: { statistic: "survival", defense: "deception", target: "1 creature you can perceive", range: "30 feet" },
+        notes: ["Against the target's Stealth DC instead if it is higher, or the poison's DC for an object: by hand. On a success you learn as detect poison whether it is poisonous or venomous (a 2nd-rank @UUID[Compendium.pf2e.spells-srd.Item.QqxwHeYEVylkYjsO] if you're legendary in Survival). Not on the same target again for 1 day."]
     }
 ];
