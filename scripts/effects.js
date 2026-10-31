@@ -18,11 +18,14 @@ export async function applyFeatEffect(item, plan, recipients = null) {
     let created = null;
     for (const each of recipients ?? [actor]) {
         // (Used again: the old one goes, so the time starts over and the bonus doesn't stack with itself.)
-        const old = each.itemTypes.effect.filter((other) => ours(other) && (other.flags[MODULE_ID].effect.source === item.sourceId || other.flags[MODULE_ID].effect.item === item.id || (effect.stance && other.flags[MODULE_ID].effect.stance)));
+        const same = (other) => other.flags[MODULE_ID].effect.source === item.sourceId || other.flags[MODULE_ID].effect.item === item.id;
+        const old = each.itemTypes.effect.filter((other) => ours(other) && (same(other) || (effect.stance && other.flags[MODULE_ID].effect.stance)));
         if (old.length) await each.deleteEmbeddedDocuments("Item", old.map((other) => other.id));
+        // (Another stance ended by this one: said, and this one still taken; 2026-10-31 Foundry test, a switch took no stance.)
+        for (const other of old.filter((other) => !same(other))) lines.push(`${escape(other.name)} ends on ${escape(each.name)}.`);
         // (A toggled passive's Effect, on: posting it again turns it off.)
         // (Its chat line, on and off, as PF2e-linked toggles have; 2026-10-30 Foundry test.)
-        if (plan.toggle && old.length) {
+        if (plan.toggle && old.some(same)) {
             lines.push(`Effect: ${escape(effect.name)} ends on ${escape(each.name)}.`);
             continue;
         }
