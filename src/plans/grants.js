@@ -7,11 +7,23 @@ const KIND = "(?:(?:warden|link|focus|hex|composition|conflux|devotion|domain|re
 const WHO = { you: "self", "your familiar": "familiar", "your eidolon": "eidolon", "your animal companion": "companion", "your companion": "companion", "your mount": "companion" };
 const GRANT = new RegExp(`\\b(You|Your familiar|Your eidolon|Your animal companion|Your companion|Your mount|you|your familiar|your eidolon|your animal companion|your companion|your mount) (?:also |each )?(?:gain|gains|learn|learns) the @UUID\\[([^\\]]+)\\](?:\\{[^}]*\\})? (${KIND})\\b`, "g");
 
+// (Not a grant that hangs on something, round 50: Fisheye's "If you eat the left eye of a fish, you gain the Breath Control feat for the
+// next hour", "If you later gain …", "… instead gain …". Those stay the player's.)
+const CONDITIONAL = /^(?:if|when|whenever|once|after|while|as long as|until)\b|\b(?:for the next|later|instead|until|for (?:\d+|one|a|an) (?:round|minute|hour|day)s?)\b/i;
+const sentenceAt = (html, at) => {
+    const before = html.slice(0, at);
+    const start = Math.max(before.lastIndexOf(". "), before.lastIndexOf(">"), before.lastIndexOf("! "), before.lastIndexOf("? ")) + 1;
+    const end = html.slice(at).search(/[.!?](?:\s|<|$)/);
+    return html.slice(start, end < 0 ? undefined : at + end).replace(/@\w+\[[^\]]*\](?:\{([^}]*)\})?/g, (_all, label) => label ?? "x").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+};
+
 export function grantsIn(item) {
     if ((item?.system?.rules ?? []).some((rule) => rule.key === "GrantItem")) return [];
     const html = String(item?.system?.description?.value ?? "");
     const out = [];
-    for (const [, who, uuid, kind] of html.matchAll(GRANT)) {
+    for (const match of html.matchAll(GRANT)) {
+        const [, who, uuid, kind] = match;
+        if (CONDITIONAL.test(sentenceAt(html, match.index))) continue;
         if (!/^Compendium\./.test(uuid) || out.some((each) => each.uuid === uuid)) continue;
         out.push({ uuid, who: WHO[who.toLowerCase()], spell: /spell|cantrip|hex/.test(kind) && !/hex activity/.test(kind), kind });
     }

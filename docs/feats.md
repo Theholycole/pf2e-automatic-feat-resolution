@@ -649,3 +649,8 @@ Landing). Round 45's fix: the before-the-roll prompts use the reminders' own set
 Reaction reminders read heritages and backgrounds as passives ("Whenever you gain the hidden condition … you can Step": Kardan Bugbear;
 River Azarketi, Heavenscribe Kobold, Courageous Tanuki), and hidden, concealed, undetected, invisible, quickened and encumbered count as
 conditions. Cloudleaper Lizardfolk's falls do no damage; Reflection's trait.
+
+## Round 50 (2026-10-31): more level-DC checks, conditional grants
+
+- Seven more checks against your level's DC (src/plans/self-checks.js): On My Best Day, Scout Battlefield, Peace with Death (its Teams+ Effect), Circadian Disciplinarian (heals you and ends fatigued), Vocal Mediation (heals you and your allies within 30 feet), Astrological Divination, Planar Pedagogy.
+- Given items no longer give a feat that hangs on something: a sentence that starts with If/When/Once/After, or says "for the next", "later", "instead", "until" or a duration (Fisheye's Breath Control "for the next hour"). Tested in Foundry: Summiting Dragonblood and Automaton Lore still give theirs. Defaulted to the recommended option; Cole can object.

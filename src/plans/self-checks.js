@@ -89,5 +89,45 @@ export default [
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.OtbrIcEF7da4lDFK", name: "Transpose Self",
         selfCheck: { statistic: "arcana" },
         notes: ["With obstacles, creatures or difficult terrain in the way the DC is very hard (+5, by hand). Success: teleport up to 15 feet within line of sight; not again for 1 hour. Critical failure: you take force damage equal to your level; not again for 1 day."]
+    },
+    // (2026-10-31, round 50: more checks against your level's DC. Circadian Disciplinarian heals you on the card; the rest say each degree.)
+    {
+        uuid: pf2e("lFNyIFWPPXpS0qRM"), name: "On My Best Day",
+        selfCheck: { statistic: "incarnation-lore", adjustment: 5 },
+        notes: ["Until the end of your next turn: critical success +3 status bonus to AC and resistance to physical damage equal to your level (Sustain up to 1 minute); success +2 and half your level; failure +1 to AC; critical failure +1 to AC against the next attack only."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.TguWAmyYB94Uts5S", name: "Scout Battlefield",
+        selfCheck: { statistic: "perception" },
+        notes: ["Increase your frustrated condition by 1. On a success you find a piece of the battlefield within 25 feet your monster can use; Reap Battlefield can then reduce frustrated by 1."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.Mkd7Qhph9eP9g1tz", name: "Peace with Death",
+        selfCheck: { statistic: "religion", outcomes: both({ nativeEffects: [{ uuid: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.3DrxNxi9Xdd513ji", label: "Effect: Peace with Death" }] }) },
+        notes: ["Takes 10 minutes; you're then immune to it for 1 hour. The first time you're dying within the hour, your recovery check DCs drop by 5, and healing while dying adds your level (half on a success)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.OILWJgTq4PlQgwLZ", name: "Circadian Disciplinarian",
+        selfCheck: { statistic: "survival", outcomes: {
+            criticalSuccess: { effects: [{ kind: "heal", formula: "max(1,@actor.abilities.con.mod)*@actor.level", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] },
+            success: { effects: [{ kind: "heal", formula: "floor(max(1,@actor.abilities.con.mod)*@actor.level/2)", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] } } },
+        notes: ["Takes 1 hour (10 minutes if you're a master in Survival). More than a day without a full night's rest: you fail. On a success, also reduce drained by 1 by hand."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.HOEhWXCvEtLdxOuw", name: "Vocal Mediation",
+        selfCheck: { statistic: "performance", target: "you and allies within 30 feet", range: "30 feet", outcomes: {
+            criticalSuccess: { effects: [{ kind: "heal", formula: "2*@actor.level" }, { kind: "end-condition", slugs: ["fatigued"] }] },
+            success: { effects: [{ kind: "heal", formula: "@actor.level" }, { kind: "end-condition", slugs: ["fatigued"] }] } } },
+        notes: ["Takes 10 minutes. Target yourself and your allies within 30 feet. Also reduce doomed and drained by 2 on a critical success, 1 on a success, by hand."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.M8Z13CBNlNt1YZpC", name: "Astrological Divination",
+        selfCheck: { statistic: "occultism" },
+        notes: ["Takes 1 hour, once per day. +2 circumstance bonus with a clear night sky. Success: augury's effects for an event up to 12 hours ahead (1 day on a critical success)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.yF3ZY56V6rEZdF5Y", name: "Planar Pedagogy",
+        selfCheck: { statistic: "arcana" },
+        notes: ["Takes 1d4 hours. On a success you're trained in one plane's Lore for 1 day (expert if you're a master in Arcana, master if legendary)."]
     }
 ];

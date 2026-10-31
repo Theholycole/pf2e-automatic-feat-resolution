@@ -19,3 +19,10 @@ test("grants: none where PF2e grants it, or nothing is given", () => {
     assert.deepEqual(grantsIn(feat("You gain a +1 circumstance bonus.")), []);
     assert.deepEqual(grantsIn(feat("When you gain the @UUID[Compendium.pf2e.conditionitems.Item.x] condition, you can Step.")), []);
 });
+
+test("a grant that hangs on something is left to the player (round 50, Fisheye)", () => {
+    const feat = (html) => ({ system: { rules: [], description: { value: html } } });
+    assert.deepEqual(grantsIn(feat("<p>If you eat the left eye of a fish, you gain the @UUID[Compendium.pf2e.feats-srd.Item.abc]{Breath Control} feat for the next hour.</p>")), []);
+    assert.deepEqual(grantsIn(feat("<p>You gain the @UUID[Compendium.pf2e.feats-srd.Item.abc]{Breath Control} feat for 1 hour.</p>")), []);
+    assert.equal(grantsIn(feat("<p>You're strong. You gain the @UUID[Compendium.pf2e.feats-srd.Item.abc]{Combat Climber} skill feat.</p>")).length, 1);
+});
