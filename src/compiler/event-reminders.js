@@ -11,7 +11,8 @@ const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}
 // kind }, or null.
 export function eventTrigger(given) {
     const item = ownWords(given);
-    const type = item?.system?.actionType?.value;
+    // (A heritage or background, with no action type: as a passive; round 49, Kardan Bugbear.)
+    const type = item?.system?.actionType?.value ?? (["heritage", "background"].includes(item?.type) ? "passive" : undefined);
     // (A passive feat that says when it applies, "Whenever you critically succeed on a Strike, …", "When you would become fatigued, …": read
     // the same way, its "When" clause as the trigger; the loop, 2026-10-30.)
     const passive = type === "passive" ? /(?:^|[.!?]\s+)When(?:ever)? ((?:you|an? (?:ally|enemy|creature|foe))\b[^,.]*),/i.exec(plainOf(item?.system?.description?.value ?? "")) : null;
@@ -153,7 +154,7 @@ export function eventTrigger(given) {
     return null;
 }
 
-const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "off-guard", "paralyzed", "petrified", "prone", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded"];
+const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "off-guard", "paralyzed", "petrified", "prone", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded", "hidden", "concealed", "undetected", "invisible", "quickened", "encumbered"];
 // "gains the Frightened condition", "would become Frightened, Drained, …", "becomes frightened or stupefied", "falls to 0 Hit Points" → the
 // conditions (with "0-hp" for the last), or null.
 function conditionsOf(trigger) {

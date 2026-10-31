@@ -26,6 +26,8 @@ export const ENVIRONMENT_FEATS = [
     // (Batch 9: no falling damage at all; Land on Your Feet halves it and keeps it on its feet.)
     { uuid: heritage("dQqurQys37aJYb26"), name: "Leaf Leshy", fall: { noDamage: true } },
     { uuid: heritage("7kHg780SAsu2FNfP"), name: "Stuffed Poppet", fall: { noDamage: true } },
+    // (Round 49: "you can open the flaps to slow any fall just enough to avoid taking damage", as long as it can act.)
+    { uuid: heritage("sEnMG5zbnXdJvVPz"), name: "Cloudleaper Lizardfolk", fall: { noDamage: true } },
     { uuid: "Compendium.pf2e.ancestryfeatures.Item.RjWv5oPKZtNQgEiK", name: "Wings (Dragonet)", fall: { noDamage: true } },
     { uuid: "Compendium.pf2e.ancestryfeatures.Item.sL1hHxrHdMNIZVAd", name: "Land on Your Feet", fall: { halved: true, landsOnFeet: true } },
     // (Its own and its allies' within 60 feet: severe heat and cold as none, extreme too when legendary in Survival.)

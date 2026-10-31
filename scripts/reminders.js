@@ -37,7 +37,7 @@ const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({
 async function remind(combatant, when) {
     const actor = combatant?.actor;
     if (actor?.type !== "character" || combatant.defeated) return;
-    const items = [...actor.itemTypes.feat, ...actor.itemTypes.action];
+    const items = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])];
     // (Slice 9: dying at the turn's start, its recovery check to come.)
     const dying = when === "start" && actor.hasCondition?.("dying") ? items.map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-recovery") : [];
     const due = shown([...turnReminders(items, when, (slug) => !!actor.hasCondition?.(slug)), ...dying]);
@@ -70,7 +70,7 @@ async function foeTurnStart(combatant) {
         const actor = token.actor;
         if (actor?.type !== "character" || token === foe || token.document.disposition === foe.document.disposition) continue;
         const distance = distanceBetween(token, foe);
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-turn-start" && distance !== null && distance <= read.within);
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-turn-start" && distance !== null && distance <= read.within);
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(combatant.name)} starts its turn near you.`, due);
     }
 }
@@ -78,7 +78,7 @@ async function foeTurnStart(combatant) {
 // A condition lost by a character ("You lose the Dying condition"; round 38).
 export async function onConditionLost(actor, slug) {
     if (!game.settings.get(MODULE_ID, SETTING) || actor?.type !== "character") return;
-    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-condition-lost" && read.conditions?.includes(slug));
+    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-condition-lost" && read.conditions?.includes(slug));
     if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong> loses ${escape(slug)}.`, due);
 }
 
@@ -114,7 +114,7 @@ export async function onRollMessage(message) {
         const saver = message.actor;
         const domains = context.domains ?? [];
         const kind = ["fortitude", "reflex", "will"].find((each) => domains.includes(each) || context.statistic === each) ?? null;
-        const due = [...saver.itemTypes.feat, ...saver.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-save" && read.outcomes.includes(context.outcome) && (!read.saves.length || (kind && read.saves.includes(kind))));
+        const due = [...saver.itemTypes.feat, ...saver.itemTypes.action, ...(saver.itemTypes.heritage ?? []), ...(saver.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-save" && read.outcomes.includes(context.outcome) && (!read.saves.length || (kind && read.saves.includes(kind))));
         if (due.length) await whisper(saver, `<strong>${escape(saver.name)}</strong>: your ${kind ?? ""} save's result.`.replace("your  save", "your save"), due);
         return;
     }
@@ -122,7 +122,7 @@ export async function onRollMessage(message) {
     if (["skill-check", "perception-check"].includes(context?.type) && message.actor?.type === "character" && context.outcome) {
         const roller = message.actor;
         const domains = context.domains ?? [];
-        const due = [...roller.itemTypes.feat, ...roller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-check" && read.outcomes.includes(context.outcome) && (!read.action || (context.options ?? []).includes(`action:${read.action}`)) && (!read.skills.length || read.skills.some((skill) => domains.includes(skill) || (context.options ?? []).includes(`action:${skill}`))));
+        const due = [...roller.itemTypes.feat, ...roller.itemTypes.action, ...(roller.itemTypes.heritage ?? []), ...(roller.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-check" && read.outcomes.includes(context.outcome) && (!read.action || (context.options ?? []).includes(`action:${read.action}`)) && (!read.skills.length || read.skills.some((skill) => domains.includes(skill) || (context.options ?? []).includes(`action:${skill}`))));
         if (due.length) await whisper(roller, `<strong>${escape(roller.name)}</strong>: your check's result.`, due);
         return;
     }
@@ -130,13 +130,13 @@ export async function onRollMessage(message) {
     const attacker = message.actor;
     const own = ownStrikeEvents(context?.type, context?.outcome);
     if (attacker?.type === "character" && own.length) {
-        const due = [...attacker.itemTypes.feat, ...attacker.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read && own.includes(read.event) && weaponFits(read.weapons, context.options ?? []));
+        const due = [...attacker.itemTypes.feat, ...attacker.itemTypes.action, ...(attacker.itemTypes.heritage ?? []), ...(attacker.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read && own.includes(read.event) && weaponFits(read.weapons, context.options ?? []));
         const result = own.includes("own-critical-hit") ? "critically hits" : own.includes("own-hit") ? "hits" : "misses";
         if (due.length) await whisper(attacker, `<strong>${escape(attacker.name)}</strong>: your Strike ${result}.`, due);
     }
     if (!events.length || !target) return;
     const source = message.speaker?.alias ?? message.actor?.name ?? "A creature";
-    const ofItems = (actor) => [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read);
+    const ofItems = (actor) => [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read);
     // (A trigger only for some attackers, "A creature with the animal … trait": by the attacker's traits.)
     const attackerTraits = message.actor?.system?.traits?.value ?? [];
     const byFits = ({ read }) => (!read.by || read.by.some((trait) => attackerTraits.includes(trait))) && !(read.notCritical && events.includes("critical-hit"));
@@ -168,7 +168,7 @@ async function remindOthersRoll(message, context) {
         const allied = token.document.disposition === rollerToken.document.disposition;
         const distance = self ? 0 : distanceBetween(token, rollerToken);
         const fits = (read) => (self ? read.who === "self-or-ally" : read.who === "creature" || (allied ? ["ally", "self-or-ally"].includes(read.who) : read.who === "enemy"));
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "others-roll" && fits(read) && read.outcomes.includes(context.outcome) && read.rolls.includes(context.type) && (!read.within || (distance !== null && distance <= read.within)));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "others-roll" && fits(read) && read.outcomes.includes(context.outcome) && read.rolls.includes(context.type) && (!read.within || (distance !== null && distance <= read.within)));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${self ? "your" : `${escape(rollerToken.name)}'s`} roll.`, due);
     }
 }
@@ -183,7 +183,7 @@ export async function onOwnUse(message) {
     const item = await fromUuid(origin.uuid).catch(() => null);
     const actor = item?.actor;
     if (actor?.type !== "character") return;
-    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].filter((each) => each !== item).map((each) => ({ item: each, read: ownUseTrigger(each) })).filter(({ read }) => usesTrigger(read, item.name, item.type, item.system?.traits?.value ?? []));
+    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].filter((each) => each !== item).map((each) => ({ item: each, read: ownUseTrigger(each) })).filter(({ read }) => usesTrigger(read, item.name, item.type, item.system?.traits?.value ?? []));
     if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: you used ${escape(item.name)}.`, due);
 }
 
@@ -202,7 +202,7 @@ export async function onForeignSpell(message) {
         // (An ally's spell, "An ally within 30 feet Casts a Spell": Accompany's, Spell Relay's; round 37.)
         const event = casterToken && token.document.disposition === casterToken.document.disposition ? "ally-casts" : "foe-casts";
         const distance = casterToken ? distanceBetween(token, casterToken) : null;
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === event && (!read.within || (distance !== null && distance <= read.within)));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === event && (!read.within || (distance !== null && distance <= read.within)));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(caster.name)} casts a spell.`, due);
     }
 }
@@ -219,7 +219,7 @@ export async function onSaveAsked(message) {
     for (const token of game.user.targets) {
         const actor = token.actor;
         if (actor?.type !== "character") continue;
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-save" && fitsSave(read, asked));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-save" && fitsSave(read, asked));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(source.name)} calls for your save (before you roll it).`, due);
     }
 }
@@ -229,7 +229,7 @@ export async function onJoinEncounter(combatant) {
     if (!game.settings.get(MODULE_ID, SETTING) || combatant.initiative !== null) return;
     const actor = combatant.actor;
     if (actor?.type !== "character") return;
-    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-initiative");
+    const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-initiative");
     if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: an encounter is starting (before you roll initiative).`, due);
 }
 
@@ -239,7 +239,7 @@ export async function onJoinEncounter(combatant) {
 export async function onConditionGained(actor, slug) {
     if (!game.settings.get(MODULE_ID, SETTING) || !actor) return;
     const matches = (read, event) => read?.event === event && read.conditions?.includes(slug);
-    const forActor = (each, event) => [...each.itemTypes.feat, ...each.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => matches(read, event));
+    const forActor = (each, event) => [...each.itemTypes.feat, ...each.itemTypes.action, ...(each.itemTypes.heritage ?? []), ...(each.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => matches(read, event));
     const words = slug === "0-hp" ? "is reduced to 0 Hit Points" : `gains ${slug}`;
     if (actor.type === "character") {
         const due = forActor(actor, "self-condition");
@@ -253,7 +253,7 @@ export async function onConditionGained(actor, slug) {
     const killerToken = current?.token?.object ?? null;
     if (slug === "0-hp" && current?.actor?.type === "character" && killerToken && killerToken.document.disposition !== token.document.disposition) {
         const killer = current.actor;
-        const of = (each, event) => [...each.itemTypes.feat, ...each.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === event);
+        const of = (each, event) => [...each.itemTypes.feat, ...each.itemTypes.action, ...(each.itemTypes.heritage ?? []), ...(each.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === event);
         const due = of(killer, "own-kill");
         if (due.length) await whisper(killer, `<strong>${escape(killer.name)}</strong>: ${escape(actor.name)} is reduced to 0 Hit Points on your turn.`, due);
         for (const other of canvas?.tokens?.placeables ?? []) {
@@ -285,7 +285,7 @@ async function remindFoeActs(foeToken, test, words, positions = null) {
         const actor = token.actor;
         if (actor?.type !== "character" || actor === foeToken.actor || token.document.disposition === foeToken.document.disposition) continue;
         const distances = positions ? positions.map((point) => canvas.grid.measurePath([token.center, point]).distance) : [distanceBetween(token, foeToken)];
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-acts" && test(read) && distances.some((distance) => distance !== null && distance <= read.within));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-acts" && test(read) && distances.some((distance) => distance !== null && distance <= read.within));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(foeToken.name)} ${escape(words)} near you.`, due);
     }
 }
@@ -306,7 +306,7 @@ async function remindAllyMoves(allyToken, positions) {
         const actor = token.actor;
         if (actor?.type !== "character" || actor === allyToken.actor || token.document.disposition !== allyToken.document.disposition) continue;
         const distances = positions.map((point) => canvas.grid.measurePath([token.center, point]).distance);
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "ally-moves" && distances.some((distance) => distance !== null && distance <= read.within));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "ally-moves" && distances.some((distance) => distance !== null && distance <= read.within));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(allyToken.name)} moves near you.`, due);
     }
 }
@@ -345,7 +345,7 @@ export async function onFalling({ token, feet } = {}) {
     const fallerToken = token?.object ?? token ?? null;
     if (!faller) return;
     if (faller.type === "character") {
-        const due = [...faller.itemTypes.feat, ...faller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-falling" && feetOf(feet) >= read.feet);
+        const due = [...faller.itemTypes.feat, ...faller.itemTypes.action, ...(faller.itemTypes.heritage ?? []), ...(faller.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-falling" && feetOf(feet) >= read.feet);
         if (due.length) await whisper(faller, `<strong>${escape(faller.name)}</strong> is falling ${feetOf(feet)} feet (before its damage).`, due);
     }
     for (const other of canvas?.tokens?.placeables ?? []) {
@@ -353,7 +353,7 @@ export async function onFalling({ token, feet } = {}) {
         if (actor?.type !== "character" || actor === faller) continue;
         const distance = distanceBetween(other, fallerToken);
         const ally = fallerToken?.document && other.document.disposition === fallerToken.document.disposition;
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "creature-falling" && (!read.ally || ally) && (!read.within || (distance !== null && distance <= read.within)));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "creature-falling" && (!read.ally || ally) && (!read.within || (distance !== null && distance <= read.within)));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(faller.name)} is falling ${feetOf(feet)} feet.`, due);
     }
 }
@@ -362,6 +362,6 @@ export async function onFell({ token, feet, applied } = {}) {
     if (!game.settings.get(MODULE_ID, SETTING)) return;
     const faller = token?.actor ?? token?.object?.actor ?? null;
     if (faller?.type !== "character") return;
-    const due = [...faller.itemTypes.feat, ...faller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-fell" && feetOf(feet) >= read.feet && (!read.noDamage || !feetOf(applied)));
+    const due = [...faller.itemTypes.feat, ...faller.itemTypes.action, ...(faller.itemTypes.heritage ?? []), ...(faller.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-fell" && feetOf(feet) >= read.feet && (!read.noDamage || !feetOf(applied)));
     if (due.length) await whisper(faller, `<strong>${escape(faller.name)}</strong> fell ${feetOf(feet)} feet.`, due);
 }

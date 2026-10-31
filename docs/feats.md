@@ -643,3 +643,9 @@ The environment module's fall hooks: as a creature starts to fall ("falling", be
 from a height of 15 feet or higher": Cushion Landing, Arrest a Fall, Grab an Edge, Contingency Leap) and others' in range ("A creature
 within 60 feet is falling": Air Cushion) are whispered; once it's done ("fell"), "You fall at least 10 feet and land" (Impressive
 Landing). Round 45's fix: the before-the-roll prompts use the reminders' own setting and the encounter the creature is in.
+
+## Round 49: heritages and backgrounds (2026-10-31)
+
+Reaction reminders read heritages and backgrounds as passives ("Whenever you gain the hidden condition … you can Step": Kardan Bugbear;
+River Azarketi, Heavenscribe Kobold, Courageous Tanuki), and hidden, concealed, undetected, invisible, quickened and encumbered count as
+conditions. Cloudleaper Lizardfolk's falls do no damage; Reflection's trait.

@@ -41,7 +41,7 @@ function dueFor(given) {
         ranged: context.item?.isRanged ?? optionsOf(context).includes("item:ranged")
     };
     if (context.type === "skill-check") roll.statistic = (context.domains ?? []).find((domain) => ["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"].includes(domain)) ?? roll.statistic;
-    const own = actor.type === "character" ? [...actor.itemTypes.feat, ...actor.itemTypes.action]
+    const own = actor.type === "character" ? [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])]
         .filter((item) => !quiet.has(`${combat.id}.${actor.id}.${item.id}`))
         .map((item) => ({ item, read: preRollTrigger(item), by: null }))
         .filter(({ read }) => fitsCheck(read, roll)) : [];
@@ -61,7 +61,7 @@ function othersDue(context, roll) {
         if (actor?.type !== "character" || sameActor(actor, roller)) continue;
         const token = combatant.token?.object ?? null;
         const side = sideOf(roller, actor, rollerToken, token);
-        for (const item of [...actor.itemTypes.feat, ...actor.itemTypes.action]) {
+        for (const item of [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])]) {
             if (quiet.has(`${combat.id}.${actor.id}.${item.id}`)) continue;
             const read = preRollTrigger(item);
             if (!fitsOthersCheck(read, roll)) continue;
