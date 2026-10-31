@@ -13,7 +13,7 @@ export default [
     // (Your ranged attacks while you're in water, against a creature that isn't: "above you or on land". One above you in the water too is the
     // player's.)
     { uuid: pf2e("7RWQZDidyK2MYbE8"), name: "Concealing Currents", rules: [offGuardIf(["strike-attack-roll", "strike-damage"], "terrain:aquatic", "item:ranged", { not: "target:terrain:aquatic" })] },
-    // (Round 104: the bonus's own part for you; an aura's for allies is PF2e's Aura rule, which needs an Effect: the allies' by hand.)
-    { uuid: pf2e("MYzRfNExDYp25rro"), name: "Marshal Dedication", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:fear"] }] },
-    { uuid: pf2e("CmGe2c5fecj837P9"), name: "Spirit Walk", rules: [{ key: "FlatModifier", selector: "skill-check", type: "status", value: 2, predicate: ["action:recall-knowledge", { or: ["target:trait:spirit", "target:trait:undead", "target:trait:haunt"] }] }] }
+    // (Round 104: Spirit Walk's bonus as a note on Recall Knowledge, which carries no target options in PF2e 8.6; Marshal Dedication's
+    // own +1 against fear is PF2e's Effect: Marshal's Aura.)
+    { uuid: pf2e("CmGe2c5fecj837P9"), name: "Spirit Walk", rules: [{ key: "Note", selector: "skill-check", predicate: ["action:recall-knowledge"], title: "{item|name}", text: "<p>+2 status bonus if the subject is a spirit, haunt or undead (you and allies within 30 feet).</p>" }] }
 ];
