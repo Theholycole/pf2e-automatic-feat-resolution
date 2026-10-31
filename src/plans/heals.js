@@ -51,5 +51,26 @@ export default [
         uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.We9abqydQAV3UOes", name: "Natural Remedy",
         affect: { target: "the creature you healed", effects: [{ kind: "heal", formula: "floor(@actor.level/2)" }] },
         notes: ["Use it as you restore Hit Points to a creature: it regains half your level more."]
+    },
+    // (Round 69: heals from a 10-minute rest, posted when the rest ends.)
+    {
+        uuid: pf2e("zpQEOqMDoujexNfA"), name: "Replenishing Hydration",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes submerged in water."]
+    },
+    {
+        uuid: pf2e("7vUOlVqjheZV0Nmc"), name: "Vivacious Conduit",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes."]
+    },
+    {
+        uuid: pf2e("LrPfGV6snjCrZ4h2"), name: "Nodal Healing",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes."]
+    },
+    {
+        uuid: "Compendium.pf2e.ancestryfeatures.Item.BgHrucbZ9TH92RDv", name: "Sunlight Healing",
+        text: "<p>You regain @Damage[(max(1,ceil(@actor.level/2)))d8[healing]] Hit Points.</p>",
+        activity: true, notes: ["After 10 minutes meditating in direct sunlight. Then you're immune to it for 1 day."]
     }
 ];

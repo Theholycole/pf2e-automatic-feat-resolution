@@ -242,5 +242,10 @@ export default [
         uuid: pf2e("P6cTyDMTXcC8HBDr"), name: "Esoteric Warden",
         toggle: { rules: [bonus("ac", 1, "status"), bonus("saving-throw", 1, "status")] },
         notes: ["After you Exploit a Vulnerability successfully: only against that creature's next attack and your next save against it (+2 on a critical success). Once a day per creature; it ends if you Exploit Vulnerability again. Post it again to take it off."]
+    },
+    {
+        uuid: pf2e("pp04AVdROQXSeaA8"), name: "Blazing Mutagen",
+        toggle: { rules: [{ key: "DamageDice", selector: "strike-damage", diceNumber: 1, dieSize: "d4", damageType: "fire", category: "persistent", predicate: ["item:melee"] }] },
+        notes: ["On while your mutagen lasts and your persistent fire burns: drinking it, take @Damage[2d4[persistent,fire]] damage that ignores fire resistance and immunity. Post it again when the persistent fire ends."]
     }
 ];

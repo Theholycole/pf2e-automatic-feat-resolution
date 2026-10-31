@@ -27,7 +27,8 @@ export function compileFeat(item, options = {}) {
     if (!dcs) return null;
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
-    const written = hand?.text ? withText(item, hand.text) : item;
+    // (hand.activity: a passive's activity, "If you rest for 10 minutes, you regain …", played as an action when it's posted.)
+    const written = hand?.text ? withText(item, hand.text, hand.activity ? { actionType: { value: "action" }, actions: { value: null } } : {}) : item;
     // (An eidolon's action, "Your eidolon Strikes": the readers' "You Strike"; 2026-10-30, "Companions".)
     const own = !hand?.text && isEidolonItem(item) ? withText(item, eidolonWords(item.system?.description?.value ?? "")) : written;
     const filled = withCharacterDCs(own, dcs);

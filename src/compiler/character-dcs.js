@@ -222,8 +222,9 @@ export function withCharacterDCs(item, dcs) {
 }
 
 // The item itself, its actor and parent kept, with other text (as monster.js's withDescription).
-export function withText(item, html) {
-    const description = { ...item.system.description, value: html };
-    const system = new Proxy(item.system, { get: (target, key) => (key === "description" ? description : Reflect.get(target, key)) });
+// (overrides: other system fields to read in its place, a passive's rest heal played as an activity: { actionType: { value: "action" } }.)
+export function withText(item, html, overrides = {}) {
+    const fields = { ...overrides, description: { ...item.system.description, value: html } };
+    const system = new Proxy(item.system, { get: (target, key) => (key in fields ? fields[key] : Reflect.get(target, key)) });
     return new Proxy(item, { get: (target, key) => (key === "system" ? system : Reflect.get(target, key)) });
 }
