@@ -65,7 +65,8 @@ export default [
     },
     {
         uuid: action("gU93T2UqxLsX9gyF"), name: "Fated Not to Die",
-        affect: { target: "you", effects: [{ kind: "end-condition", slug: "dying" }] },
+        // (Unconscious again after dying ends, as My Legend Must Be Told: PF2e's dying takes its unconscious with it; 2026-10-31 Foundry test.)
+        affect: { target: "you", effects: [{ kind: "end-condition", slug: "dying", stabilize: true }, { kind: "condition", slug: "unconscious", value: null, duration: null }] },
         notes: ["You stay unconscious at 0 Hit Points. If the harrow card you draw is from the suit of Shields, you wake and regain 1d6 + your level Hit Points (by hand)."]
     }
 ];

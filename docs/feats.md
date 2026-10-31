@@ -485,3 +485,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   Scales's selectors), Sharpened Senses (Seek).
 - Round 24: all four pass (each only on its action's roll: Recall Knowledge, Escape, Seek).
 - Then: Reclaim Power (your level per thrall, posted once per thrall), Fated Not to Die (ends dying; the Shields heal by hand).
+- Round 25: Reclaim Power passes. Fated Not to Die took unconscious with dying (PF2e grants it from dying): unconscious again after, as My Legend Must Be Told.
