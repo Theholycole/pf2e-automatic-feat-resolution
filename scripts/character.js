@@ -44,7 +44,15 @@ function ownDCs(actor) {
         const mod = Number(ability?.mod);
         if (Number.isFinite(mod)) abilities[slug] = mod;
     }
+    // (Its attack modifiers, for an attack roll against a defense (src/plans/attacks.js): its best spell attack, and each Strike's.)
+    const spellAttacks = [...(actor.spellcasting?.contents ?? actor.spellcasting ?? [])].map((entry) => Number(entry?.statistic?.check?.mod)).filter(Number.isFinite);
+    const strikes = [...(actor.system?.actions ?? [])].filter((action) => action?.type === "strike" && action.item).map((action) => ({
+        group: action.item.group ?? action.item.system?.group ?? null,
+        ranged: Boolean(action.item.isRanged),
+        mod: Number(action.totalModifier ?? action.variants?.[0]?.modifier)
+    })).filter((strike) => Number.isFinite(strike.mod));
     return {
+        attacks: { spell: spellAttacks.length ? Math.max(...spellAttacks) : null, strikes },
         level: Number(actor.level) || Number(actor.system?.details?.level?.value) || null,
         abilities,
         class: value(actor.classDC) ?? (Object.values(byClass).length ? Math.max(...Object.values(byClass)) : null),

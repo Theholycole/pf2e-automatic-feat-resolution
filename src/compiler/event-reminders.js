@@ -11,7 +11,8 @@ const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}
 // kind }, or null.
 export function eventTrigger(given) {
     const item = ownWords(given);
-    const type = item?.system?.actionType?.value;
+    // (A heritage or background, with no action type: as a passive; round 49, Kardan Bugbear.)
+    const type = item?.system?.actionType?.value ?? (["heritage", "background"].includes(item?.type) ? "passive" : undefined);
     // (A passive feat that says when it applies, "Whenever you critically succeed on a Strike, …", "When you would become fatigued, …": read
     // the same way, its "When" clause as the trigger; the loop, 2026-10-30.)
     const passive = type === "passive" ? /(?:^|[.!?]\s+)When(?:ever)? ((?:you|an? (?:ally|enemy|creature|foe))\b[^,.]*),/i.exec(plainOf(item?.system?.description?.value ?? "")) : null;
@@ -21,6 +22,15 @@ export function eventTrigger(given) {
     const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
     const kind = passive ? "passive" : type === "reaction" ? "reaction" : "free action";
     const within = Number(/\bwithin (\d+) feet\b/i.exec(trigger)?.[1]) || (/\badjacent\b/i.test(trigger) ? 5 : null);
+    // (A fall, the environment module's: "You fall from a height of 15 feet or higher" as it starts, before its damage; "You fall at least 10
+    // feet and take no damage from the fall" once it's done; "A creature within 60 feet is falling" by its distance; round 47.)
+    const fall = /^You fall\b(?:(?! and take no damage| and land)[^.])*|^You fall at least (\d+) feet and (?:take no damage|land)\b|^An? (?:creature|ally)(?: within (\d+) feet)? (?:is falling|falls)\b/i.exec(trigger);
+    if (fall && !passive && !/\bto 0 Hit Points\b/i.test(trigger)) {
+        const feet = Number(/\b(?:height of|at least) (\d+) feet\b/i.exec(trigger)?.[1]) || 0;
+        if (/^An? (?:creature|ally)/i.test(trigger)) return { event: "creature-falling", trigger, kind, ...(within ? { within } : {}), ...(/^An? ally/i.test(trigger) ? { ally: true } : {}) };
+        if (/\band (?:take no damage|land)\b/i.test(trigger)) return { event: "self-fell", trigger, kind, feet, ...(/take no damage/i.test(trigger) ? { noDamage: true } : {}) };
+        return { event: "self-falling", trigger, kind, feet };
+    }
     // (2026-10-30 Foundry test, Hunter's Defense: "A creature with the animal, beast, elemental, fey, fungus, or plant trait attacks you" —
     // only a creature with one of those traits: by.)
     const traits = /\bcreature with the ((?:[a-z-]+,? (?:or |and )?)*[a-z-]+) traits?\b/i.exec(trigger)?.[1];
@@ -55,11 +65,23 @@ export function eventTrigger(given) {
         const skills = [...check[2].matchAll(/Recall Knowledge|[A-Z][a-z]+/g)].map((match) => match[0].toLowerCase()).filter((word) => word !== "recall knowledge");
         return { ...read("own-check"), outcomes: [...new Set(outcomes)], skills };
     }
+    // ("You fail, but don't critically fail, an attempt to Disable a Device on a trap": that action's check, any skill; "You roll a skill
+    // check or saving throw and don't like the result": any degree; round 48.)
+    const attempt = /^You ((?:(?:critically )?(?:succeed|fail)(?:,? \(?but (?:don't|do not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on )?(?:an|your) attempt to ([A-Z][a-z]+(?: (?:a |an |the )?[A-Z][a-z]+)*)\b/.exec(trigger);
+    if (attempt) {
+        const words = attempt[1].toLowerCase();
+        const outcomes = [...(/critically succeed/.test(words) ? ["criticalSuccess"] : []), ...(/(?<!critically )succeed/.test(words) ? ["success"] : []), ...(/(?<!critically )fail/.test(words) ? ["failure", ...(/but (?:don't|do not) critically fail/.test(words) ? [] : ["criticalFailure"])] : []), ...(/critically fail(?!\))/.test(words) && !/but (?:don't|do not) critically fail/.test(words) ? ["criticalFailure"] : [])];
+        return { ...read("own-check"), outcomes: [...new Set(outcomes)], skills: [], action: attempt[2].toLowerCase().replace(/\s+(?:a|an|the)\s+/g, " ").replace(/\s+/g, "-") };
+    }
+    if (/^You roll a skill check(?: or saving throw)? and don't like the result\b/i.test(trigger)) return { ...read("own-check"), outcomes: ["criticalSuccess", "success", "failure", "criticalFailure"], skills: [], ...(/saving throw/i.test(trigger) ? { alsoSaves: true } : {}) };
     // (Another creature's roll result: "A creature within 30 feet critically fails an attack roll, skill check, or saving throw", "An ally
     // within 30 feet of you critically succeeds at an attack roll or skill check", "An enemy critically succeeds at an attack roll or saving
     // throw", "You or an ally within 30 feet fails an attack roll or skill check", "An ally misses … with their attack": others-roll, by who
     // rolled, its degrees and kinds of roll; the loop, 2026-10-30.)
-    const others = /^(You or an ally|An? (?:adjacent )?(?:ally|enemy|foe|creature(?: other than you)?))\b[^.]*?\b((?:(?:critically )?(?:succeeds|fails|misses)(?:,? \(?but (?:doesn't|does not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on |with )?(?:a |an |their |its )?((?:(?:attack rolls?|Strikes?|spell attack rolls?|skill checks?|saving throws?|saves?|attack)(?:,? or |, )?)+)/i.exec(trigger);
+    // ("A creature within 30 feet you can see would succeed at a save": Black Cat Curse's, read as "succeeds"; round 37.)
+    // ("Would succeed" counts a critical success too; round 37.)
+    const othersTrigger = trigger.replace(/\bwould succeed\b/gi, "succeeds or critically succeeds").replace(/\bwould (critically )?(succeed|fail)\b/gi, (_whole, critically = "", verb) => `${critically ?? ""}${verb}s`);
+    const others = /^(You or an ally|An? (?:adjacent )?(?:ally|enemy|foe|creature(?: other than you)?))\b[^.]*?\b((?:(?:critically )?(?:succeeds|fails|misses)(?:,? \(?but (?:doesn't|does not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on |with )?(?:a |an |their |its )?((?:(?:attack rolls?|Strikes?|spell attack rolls?|skill checks?|saving throws?|saves?|attack)(?:,? or |, )?)+)/i.exec(othersTrigger);
     if (others && !/\bagainst (?:you|your)\b|\b(?:Strike|attack) you\b/i.test(trigger)) {
         const words = others[2].toLowerCase();
         const outcomes = [...(/critically succeeds/.test(words) ? ["criticalSuccess"] : []), ...(/(?<!critically )succeeds/.test(words) ? ["success"] : []), ...(/(?<!critically )(?:fails|misses)/.test(words) ? ["failure", ...(/but (?:doesn't|does not) critically fail/.test(words) ? [] : ["criticalFailure"])] : []), ...(/critically (?:fails|misses)/.test(words) ? ["criticalFailure"] : [])];
@@ -78,6 +100,9 @@ export function eventTrigger(given) {
     // ("A creature Casts a Spell", "An enemy casts a spell that targets you …", "Another creature within 30 feet Casts a Spell": a spell another
     // creature casts, the Counterspells' trigger.)
     if (/^(?:A|An|Another|Your) (?:creature|enemy|foe|opponent)\b[^.]*?\b[Cc]asts? a [Ss]pell\b/.test(trigger)) return read("foe-casts");
+    // ("An ally within 30 feet Casts a Spell", "An ally Casts a Spell and you are within that spell's range": Accompany's, Spell Relay's;
+    // round 37.)
+    if (/^An? (?:adjacent )?ally\b[^.]*?\b[Cc]asts? a [Ss]pell\b/.test(trigger)) return read("ally-casts");
     // (A foe near the character moving or using a manipulate, concentrate or move action: "A creature within your reach leaves a square during
     // a move action it's using", "A creature within 10 feet of you uses a manipulate action or a move action", "A creature moves to be within
     // 15 feet of you", "A creature within your reach uses a concentrate action" — Reactive Strike's kind. Reach counted as 10 feet.)
@@ -89,15 +114,25 @@ export function eventTrigger(given) {
         if (traits.length || moves) return { ...read("foe-acts"), within: reach, traits: [...new Set(traits)], moves };
     }
     // ("A creature within your reach critically fails a Strike against you": Dueling Riposte's.)
-    if (/\bcritically fails (?:a|an|its|their) (?:melee )?(?:Strike|attack(?: roll)?)\b[^.]*\bagainst you\b/i.test(trigger)) return read("critical-miss");
+    if (/\bcritically (?:fails|misses) (?:a|an|its|their) (?:melee )?(?:Strike|attack(?: roll)?)\b[^.]*\bagainst (?:you|your AC)\b/i.test(trigger)) return read("critical-miss");
     // (A creature or ally gaining a condition or falling to 0 Hit Points: "An ally within 30 feet gains the Frightened condition", "An ally
     // within 30 feet would be reduced to 0 HP but not immediately killed", "A creature within 60 feet gains the Frightened condition".)
+    // ("You lose the Dying condition": Bounce Back's; "Whenever an enemy starts its turn adjacent to you": Bonekeeper's Bane's; round 38.)
+    const lost = /^You lose the ([A-Za-z-]+) condition\b/i.exec(trigger)?.[1]?.toLowerCase();
+    if (lost && CONDITION_WORDS.includes(lost)) return { ...read("self-condition-lost"), conditions: [lost] };
+    if (/^An? (?:enemy|foe|creature|opponent)\b[^.]*?\b(?:starts|begins) (?:its|their) turn (?:adjacent to you|within (?:your reach|\d+ feet of you))/i.test(trigger)) return { ...read("foe-turn-start"), within: within ?? (/\breach\b/i.test(trigger) ? 10 : 5) };
     const conditions = conditionsOf(trigger);
     if (conditions) {
-        const who = /^(?:An?|Another|Your|One of your) (?:adjacent )?all(?:y|ies)\b/i.test(trigger) ? "ally-condition" : /^(?:A|Another) creature\b/i.test(trigger) ? "creature-condition" : /^You(?:'re| are)? (?:would )?(?:gain|become|are reduced|reduced|fall|would be reduced)\b/i.test(trigger) ? "self-condition" : null;
-        if (who) return { ...read(who), conditions };
+        // ("An attack or effect would reduce you to 0 Hit Points", "You witness an ally being reduced to 0 Hit Points", "You Drop Prone or
+        // otherwise become Prone"; round 37.)
+        const who = /^(?:An?|Another|Your|One of your) (?:adjacent )?all(?:y|ies)\b|^You witness an ally\b/i.test(trigger) ? "ally-condition"
+            : /^(?:A|An)\b[^.]*\bwould reduce you to 0 (?:Hit Points|HP)\b|^You\b[^.]*\bbecome (?:the )?[A-Za-z-]+(?: condition)?\.$/i.test(trigger) ? "self-condition" : /^(?:A|An|Another) (?:[\w-]+ ){0,3}?(?:creature|enemy|foe)\b/i.test(trigger) ? "creature-condition" : /^You(?:'re| are)? (?:would )?(?:gain|become|are reduced|reduced|fall|would be reduced)\b|^You are [A-Z][a-z-]+ \d+ or greater and your\b/i.test(trigger) ? "self-condition" : null;
+        // (Its kind, "an undead creature", "a Small or Medium enemy" not: a creature trait; round 48 test.)
+        const kindWord = /^(?:A|An|Another) ([a-z]+) (?:creature|enemy|foe)\b/i.exec(trigger)?.[1]?.toLowerCase();
+        const traits = kindWord && CREATURE_TRAITS.includes(kindWord) ? [kindWord] : [];
+        if (who) return { ...read(who), conditions, ...(traits.length ? { traits } : {}) };
     }
-    const ally = /\b(?:an|your|one of your|a) (?:adjacent )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
+    const ally = /\b(?:an|your|one of your|a) (?:adjacent |linked |designated )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
     // (An ally near the character moving: "An ally ends a move action adjacent to you", "An ally within your reach uses a move action or
     // leaves a square …", "An adjacent ally moves", "A willing ally enters a space within your lash's reach using a move action": Goblin
     // Scuttle's, Shadow Tempo's; the loop, 2026-10-30. Reach counted as 10 feet.)
@@ -106,7 +141,7 @@ export function eventTrigger(given) {
     }
     if (ally) {
         if (/\b(?:is|are) (?:critically )?hit\b|\bhits (?:an|your|the) ally\b/i.test(trigger)) return read("ally-hit");
-        if (/\b(?:takes?|would take) damage\b|\bis damaged\b|\bdamages (?:an|your|the) ally\b/i.test(trigger)) return read("ally-damaged");
+        if (/\b(?:takes?|would take) damage\b|\bis damaged\b|\bwould damage\b|\bdamages (?:an|your|the) ally\b/i.test(trigger)) return read("ally-damaged");
         if (/\b(?:is|are) targeted\b|\btargets (?:an|your|the|one of your) all/i.test(trigger)) return read("ally-targeted");
         return null;
     }
@@ -114,17 +149,23 @@ export function eventTrigger(given) {
     // ("A creature missed you with a melee attack", "A creature misses you with a ranged attack", "An adjacent creature you can see fails an
     // attack roll against you": Elude Trouble's, Coursing Weave's; the loop, 2026-10-30.)
     if (/\bmiss(?:es|ed)? you\b|\bfails an attack roll against you\b/i.test(trigger)) return read("miss");
+    // ("Hits, but does not critically hit you": not on a critical hit, notCritical; round 37.)
+    if (/\bhits, but (?:does not|doesn't) critically hit you\b|\bhits you\b[^.]*\bbut (?:does not|doesn't) critically\b/i.test(trigger)) return { ...read("hit"), notCritical: true };
     if (/\bhits you\b|^You(?:'re| are| would be) hit\b/i.test(trigger)) return read("hit");
     if (/\btargets you\b|^You are (?:the )?target(?:ed)? (?:of|by)\b|\battempts? (?:a (?:melee |ranged )?Strike|an attack(?: roll)?) against you\b|\battacks you\b|\bmakes an attack(?: roll)? against you\b|^You(?:'re| are) targeted (?:with|by) (?:a|an) (?:melee |ranged |physical )*(?:Strike|attack)\b|^You(?:'re| are) the target of (?:a|an) (?:melee |ranged |physical )*(?:Strike|attack)\b|^You or an? (?:adjacent )?(?:willing )?ally\b[^.]*\b(?:is|are) the target of (?:a|an) (?:melee |ranged |physical )*(?:Strike|attack)\b/i.test(trigger)) return read("targeted");
-    if (/(?:^|,\s*)You (?:or your [\w ]+? )?(?:would )?take (?:(?:[a-z]+(?:,| or| and)?|or|and) )*?damage\b|^You(?:'re| are) dealt\b[^.]*\bdamage\b|\bwould deal damage to you\b|\bdamages you\b|\bdeals damage to you\b/i.test(trigger) && !/\bfall(?:ing)? damage\b/i.test(trigger)) return read("damaged");
+    if (/(?:^|,\s*)You (?:or your [\w ]+? )?(?:would )?take (?:(?:[a-z]+(?:,| or| and)?|or|and) )*?damage\b|^You(?:'re| are) dealt\b[^.]*\bdamage\b|\bwould deal damage to you\b|\bdamages you\b|\bdamaged you\b|\bdeals damage to you\b/i.test(trigger) && !/\bfall(?:ing)? damage\b/i.test(trigger)) return read("damaged");
     return null;
 }
 
-const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "off-guard", "paralyzed", "petrified", "prone", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded"];
+const CREATURE_TRAITS = ["aberration", "animal", "beast", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "fungus", "giant", "humanoid", "monitor", "ooze", "plant", "spirit", "undead", "demon", "devil", "incorporeal", "living"];
+const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "off-guard", "paralyzed", "petrified", "prone", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded", "hidden", "concealed", "undetected", "invisible", "quickened", "encumbered"];
 // "gains the Frightened condition", "would become Frightened, Drained, …", "becomes frightened or stupefied", "falls to 0 Hit Points" → the
 // conditions (with "0-hp" for the last), or null.
 function conditionsOf(trigger) {
-    if (/\b(?:falls to|is reduced to|are reduced to|'re reduced to|would be reduced to|brings? [^.]*? to|drops to) 0 (?:Hit Points|HP)\b/i.test(trigger) && !/\bbrings an enemy\b/i.test(trigger)) return ["0-hp"];
+    if (/\b(?:falls to|is reduced to|are reduced to|'re reduced to|would be reduced to|being reduced to|would reduce you to|brings? [^.]*? to|drops to) (?:0|zero) (?:Hit Points|HP)\b|\bdies\b/i.test(trigger) && !/\bbrings an enemy\b/i.test(trigger)) return ["0-hp"];
+    // ("You are Doomed 1 or greater and your doomed value would increase": Know Thy Doom's; round 48.)
+    const raised = /\byour ([A-Za-z-]+) (?:condition )?value would increase\b/i.exec(trigger)?.[1]?.toLowerCase();
+    if (raised && CONDITION_WORDS.includes(raised)) return [raised];
     const match = /\b(?:gains?|would gain|becomes?|would become)(?: the)? ((?:[A-Za-z-]+(?:,? (?:or|and) |, ))*[A-Za-z-]+)(?: condition)?\b/i.exec(trigger);
     if (!match) return null;
     const words = match[1].toLowerCase().split(/,? (?:or|and) |, /).map((word) => word.trim());
@@ -224,15 +265,96 @@ export function preRollTrigger(given) {
     const kind = type === "reaction" ? "reaction" : "free action";
     // ("You roll initiative", "You roll for initiative, and you are observing …": asked as the character joins the encounter; the loop,
     // 2026-10-30.)
-    if (/^You roll (?:for )?initiative\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
+    // ("You and your mystic duo roll initiative in the same encounter", "When a fight begins": Esoteric Coordination's, Primary Threat's; round 38.)
+    if (/^You (?:and [^.]+? )?roll (?:for )?initiative\b|^When a fight begins\b|^(?:A|The) fight begins\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
+    // (Another's roll about to be made, "An enemy is about to use an action that requires a skill check or attack roll", "A creature within
+    // 60 feet is about to attempt an attack roll or skill check": asked of the roller, before its dice; round 46. Not Aid, which needs your
+    // preparing to first.)
+    // ("You are attacked by a foe, but they haven't rolled yet": a foe's attack roll against you; round 48.)
+    if (/^You are attacked by (?:a|an) (?:foe|enemy|creature)\b[^.]*\bhaven['’]t (?:yet )?rolled\b/i.test(trigger)) return { event: "pre-check-other", who: /creature/i.test(trigger) ? "creature" : "enemy", checks: ["attack"], againstYou: true, trigger, kind };
+    const other = othersRoll(trigger, item);
+    if (other) return { ...other, trigger, kind };
     if (!/^You(?:'re| are| would| attempt| have)\b/i.test(trigger) && !/^You and\b/i.test(trigger)) return null;
-    const before = /\babout to (?:roll|attempt)\b|\bwould (?:roll|attempt)\b|\bhaven['’]t (?:yet )?rolled\b/i.test(trigger);
+    // ("You attempt a basic Reflex save", "You attempt a saving throw against a disease or poison effect that affects an area": Feline Dance's,
+    // Absorb Toxin's, used as the save is rolled; round 37.)
+    const before = /\babout to (?:roll|attempt|make)\b|\bwould (?:roll|attempt)\b|\bhaven['’]t (?:yet )?rolled\b|^You attempt an? (?:basic )?(?:(?:Fortitude|Reflex|Will) )?(?:save|saving throw)\b/i.test(trigger);
     if (!before) return null;
     if (/\binitiative\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
     if (/\brecovery check\b/i.test(trigger)) return { event: "pre-recovery", trigger, kind };
-    if (/\b(?:saving throws?|saves?)\b/i.test(trigger)) return { event: "pre-save", trigger, kind };
+    // ("You are about to make an attack roll, skill check, or saving throw": any of them, a pre-check; round 48.)
+    if (/\b(?:saving throws?|saves?)\b/i.test(trigger) && /\battack rolls?\b|\bskill checks?\b/i.test(trigger)) return { event: "pre-check", check: "any", trigger, kind };
+    if (/\b(?:saving throws?|saves?)\b/i.test(trigger)) {
+        // (Only the save it names, and only a basic one when it says so: Feline Dance's "a basic Reflex save"; round 37.)
+        const save = /\b(Fortitude|Reflex|Will)\b/i.exec(trigger)?.[1]?.toLowerCase() ?? null;
+        return { event: "pre-save", trigger, kind, ...(save ? { save } : {}), ...(/\bbasic\b/i.test(trigger) ? { basic: true } : {}) };
+    }
+    // (Your own Strike or check, "You attempt a melee Strike against your opponent, but haven't rolled yet", "You are about to attempt a
+    // check": asked as the roll starts, before its dice; round 45.)
+    // (Not one that hangs on a fortune or misfortune effect: no roll says it has one before it's rolled.)
+    if (/\b(?:mis)?fortune\b/i.test(trigger)) return null;
+    if (/\bflat check\b/i.test(trigger)) return { event: "pre-check", check: "flat", trigger, kind };
+    const action = /\bRecall Knowledge\b/i.test(trigger) ? { action: "recall-knowledge" } : {};
+    if (/\b(?:Strike|attack roll)s?\b/i.test(trigger)) return { event: "pre-check", check: "attack", ...(/\bmelee\b/i.test(trigger) ? { melee: true } : /\branged\b/i.test(trigger) ? { ranged: true } : {}), trigger, kind };
+    const skill = /\b(Acrobatics|Arcana|Athletics|Crafting|Deception|Diplomacy|Intimidation|Medicine|Nature|Occultism|Performance|Religion|Society|Stealth|Survival|Thievery|Perception)\b/i.exec(trigger)?.[1]?.toLowerCase();
+    if (skill) return { event: "pre-check", check: skill, ...action, trigger, kind };
+    if (/\b(?:skill )?checks?\b|\broll\b/i.test(trigger)) return { event: "pre-check", check: /\bskill check\b/i.test(trigger) || action.action ? "skill" : "any", ...action, trigger, kind };
     return null;
+}
+
+function othersRoll(trigger, item) {
+    if ((item?.system?.slug ?? "") === "aid" || /^Aid$/i.test(item?.name ?? "")) return null;
+    const match = /^(An ally|Your ally|An enemy|A foe|A creature|Any creature)\b([^.;]*?)\b(?:is about to|would|attempts? .* but hasn['’]t (?:yet )?rolled)\s+([^.;]*)/i.exec(trigger);
+    if (!match) return null;
+    const what = match[3];
+    // (After the roll, "would succeed at a save": not before it.)
+    if (/^(?:succeed|fail|critically|be |take |deal )/i.test(what) || /\bor you would\b/i.test(trigger)) return null;
+    const checks = [];
+    if (/\battack rolls?\b|\bStrikes?\b/i.test(what)) checks.push("attack");
+    if (/\bskill checks?\b|\bcheck to (?:Escape|[A-Z])/i.test(what)) checks.push("skill");
+    if (/\bsaving throws?\b|\bsaves?\b/i.test(what)) checks.push("save");
+    if (!checks.length) return null;
+    const who = /ally/i.test(match[1]) ? "ally" : /enemy|foe/i.test(match[1]) ? "enemy" : "creature";
+    const within = /\bwithin (\d+) feet\b/i.exec(match[2])?.[1] ?? (/\bwithin your reach\b/i.test(match[2]) ? "5" : null);
+    return { event: "pre-check-other", who, checks, ...(within ? { within: Number(within) } : {}), ...(/\bagainst you\b/i.test(what) ? { againstYou: true } : {}), ...(/\bEscape\b/.test(what) ? { action: "escape" } : {}), ...(/\branged\b/i.test(what) ? { ranged: true } : {}) };
+}
+
+// Whether another's pre-check read fits a roll about to happen: its kind of check, and (the scripts check who and how far).
+export function fitsOthersCheck(read, roll) {
+    if (read?.event !== "pre-check-other" || !roll) return false;
+    if (read.action && !(roll.options ?? []).includes(`action:${read.action}`)) return false;
+    const kind = roll.type === "attack-roll" ? "attack" : roll.type === "skill-check" ? "skill" : roll.type === "saving-throw" ? "save" : null;
+    return Boolean(kind) && read.checks.includes(kind) && (!read.ranged || roll.ranged === true);
+}
+
+const SKILLS = new Set(["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"]);
+// Whether a pre-check read fits a roll about to happen: { type: PF2e's check type ("attack-roll", "skill-check", "perception-check",
+// "flat-check", "saving-throw", "initiative"), statistic slug, melee, ranged }.
+export function fitsCheck(read, roll) {
+    if (read?.event !== "pre-check" || !roll) return false;
+    const { type, statistic } = roll;
+    if (read.action && !(roll.options ?? []).includes(`action:${read.action}`)) return false;
+    if (read.check === "flat") return type === "flat-check";
+    if (read.check === "attack") return type === "attack-roll" && (!read.melee || roll.melee === true) && (!read.ranged || roll.ranged === true);
+    if (read.check === "skill") return type === "skill-check";
+    if (read.check === "any") return ["attack-roll", "skill-check", "perception-check", "saving-throw"].includes(type);
+    if (read.check === "perception") return type === "perception-check" || statistic === "perception";
+    return SKILLS.has(read.check) && statistic === read.check;
 }
 
 // Whether a posted message's text asks for a save: PF2e's inline save links.
 export const asksForSave = (content) => /data-pf2-check="(?:fortitude|reflex|will)"/.test(String(content ?? ""));
+
+// The saves a posted message's inline links ask for: [{ save, basic }]. PF2e 8.6 marks a basic save only by its label's text ("Basic
+// Reflex", localised) and the damaging-effect roll option it adds; not the link's flavor or label attributes (round 37b).
+export function savesAsked(content, basicWord = "basic") {
+    const word = new RegExp(`\\b${String(basicWord).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    return [...String(content ?? "").matchAll(/<a\b([^>]*data-pf2-check="(fortitude|reflex|will)"[^>]*)>([\s\S]*?)<\/a>/g)].map((match) => {
+        const options = /data-pf2-roll-options="([^"]*)"/.exec(match[1])?.[1] ?? "";
+        const label = /<span class="label">([\s\S]*?)<\/span>\s*(?:<i|$)/.exec(match[3])?.[1] ?? match[3];
+        const text = label.replace(/<[^>]+>/g, " ");
+        return { save: match[2], basic: /(?:^|,)\s*damaging-effect\s*(?:,|$)/.test(options) || word.test(text) || /\bbasic\b/i.test(text) };
+    });
+}
+
+// Whether a pre-save read fits the saves asked: any save when it names none; its save, and a basic one when it says basic.
+export const fitsSave = (read, asked) => !read.save || asked.some((each) => each.save === read.save && (!read.basic || each.basic));

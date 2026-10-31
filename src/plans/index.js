@@ -21,6 +21,7 @@ import strikes3 from "./strikes-3.js";
 import affects from "./affects.js";
 import eidolons from "./eidolons.js";
 import saves4 from "./saves-4.js";
+import saves5 from "./saves-5.js";
 import heals from "./heals.js";
 import checks2 from "./checks-2.js";
 import affects2 from "./affects-2.js";
@@ -28,9 +29,10 @@ import passiveEffects from "./passive-effects.js";
 import toggles from "./toggles.js";
 import linkedEffects from "./linked-effects.js";
 import selfChecks from "./self-checks.js";
+import attacks from "./attacks.js";
 import affects3 from "./affects-3.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
@@ -106,14 +108,17 @@ const NONE = () => ({ damage: { mode: "none", multiplier: 0, sourceComponentIds:
 // An affect entry → a plan with no roll: its conditions on each target. entry.affect: { effects: [{ slug, value, duration }], target,
 // range }.
 // (An effect with its own kind, Rallying Cry's temporary Hit Points: as given, its "@actor.level" the character's; 2026-10-30 Foundry test.)
+// (Every character number, as a damage tag's: Plant Banner's level, Instant Recovery's Constitution; worked out where it can be.)
+const characterFormula = (formula, dcs, item) => {
+    const filled = fillCharacterNumbers(`@Damage[${formula}]`, dcs, item);
+    const inner = /^@Damage\[(.*)\]$/s.exec(filled)?.[1] ?? String(formula);
+    return inner.replace(/@actor\.level\b/g, String(dcs?.level ?? "@actor.level"));
+};
+const withCharacterNumbers = (effects, dcs, item) => effects.map((effect) => (effect.formula ? { ...effect, formula: characterFormula(effect.formula, dcs, item) } : { ...effect }));
+
 export function handAffect(item, entry, dcs = null) {
     const affect = entry.affect ?? {};
-    // (Every character number, as a damage tag's: Plant Banner's level, Instant Recovery's Constitution; worked out where it can be.)
-    const level = (formula) => {
-        const filled = fillCharacterNumbers(`@Damage[${formula}]`, dcs, item);
-        const inner = /^@Damage\[(.*)\]$/s.exec(filled)?.[1] ?? String(formula);
-        return inner.replace(/@actor\.level\b/g, String(dcs?.level ?? "@actor.level"));
-    };
+    const level = (formula) => characterFormula(formula, dcs, item);
     const effects = (affect.effects ?? []).map((effect) => (effect.kind ? { ...effect, ...(effect.formula ? { formula: level(effect.formula) } : {}) }
         : { kind: "condition", slug: effect.slug, value: effect.value ?? null, duration: effect.duration ?? null }));
     return {
@@ -136,13 +141,52 @@ const LEVEL_DCS = [14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 3
 // A selfCheck entry → a check card against a DC of the character's level (2026-10-30, docs/feats.md, "Checks against your level's DC"):
 // the character rolls entry.selfCheck.statistic against that DC plus its adjustment ("an easy DC", −2), and each degree's results go on
 // its target ("you" or the player's targets): conditions, and PF2e's Effects linked in the text (nativeEffects). Null without a level.
+// An attack roll against a defense (src/plans/attacks.js) → a check card at the character's attack modifier, or null when it has none.
+export function handAttack(item, entry, dcs = null) {
+    const attack = entry.attack;
+    const modifier = attackModifier(attack, dcs);
+    if (!Number.isFinite(modifier)) return null;
+    const row = (degree) => {
+        const outcome = attack.outcomes?.[degree] ?? {};
+        const formula = outcome.damage ? characterFormula(outcome.damage, dcs, item) : null;
+        return {
+            ...NONE(),
+            ...(formula ? { damage: { mode: "formulas", formulas: [{ formula }], rollScope: "target" } } : {}),
+            effects: withCharacterNumbers(outcome.effects ?? [], dcs, item),
+            ...(outcome.nativeEffects ? { nativeEffects: outcome.nativeEffects.map((effect) => ({ ...effect })) } : {})
+        };
+    };
+    return {
+        modelVersion: 13,
+        source: sourceFor(item),
+        rank: 1,
+        traits: [...new Set([...(item.system?.traits?.value ?? []), "attack"])],
+        activation: { time: actionsOf(item), traits: [] },
+        targeting: { target: attack.target ?? "1 creature", range: attack.range ?? null, area: null },
+        trigger: { event: "use", immunity: null },
+        resolution: { kind: "check", check: { roll: "skill", statistic: attack.roll === "spell" ? "spell-attack" : "attack", against: { dc: "target", statistic: attack.against ?? "ac" }, modifier }, sharedDamage: null,
+            outcomes: { criticalSuccess: row("criticalSuccess"), success: row("success"), failure: row("failure"), criticalFailure: row("criticalFailure") } },
+        automation: { level: "automatic" },
+        notes: [...(entry.notes ?? []), "The roll uses your attack modifier as your sheet shows it: take off your multiple attack penalty by hand if this isn't your first attack this turn."]
+    };
+}
+
+// The character's modifier for the attack: its best spell attack, or its best Strike of that group and reach.
+export function attackModifier(attack, dcs) {
+    if (attack?.roll === "spell") return Number.isFinite(dcs?.attacks?.spell) ? dcs.attacks.spell : Number.isFinite(dcs?.spell) ? dcs.spell - 10 : null;
+    const fits = (dcs?.attacks?.strikes ?? []).filter((strike) => Number.isFinite(strike.mod) && (!attack?.group || strike.group === attack.group) && (attack?.ranged === undefined || Boolean(strike.ranged) === attack.ranged));
+    return fits.length ? Math.max(...fits.map((strike) => strike.mod)) : null;
+}
+
 export function handSelfCheck(item, entry, dcs = null) {
     const check = entry.selfCheck;
     const level = Number(dcs?.level ?? item.actor?.level);
     // (check.level "target": "the hard DC for the target's level" — each target's own, the ability module's card works it out.)
-    const byTarget = check.level === "target";
+    // (check.defense "perception": against each target's Perception DC, a check the text reader doesn't take (a Lore, Perception against
+    // Deception; round 52 Foundry test).)
+    const byTarget = check.level === "target" || Boolean(check.defense);
     if (!byTarget && (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length)) return null;
-    const row = (degree) => ({ ...NONE(), effects: [...(check.outcomes?.[degree]?.effects ?? [])], ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
+    const row = (degree) => ({ ...NONE(), effects: withCharacterNumbers(check.outcomes?.[degree]?.effects ?? [], dcs, item), ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
     return {
         modelVersion: 13,
         source: sourceFor(item),
@@ -151,7 +195,7 @@ export function handSelfCheck(item, entry, dcs = null) {
         activation: { time: actionsOf(item), traits: [] },
         targeting: { target: check.target ?? "you", range: check.range ?? null, area: null },
         trigger: { event: "use", immunity: null },
-        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: byTarget ? { dc: "level", adjustment: check.adjustment ?? 0 } : { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
+        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: check.defense ? { dc: "target", statistic: check.defense } : byTarget ? { dc: "level", adjustment: check.adjustment ?? 0 } : { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
             outcomes: { criticalSuccess: row("criticalSuccess"), success: row("success"), failure: row("failure"), criticalFailure: row("criticalFailure") } },
         automation: { level: "automatic" },
         notes: [...(entry.notes ?? [])]

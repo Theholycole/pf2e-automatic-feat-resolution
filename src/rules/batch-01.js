@@ -2,32 +2,7 @@
 // against its text), and the plainest bonuses and resistances, written by hand in the shape PF2e's own items give the same words.
 
 export default [
-    // Senses and Speeds (tools/rules-batch.mjs).
-    {"uuid":"Compendium.pf2e.feats-srd.Item.cixf1uAQF2Y3w1Qx","name":"Nightvision Adaptation","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.YG6OCTbbqZwqRTr3","name":"Arcane Eye","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.qVk9htKv47niPmXS","name":"Deep Vision","rules":[{"key":"Sense","selector":"darkvision"}]},
     {"uuid":"Compendium.pf2e.feats-srd.Item.XYtnVNKt6uPcRrdH","name":"Tree Climber (Goblin)","rules":[{"key":"BaseSpeed","selector":"climb","value":10}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.NN1U8ifiURc0h4Fx","name":"Pierce the Darkness","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.sL2GmYve5NXJ0wc1","name":"Gloomseer","rules":[{"key":"Sense","selector":"low-light-vision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.XM4zR0q9rBxjR3lG","name":"Darkseer","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.RDRNtaFEq9p6KzEO","name":"Jotun's Eyes","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.sza9YDyDBSHbzCjc","name":"Nalinivati's Light","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.roC6o0xJ8hDzHIWY","name":"Serpent's Tongue","rules":[{"key":"Sense","acuity":"imprecise","range":30,"selector":"scent"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.mAhmb9CkYe0J2bCD","name":"Elucidating Vision","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.6ENHSzqg88J6dri6","name":"Elemental Eyes","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.BNIAfaJPNCWKs3FN","name":"Nocturnal Tripkee","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.akrj9t0lTrndmf0q","name":"Canopy Sight","rules":[{"key":"Sense","selector":"low-light-vision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.WzJaArukCUf9hpeP","name":"Hag's Sight","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.5EpkOj9CFOjt8vsK","name":"Eyes of Night","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.SCgqIo8VQZZKZ1Ws","name":"Orc Sight","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.hxCqQPjlyVI57vQt","name":"Gravesight","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.yQZ6naE8AP6JYTSH","name":"Ember's Eyes","rules":[{"key":"Sense","selector":"low-light-vision"},{"key":"Sense","predicate":["self:low-light-vision:from-ancestry"],"selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.akCO62yBCJLjjCZJ","name":"Nephilim Eyes","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.Kz4MLcrfXFrdKhyS","name":"Aquatic Eyes","rules":[{"key":"Sense","selector":"low-light-vision"},{"key":"Sense","predicate":["self:low-light-vision:from-ancestry"],"selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.e0Gz3tjd55A5ggYK","name":"Alabaster Eyes","rules":[{"key":"Sense","selector":"darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.1AgirzUGkyDdmENy","name":"Shadowdancer Dedication","rules":[{"key":"Sense","selector":"greater-darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.tFUo2tsdreWBxMfs","name":"Stalking Feline Mask","rules":[{"key":"Sense","selector":"greater-darkvision"}]},
-    {"uuid":"Compendium.pf2e.feats-srd.Item.bbpFExz1RXCkOhnb","name":"Sense Ki","rules":[{"key":"Sense","acuity":"imprecise","range":30,"selector":"lifesense"}]},
     {"uuid":"Compendium.pf2e-team-plus-magic.items.Item.huTig9LF2n5cCDTn","name":"Shadowsight","rules":[{"key":"Sense","selector":"greater-darkvision"}]},
     // PF2e's Community-Minded is the shape: "+1 circumstance bonus to your Perception DC against Lies and Impersonations".
     {"uuid":"Compendium.pf2e.feats-srd.Item.Vxs9btOk61C7KpP2","name":"Cynical","rules":[{"key":"FlatModifier","predicate":[{"or":["action:lie","action:impersonate"]}],"selector":"perception","type":"circumstance","value":1}]},

@@ -23,6 +23,15 @@ export const ENVIRONMENT_FEATS = [
     { uuid: heritage("rKV11HWREwjjMIum"), name: "Skyborn Tengu", fall: { noDamage: true } },
     // (With a hand free: the environment module can't see hands, so always; its note says so.)
     { uuid: heritage("xaTTN5anLEBzWCzv"), name: "Windweb Tripkee", fall: { noDamage: true } },
+    // (Batch 9: no falling damage at all; Land on Your Feet halves it and keeps it on its feet.)
+    { uuid: heritage("dQqurQys37aJYb26"), name: "Leaf Leshy", fall: { noDamage: true } },
+    { uuid: heritage("7kHg780SAsu2FNfP"), name: "Stuffed Poppet", fall: { noDamage: true } },
+    // (Round 49: "you can open the flaps to slow any fall just enough to avoid taking damage", as long as it can act.)
+    { uuid: heritage("sEnMG5zbnXdJvVPz"), name: "Cloudleaper Lizardfolk", fall: { noDamage: true } },
+    { uuid: "Compendium.pf2e.ancestryfeatures.Item.RjWv5oPKZtNQgEiK", name: "Wings (Dragonet)", fall: { noDamage: true } },
+    { uuid: "Compendium.pf2e.ancestryfeatures.Item.sL1hHxrHdMNIZVAd", name: "Land on Your Feet", fall: { halved: true, landsOnFeet: true } },
+    // (Its own and its allies' within 60 feet: severe heat and cold as none, extreme too when legendary in Survival.)
+    { uuid: pf2e("BlfgmJHjDyTVGdPs"), name: "Wandering Oasis", aura: 60, temperature: (actor) => Object.fromEntries((Number(actor?.skills?.survival?.rank ?? actor?.system?.skills?.survival?.rank) >= 4 ? ["severe", "extreme"] : ["severe"]).flatMap((step) => [[`${step}-cold`, "normal"], [`${step}-heat`, "normal"]])) },
     // (10 feet shorter trained, 25 expert, 50 master; legendary lands on its feet with no damage.)
     { uuid: pf2e("LQw0yIMDUJJkq1nD"), name: "Cat Fall", fall: { byAcrobatics: [null, { shorter: 10 }, { shorter: 25 }, { shorter: 50 }, { noDamage: true, landsOnFeet: true }] } }
 ];
@@ -32,8 +41,27 @@ const sourceOf = (item) => item?.sourceId ?? item?._stats?.compendiumSource ?? i
 const FEATS = new Set(["feat", "heritage"]);
 const entriesOf = (actor) => [...(actor?.items ?? [])].filter((item) => FEATS.has(item.type)).map((item) => [item, BY_UUID.get(sourceOf(item))]).filter(([, entry]) => entry);
 
-export function temperatureProtections(actor) {
-    return entriesOf(actor).filter(([, entry]) => entry.temperature).map(([item, entry]) => ({ counts: entry.temperature, source: item.name }));
+const countsOf = (entry, actor) => (typeof entry.temperature === "function" ? entry.temperature(actor) : entry.temperature);
+
+// (Its own, and an aura's from an ally near enough: nearby(actor) gives [{ actor, distance }] of the creatures on its side, the world's
+// tokens by default. The environment module asks (actor, { temperature }): nearby as options.nearby, or a function; round 33.)
+export function temperatureProtections(actor, options = {}) {
+    const nearby = typeof options === "function" ? options : typeof options?.nearby === "function" ? options.nearby : alliesNear;
+    const own = entriesOf(actor).filter(([, entry]) => entry.temperature).map(([item, entry]) => ({ counts: countsOf(entry, actor), source: item.name }));
+    const auras = [];
+    for (const { actor: ally, distance } of nearby(actor) ?? []) {
+        if (!ally || ally === actor) continue;
+        for (const [item, entry] of entriesOf(ally)) if (entry.aura && entry.temperature && distance <= entry.aura) auras.push({ counts: countsOf(entry, ally), source: `${item.name} (${ally.name})` });
+    }
+    return [...own, ...auras];
+}
+
+function alliesNear(actor) {
+    const canvas = globalThis.canvas;
+    if (!canvas?.ready) return [];
+    const token = actor?.getActiveTokens?.(true, false)?.[0];
+    if (!token) return [];
+    return canvas.tokens.placeables.filter((other) => other !== token && other.actor && other.actor.alliance === actor.alliance && actor.alliance).map((other) => ({ actor: other.actor, distance: token.distanceTo?.(other) ?? Infinity }));
 }
 
 export function weatherIgnores(actor) {

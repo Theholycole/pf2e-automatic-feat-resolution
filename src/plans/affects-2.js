@@ -28,5 +28,6 @@ export default [
     { uuid: pf2e("svBQNCS2ZCPlKm6f"), name: "Blood Calls Blood", affect: { target: "you", effects: [{ kind: "condition", slug: "drained", value: 1, duration: null, stack: { by: 1 } }] }, notes: ["You finish Casting the Spell."] },
     // (Unconscious again after dying ends: PF2e grants it from dying, so it went with it; 2026-10-30 Foundry test.)
     { uuid: action("T8ZnkumXGAbqsOqt"), name: "My Legend Must Be Told", affect: { target: "you", effects: [{ kind: "end-condition", slug: "dying", stabilize: true }, { kind: "condition", slug: "unconscious", value: null, duration: null }, { kind: "condition", slug: "doomed", value: 1, duration: null, stack: { by: 1 } }] }, notes: ["You stabilize instead of dying, still unconscious at 0 Hit Points."] },
-    { uuid: action("ZEsBPUmxNJ0nod2Z"), name: "Sorshen's Devotion", affect: { target: "the triggering creature", effects: [{ kind: "heal", formula: "7d10+28" }] }, notes: ["Spend 1 Mythic Point."] }
+    { uuid: action("ZEsBPUmxNJ0nod2Z"), name: "Sorshen's Devotion", affect: { target: "the triggering creature", effects: [{ kind: "heal", formula: "7d10+28" }] }, notes: ["Spend 1 Mythic Point."] },
+    { uuid: pf2e("c1R8qAUsJmhVsq4B"), name: "Scoundrel's Surprise", affect: { target: "the creatures your disguise fooled", effects: [{ slug: "off-guard", duration: untilYourTurnEnds }] }, notes: ["Only those that failed to see through your Impersonate, and only against your next attack this turn."] }
 ];

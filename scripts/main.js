@@ -5,6 +5,13 @@ import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { registerConditionFeats } from "./conditions.js";
+import { registerTerrainOptions } from "./terrain.js";
+import { registerCompanionGrowth } from "./companion-growth.js";
+import { registerGrants } from "./grants.js";
+import { registerPreRoll } from "./pre-roll.js";
+import { registerManeuverMap } from "./maneuver-map.js";
+import { registerRetaliation } from "./retaliation.js";
+import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
@@ -12,7 +19,7 @@ import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
-import { onConditionGained, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
+import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -87,7 +94,8 @@ async function cardForFeat(message) {
     // (On the player's targets, who "target": as a passive's PF2e Effect is.)
     const targetActors = () => (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
     const untargeted = () => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });
-    if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : untargeted();
+    // (A timer's, with no targets: nothing, its words already in chat; round 43.)
+    if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : plan.timer ? null : untargeted();
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     // (A Focus or Mythic Point back: added to the pool, up to its maximum; 2026-10-30, the loop.)
@@ -199,6 +207,14 @@ Hooks.once("init", () => {
     registerSenseZones();
     // (Friend of Fear, Calm and Centered: a condition's value as it changes, src/plans/condition-feats.js.)
     registerConditionFeats();
+    // (Difficult terrain's roll option, for the feats that make foes in it off-guard: scripts/terrain.js.)
+    registerTerrainOptions();
+    // (The /nonlethal command: scripts/nonlethal.js.)
+    registerNonlethal();
+    // (A master's feat that advances its companion: scripts/companion-growth.js.)
+    registerCompanionGrowth();
+    // (A feat's given spell or action: scripts/grants.js.)
+    registerGrants();
 });
 
 // (In init, after PF2e's own: by setup the world's tokens had prepared without them; 2026-10-30 Foundry test. PF2e's hearing and tremorsense,
@@ -214,12 +230,24 @@ Hooks.on("canvasReady", () => {
 });
 
 Hooks.once("ready", () => {
+    // (A fall, the environment module's hooks: scripts/reminders.js; round 47.)
+    Hooks.on("pf2e-automatic-environment-resolution.falling", (data) => { if (isActiveGM()) onFalling(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
+    Hooks.on("pf2e-automatic-environment-resolution.fell", (data) => { if (isActiveGM()) onFell(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
+    // (Before your own roll, a feat used then: scripts/pre-roll.js; round 45.)
+    registerPreRoll();
+    // (A maneuver's lower multiple attack penalty, Agile Maneuvers: scripts/maneuver-map.js; round 54.)
+    registerManeuverMap();
+    // (Damage back on a creature that hits or grabs you, Inviolable: scripts/retaliation.js; round 57.)
+    registerRetaliation();
     Hooks.on("preCreateChatMessage", recordTargets);
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {
         if (isActiveGM()) onTurnChange(combat, prior, current);
     });
     // (Slice 10: a condition gained, or 0 Hit Points.)
+    Hooks.on("deleteItem", (item) => {
+        if (isActiveGM() && item.type === "condition" && item.actor) onConditionLost(item.actor, item.slug).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
+    });
     Hooks.on("createItem", (item) => {
         if (isActiveGM() && item.type === "condition" && item.actor) onConditionGained(item.actor, item.slug).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error));
     });
@@ -258,5 +286,5 @@ Hooks.once("ready", () => {
     });
     const module = game.modules.get(MODULE_ID);
     // (What its feats ease of the weather, the temperature and falls, for the environment module: src/plans/environment.js.)
-    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs, temperatureProtections, weatherIgnores, fallEases });
+    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs, temperatureProtections, weatherIgnores, fallEases, toggleNonlethal });
 });

@@ -9,6 +9,11 @@ import batch05 from "./batch-05.js";
 import batch06 from "./batch-06.js";
 import batch07 from "./batch-07.js";
 import batch08 from "./batch-08.js";
+import batch09 from "./batch-09.js";
+import batch10 from "./batch-10.js";
+import batch12 from "./batch-12.js";
+import batch13 from "./batch-13.js";
+import batch14 from "./batch-14.js";
 import { selectorOf } from "./read.js";
 
 // PF2e's pack folders (the repository's) → its compendium names.
@@ -19,7 +24,7 @@ export function compendiumUuid(module, pack, id) {
     return `Compendium.${module}.${name}.Item.${id}`;
 }
 
-export const BATCHES = [batch01, batch02, batch03, batch04, batch05, batch06, batch07, batch08];
+export const BATCHES = [batch01, batch02, batch03, batch04, batch05, batch06, batch07, batch08, batch09, batch10, batch12, batch13, batch14];
 const BY_UUID = new Map(BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 // The item's source in a compendium: PF2e's sourceId, Foundry's _stats.compendiumSource, or the older core flag.
@@ -31,5 +36,7 @@ export function rulesFor(item) {
     if (!entry) return [];
     const own = item?.system?.rules ?? [];
     const same = (a, b) => a.key === b.key && selectorOf(a) === selectorOf(b) && JSON.stringify(a.predicate ?? []) === JSON.stringify(b.predicate ?? []);
-    return entry.rules.filter((rule) => !own.some((each) => same(each, rule)));
+    // (A list, or a function of the item for one that depends on its character: Stargazer's Eyes.)
+    const rules = typeof entry.rules === "function" ? entry.rules(item) : entry.rules;
+    return rules.filter((rule) => !own.some((each) => same(each, rule)));
 }

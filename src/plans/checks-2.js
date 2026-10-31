@@ -6,6 +6,8 @@ const condition = (id, label) => `@UUID[Compendium.pf2e.conditionitems.Item.${id
 const prone = condition("j91X7x0XSomq8d60", "Prone");
 const grabbed = condition("kWc1fhmv9LBiTuei", "Grabbed");
 const slowed = condition("xYTAsEpcJE1Ccni3", "Slowed 1");
+const offGuard = condition("AJh5ex99aV6VTggg", "Off-Guard");
+const stunned = condition("dfCMdR4wnpbYNTix", "Stunned 1");
 const frightened = (value) => condition("TBSHQspnbcqxsmjL", `Frightened ${value}`);
 const check = (skill, defense, against) => `<p>Attempt a @Check[${skill}|defense:${defense}] check against ${against}.</p><hr />`;
 const results = ({ criticalSuccess = null, success = null, failure = null, criticalFailure = null }) =>
@@ -32,5 +34,21 @@ export default [
         uuid: pf2e("isdTXU8bV7ZVOAuQ"), name: "Flourishing Finish", target: "each enemy within 30 feet",
         text: check("performance", "will", "the Will DC of each foe within 30 feet who can see you") + results({ criticalSuccess: `The target is ${frightened(2)}.`, success: `The target is ${frightened(1)}.` }),
         notes: ["Only foes that can see you. Whatever the result, each is immune for 10 minutes."]
+    },
+    // (Round 51, triggered reactions.)
+    {
+        uuid: pf2e("MjPqgBQU9W4kelfz"), name: "Interrupt Charge", target: "the triggering foe",
+        text: check("athletics", "fortitude", "the triggering creature's Fortitude DC") + results({ criticalSuccess: "You disrupt the movement: it stops.", success: "It takes a –10-foot circumstance penalty to its Speed for the rest of its triggering movement.", failure: "It takes a –5-foot circumstance penalty to its Speed for the rest of its triggering movement." }),
+        notes: ["Use its Athletics DC instead if that's higher (the card uses Fortitude). The Speed penalty may end its movement at once: move its token back by hand."]
+    },
+    {
+        uuid: pf2e("pQQhrcj1u6hUUc8L"), name: "Keep up Appearances", target: "each observing creature",
+        text: check("deception", "perception", "the Perception DC of each creature observing you") + results({ criticalSuccess: "The creature believes you were unaffected by the emotion effect.", success: "The creature believes you were unaffected by the emotion effect." }),
+        notes: ["A creature you fool can't benefit from the emotion effect or use abilities that need you under it (a will-o'-wisp's Feed on Fear)."]
+    },
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.QGeA2sPtDdryTpWw", name: "Overawe Crowd", target: "the swarm or troop",
+        text: check("intimidation", "will", "the Will DC of the swarm or troop") + results({ criticalSuccess: `The target Strides twice in a direction you choose; you can move with it. It is ${stunned}.`, success: `The target Strides twice in a direction you choose; you can move with it. It is ${stunned}.`, failure: `The target Strides once in a direction you choose and you move with it. It is ${stunned}.`, criticalFailure: `The target is ${stunned}.` }),
+        notes: ["Spend 1 Mythic Point; roll at mythic proficiency, by hand. Move the tokens by hand. The target is then immune for 24 hours."]
     }
 ];

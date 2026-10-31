@@ -531,3 +531,140 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   Centered (a frightened or stupefied lowered goes 1 further), played by the active GM as PF2e changes the condition, with a GM line. The
   value before rides in the update's options, so a player's change counts too. And Fearsense's scent (rule batch 8).
 - Round 32: Calm and Centered and Fearsense pass. Friend of Fear went 2 too low: the ability module's Bravery reading (scripts/bravery.js) already lowers a gained frightened for it, so it's dropped here (its whisper says "Bravery"). PF2e's end-of-turn frightened decrease didn't fire in the test world, so Calm and Centered there is untested.
+
+### Batch 9 (2026-10-31)
+
+- Proficiency raises as PF2e's "upgrade" (never lowering what a class already gives): Knight in Shining Armor, Unbreakable Expertise and
+  Mastery, Master Tricks, Second Doctrine (Warpriest), Fourth Doctrine (Armorclad, Seeker). Earthsense's tremorsense; Stargazer's Eyes'
+  low-light vision, or darkvision over an ancestry's low-light vision or when taken twice (a rule list that's a function of the item).
+- Off-guard in difficult terrain: scripts/terrain.js gives a creature whose token stands in a Modify Movement Cost region harder for its
+  current movement the roll option self:terrain:difficult (:greater at 3×), worked out when asked; a Strike reads it as
+  target:terrain:difficult. Nature's Edge and Terrain Advantage (not lizardfolk) put Off-Guard on that target by EphemeralEffect.
+- Through the environment module: Leaf Leshy, Stuffed Poppet, Wings (Dragonet) fall without damage, Land on Your Feet halves it and lands
+  standing; Wandering Oasis protects its own and allies within 60 feet from severe heat and cold (extreme too when legendary in Survival).
+- On companions: Wing Rider's fly 25, Gigantic Megafauna Companion's Huge, Climbing Limbs+'s climb Speed as the land Speed.
+- Round 33: proficiency raises, senses, off-guard in difficult terrain and falls pass. Fixed after it: a token on "travel" reads its
+  walking cost; temperatureProtections takes the environment module's (actor, { temperature }); an animal companion counts as one while
+  it prepares (its Animal Companion class or the module's master flag, before its class's minion trait is on it).
+
+### Batch 10 (2026-10-31)
+
+- Penalties a feat ignores, as AdjustModifier suppressing PF2e's modifier by its slug: Improvisational Defender (the improvised weapon's
+  -2, slug improvised), Ankle Biter (prone's attack penalty). Night Terror: the apocalypse mount's fly Speed as its land Speed
+  (system.movement.speeds.land.value in PF2e 8.6; Climbing Limbs+ the same).
+- Round 34: Improvisational Defender and Ankle Biter pass. PF2e 8.6.1 has no penalty (and no toggle) for a nonlethal Strike with a lethal
+  weapon. Cole (2026-10-31): there's none native to PF2e, so the module gives one: the Nonlethal Attacks Effect (/nonlethal, or
+  api.toggleNonlethal), src/plans/nonlethal.js. Lethal weapons gain the nonlethal trait and a -2 circumstance (slug nonlethal) on Strikes;
+  Stage Fighting, Nonlethal Takedown and Protector of the Wilds suppress it. Round 36: all pass. PF2e doesn't knock out on nonlethal
+  damage either; the module now does (applyDamage wrapped: nonlethal damage to 0 HP leaves it unconscious, not dying or dead).
+
+### Batch 11 (2026-10-31)
+
+- On the eidolon or companion: Airborne Form's fly Speed as its land Speed, Resilient Shell's physical resistance 5 (6 at 17th level),
+  Amphibious Form's amphibious trait, Demon-Hunting Companion's scent (imprecise, 30 feet).
+
+### Round 37: more reaction triggers (2026-10-31)
+
+- `eventTrigger` reads more wordings: "would succeed at a save" by a creature (Black Cat Curse), "critically misses … against your AC"
+  (Clang!), "hits, but does not critically hit you" (Deceptive Sidestep), "damaged you" (Rushing Boar), "would reduce you to 0 Hit Points"
+  (Defensive Roll, Divert Destiny), "You witness an ally being reduced to 0 Hit Points" (Awakening Shock), "otherwise become Prone"
+  (Rolling White Bottle Form), a linked or designated ally taking damage (Share Life, Wounded Party), "would damage you or your ally"
+  (Transcendent Deflection), and an ally casting a spell (new event ally-casts: Accompany, Spell Relay). `preRollTrigger`: "You attempt a
+  basic Reflex save", "You attempt a saving throw against …" (Feline Dance, Absorb Toxin, Consume Magic). Count: 2,445 of 4,826 left.
+- Round 37: all nine remind. Fixed after it: "hits, but does not critically hit you" isn't reminded on a critical hit (notCritical);
+  a pre-save feat naming a save (and "basic") is reminded only when the card asks for that save (savesAsked, the inline links);
+  "would succeed" counts a critical success.
+
+### Round 38 (2026-10-31)
+
+- More triggers: "You turn begins" (Flash of Omniscience's typo), "You and your mystic duo roll initiative" (Esoteric Coordination),
+  "You lose the Dying condition" (Bounce Back: event self-condition-lost, on a condition's deletion), "Whenever an enemy starts its turn
+  adjacent to you" (Bonekeeper's Bane: event foe-turn-start, on each change of turn, to characters of another disposition in range).
+
+### Batch 12 (2026-10-31, the loop by largest group: passives in other words)
+
+- Crimson Oath Devotion (spellcasting expert), Master Detective (investigator class DC master); senses: Terra Dragonblood, Vigilant Mask,
+  Visual Fidelity, Defy the Darkness (greater darkvision), Lifesense, Vestigial Magicsense (vague), Soulsight (spiritsense); Butterfly's
+  Kiss suppresses the module's nonlethal penalty with a butterfly sword. The count now includes the companion, environment and
+  condition entries: 2,410 of 4,826 left before this batch.
+- Round 40b: Uncanny Awareness (motion sense) and Alacritous Action (eidolon Speed +10) pass. Master Detective's master class DC is
+  PF2e's own: the item's system.subfeatures.proficiencies. A scan found 50 of the module's rule entries (darkvision feats, Fearsense,
+  Earthsense, the proficiency raises of batch 9, most of batch 12, Stargazer's Eyes) that PF2e already gives by subfeatures.senses or
+  .proficiencies; they're dropped, and the count takes subfeatures as PF2e's own. Count: 2,395 of 4,826 left.
+
+## Round 41: companion growth (2026-10-31)
+
+A master's feat that advances its companion (Mature Animal Companion, Incredible Companion, Specialized Companion, the construct and
+reanimated stages; 31 feats, src/plans/companion-growth.js) puts the animal companions module's item on the companion as the feat is
+gained, on the active GM's client, the GM choosing where the feat gives a choice (Nimble or Savage; a second specialization). Deleting
+the feat deletes the item it added. Open question for Cole: whether to do this at all (the card on companion advancement).
+
+## Round 42: eidolon size and combat; given items (2026-10-31)
+
+- Eidolon (on the eidolon from the summoner's feats, src/rules/companion.js): Hulking Size (Large) and Towering Size (Huge, over
+  Hulking), Eidolon Weapon Specialization and Greater Eidolon Specialization (as PF2e's Weapon Specialization, unarmed only), Expert
+  Combat Eidolon (expert unarmed; unarmored defense and weapon specialization when the summoner has them), Bloodletting Claws (the
+  critical bleed as a note).
+- Given items (src/plans/grants.js, scripts/grants.js): "You gain the X warden spell / hex / action", "Your familiar gains the X
+  activity". PF2e gives 682 such feats by GrantItem; for the rest, the module adds the item as the feat is gained (a spell into the
+  actor's focus spellcasting) and removes it as the feat goes. 64 feats.
+
+## Round 43: timed activities (2026-10-31)
+
+Cole's card: an action whose effect lasts a set time ("until the start of your next turn", "for 1 minute") and that nothing else plays
+gets an Effect with no rules, the feat's sentence and its duration, on whoever it affects: the user, or the player's targets when the
+sentence's subject is the target, an enemy or allies (src/compiler/timer-effect.js). With no targets, nothing (the words are in chat).
+Not an immunity, a once-a-day, or the time an activity takes ("rest for 10 minutes"). Hulking and Towering Size now set reach 10 and 15
+(round 42).
+
+## Round 44: situational bonus notes (2026-10-31)
+
+Cole's card: a passive's bonus only in a moment PF2e can't see ("+2 circumstance bonus to Survival checks made to prepare for this
+weather event") is a note on that roll, the sentence as its text, for the GM to add when it fits (src/rules/read.js readBonusNotes,
+src/rules/batch-13.js, 22 feats). Only the character's own bonus, only on a roll (not AC or a DC).
+
+## Round 45: before your own roll (2026-10-31)
+
+A reaction or free action used before the character's own roll ("You attempt a melee Strike against your opponent, but haven't rolled
+yet", "You are about to attempt a check", "You attempt a flat check for Steady Spellcasting"): as PF2e starts that check (Check.roll),
+in an encounter, the roller is asked first (Roll; Roll, don't ask this encounter; Stop, I'll use it first). Not one that hangs on a
+fortune or misfortune effect. 9 feats (scripts/pre-roll.js).
+
+## Round 46: before another's roll (2026-10-31)
+
+"An enemy is about to use an action that requires a skill check or attack roll" (Hinder), "A creature within 60 feet is about to attempt
+an attack roll or skill check" (Harbinger's Caw), "An ally is about to roll a saving throw" (Divine Rebuttal): as that roll starts, in
+an encounter, its roller is asked first, the feat's character named, with the same three buttons. By side (the tokens' dispositions),
+range, and "against you" (the Strike's target). Not Aid (it needs preparing first), not "would succeed" (after the roll). 11 feats.
+
+## Round 47: falls (2026-10-31)
+
+The environment module's fall hooks: as a creature starts to fall ("falling", before the GM applies it), its own reactions ("You fall
+from a height of 15 feet or higher": Cushion Landing, Arrest a Fall, Grab an Edge, Contingency Leap) and others' in range ("A creature
+within 60 feet is falling": Air Cushion) are whispered; once it's done ("fell"), "You fall at least 10 feet and land" (Impressive
+Landing). Round 45's fix: the before-the-roll prompts use the reminders' own setting and the encounter the creature is in.
+
+## Round 49: heritages and backgrounds (2026-10-31)
+
+Reaction reminders read heritages and backgrounds as passives ("Whenever you gain the hidden condition … you can Step": Kardan Bugbear;
+River Azarketi, Heavenscribe Kobold, Courageous Tanuki), and hidden, concealed, undetected, invisible, quickened and encumbered count as
+conditions. Cloudleaper Lizardfolk's falls do no damage; Reflection's trait.
+
+## Round 50 (2026-10-31): more level-DC checks, conditional grants
+
+- Seven more checks against your level's DC (src/plans/self-checks.js): On My Best Day, Scout Battlefield, Peace with Death (its Teams+ Effect), Circadian Disciplinarian (heals you and ends fatigued), Vocal Mediation (heals you and your allies within 30 feet), Astrological Divination, Planar Pedagogy.
+- Given items no longer give a feat that hangs on something: a sentence that starts with If/When/Once/After, or says "for the next", "later", "instead", "until" or a duration (Fisheye's Breath Control "for the next hour"). Tested in Foundry: Summiting Dragonblood and Automaton Lore still give theirs. Defaulted to the recommended option; Cole can object.
+
+## Round 51 (2026-10-31): check cards for reactions and actions against a creature
+
+- Check cards (src/plans/checks-2.js): Interrupt Charge, Keep up Appearances, Improvise Strategy, Overawe Crowd, Predictable!. Healer's Halo heals 1d6 (src/plans/heals.js).
+- Round 52: save cards for Gluttonous Feast and Arrange the Board (src/plans/saves-5.js); heals for Life's Blood and Natural Remedy.
+- Round 52 companions (src/rules/companion.js): Fell Rider (companion trained in Intimidation), Undead Companion (undead instead of animal, void healing), Sheathed in Light (Clerics+: the sacred animal sheds bright light 20 feet, dim 40).
+- Round 53: Flailtongue (toggled Strike, src/plans/toggles.js); batch 14 rules (src/rules/batch-14.js): Agile Maneuvers' lower multiple attack penalty on maneuvers, Paragon Battle Medicine's note. Cole agreed the remaining scope 2026-10-31: triggered combat feats, core companion feats, feats that change a card we play.
+- Round 52 Foundry fixes: Improvise Strategy and Predictable! are level-DC style checks against the target's Perception/Deception DC (selfCheck.defense), since the text reader takes no Lore or Perception-vs-Deception checks; Gluttonous Feast and Arrange the Board texts reworded so they read; Vocal Mediation heals you only on the card (one roll), allies by hand.
+- Round 54: Agile Maneuvers moved from a MultipleAttackPenalty rule (PF2e 8.6 never reads one for basic maneuvers) to scripts/maneuver-map.js, which passes −4/−8 (−3/−6 with panache and an agile weapon) to Trip, Shove, Grapple, Disarm and Reposition. Companion tokens now prepare again with their master's rules (Sheathed in Light's light shows at once).
+- Round 57: damage back on a creature that hits or grabs you (src/plans/retaliation.js, scripts/retaliation.js): Inviolable, Inner Fire's touch damage, Defensive Needles, Torch Goblin, Pesh Skin. The active GM's client rolls it as PF2e posts the attack or maneuver, the attacker named and targeted on the damage card. Axe Thrower: one-handed axes gain thrown 10 feet (batch 14).
+- Round 58: Kip Up, Taunt and Shielding Taunt (PF2e's Effect: Taunt on the target), Forced Pact (Will save; its outcomes in the notes, round 58 Foundry fix), Scoundrel's Surprise. Retaliation saves: Poisonous Blood posts the attacker's Fortitude save at your class DC (the class's, else the highest other class DC), 2 higher while you bleed.
+- Round 59: feats that link PF2e's own Effect: Roaring Heart, Left-Hand Blood, Lesson of the Broken Wing, Even the Odds (Eagle Knight), Song of Glorious Invocation, Purifying Breeze, Sheltering Pulse, Shield Wall (Cover). Lowered conditions: Inner Strength (enfeebled), Fever Shiver (sickened). Nimble Form: the eidolon's agile MAP −3/−6.
+- Rounds 60–61 (Foundry: all pass after fixes): Interlocked Shields, Pinpoint Out, Arbitrate Fate (Teams+ Effects); linked targets must read "(you and) each ally within N feet" for the area code to find allies (Shield Wall, Interlocked Shields, Pinpoint Out, Sheltering Pulse, Purifying Breeze). PF2e's TokenMark Effects (Lesson of the Broken Wing) ask for a token when nothing is targeted.
+- Rounds 62–64 (Cole's call 2026-10-31, "build the new card types first"): attack-roll cards (src/plans/attacks.js). Spell attacks (Rainbow Beam, Bleed Out) roll PF2e's own spell attack from the best spellcasting entry against the target's defense (ability module scripts/live.js, dc { slug } and the target actor); Strike attacks (Hot Foot against Reflex DC, Reactive Interference, Miraculous Intervention) roll a flat check at the best fitting Strike's sheet modifier, posted as a skill check, the multiple attack penalty by hand.

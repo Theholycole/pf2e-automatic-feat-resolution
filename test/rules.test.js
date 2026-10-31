@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { BATCHES, compendiumUuid, rulesFor } from "../src/rules/index.js";
-import { readRules, sentenceRules, readNotes, readTriggerNotes } from "../src/rules/read.js";
+import { readRules, sentenceRules, readNotes, readTriggerNotes, readBonusNotes as readBonusNotesOf } from "../src/rules/read.js";
 
 // The rule elements the module adds (docs/rules.md): only ones PF2e builds from data alone, that never write back to their own source.
-const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike"]);
+const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike", "EphemeralEffect", "CreatureSize", "ActorTraits", "ItemAlteration", "TokenLight", "MultipleAttackPenalty"]);
 
 test("every batch entry: a compendium item, rules PF2e builds from data alone", () => {
     const seen = new Set();
@@ -13,8 +13,9 @@ test("every batch entry: a compendium item, rules PF2e builds from data alone", 
         assert.match(entry.uuid, /^Compendium\.[\w-]+\.[\w-]+\.Item\.[A-Za-z0-9]{16}$/, entry.name);
         assert.ok(!seen.has(entry.uuid), `${entry.name} twice`);
         seen.add(entry.uuid);
-        assert.ok(entry.rules.length, entry.name);
-        for (const rule of entry.rules) {
+        const rules = typeof entry.rules === "function" ? entry.rules({ actor: { items: [] } }) : entry.rules;
+        assert.ok(rules.length, entry.name);
+        for (const rule of rules) {
             assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
             assert.ok(!(rule.key === "RollOption" && rule.toggleable), `${entry.name}: a toggle writes back to its source`);
         }
@@ -28,10 +29,10 @@ test("PF2e's pack folders as its compendium names", () => {
 });
 
 test("an item's rules by its compendium source, less any it has already", () => {
-    const orcSight = { sourceId: "Compendium.pf2e.feats-srd.Item.SCgqIo8VQZZKZ1Ws", system: { rules: [] } };
-    assert.deepEqual(rulesFor(orcSight), [{ key: "Sense", selector: "darkvision" }]);
+    const orcSight = { sourceId: "Compendium.pf2e-team-plus-magic.items.Item.huTig9LF2n5cCDTn", system: { rules: [] } };
+    assert.deepEqual(rulesFor(orcSight), [{ key: "Sense", selector: "greater-darkvision" }]);
     assert.deepEqual(rulesFor({ _stats: { compendiumSource: orcSight.sourceId }, system: { rules: [] } }).length, 1, "Foundry's own source field");
-    assert.deepEqual(rulesFor({ ...orcSight, system: { rules: [{ key: "Sense", selector: "darkvision" }] } }), [], "PF2e added it since");
+    assert.deepEqual(rulesFor({ ...orcSight, system: { rules: [{ key: "Sense", selector: "greater-darkvision" }] } }), [], "PF2e added it since");
     assert.deepEqual(rulesFor({ sourceId: "Compendium.pf2e.feats-srd.Item.nothingHere00000", system: { rules: [] } }), []);
 });
 
@@ -81,9 +82,51 @@ test("a reaction triggered by the character's own roll: a note on that roll, for
 
 test("a master's feats' rules for its companion: PF2e's safe keys, labelled with the feat", async () => {
     const { COMPANION_RULES, companionRulesFrom } = await import("../src/rules/companion.js");
-    for (const entry of COMPANION_RULES) for (const rule of entry.rules) assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
+    for (const entry of COMPANION_RULES) for (const rule of typeof entry.rules === "function" ? entry.rules({ items: [] }) : entry.rules) assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
     const summoner = { items: [{ name: "Expanded Senses", sourceId: "Compendium.pf2e.feats-srd.Item.rPzEnABFjkbOARiB" }, { name: "Other", sourceId: "Compendium.pf2e.feats-srd.Item.nothingHere00000" }] };
     assert.deepEqual(companionRulesFrom(summoner).map((rule) => rule.selector), ["low-light-vision", "darkvision", "scent"]);
     assert.equal(companionRulesFrom(summoner)[2].range, 30);
     assert.deepEqual(companionRulesFrom(null), []);
+});
+
+
+test("Wandering Oasis: its own and an ally's within 60 feet; Land on Your Feet halves a fall", async () => {
+    const { temperatureProtections, fallEases } = await import("../src/plans/environment.js");
+    const oasis = { type: "feat", name: "Wandering Oasis", sourceId: "Compendium.pf2e.feats-srd.Item.BlfgmJHjDyTVGdPs" };
+    const druid = { name: "Druid", items: [oasis], skills: { survival: { rank: 3 } } };
+    const ally = { name: "Ally", items: [] };
+    assert.deepEqual(temperatureProtections(druid, () => [])[0].counts, { "severe-cold": "normal", "severe-heat": "normal" });
+    assert.equal(temperatureProtections(ally, () => [{ actor: druid, distance: 60 }])[0].source, "Wandering Oasis (Druid)");
+    assert.deepEqual(temperatureProtections(ally, () => [{ actor: druid, distance: 65 }]), []);
+    assert.equal(Object.keys(temperatureProtections(ally, () => [{ actor: { ...druid, skills: { survival: { rank: 4 } } }, distance: 30 }])[0].counts).length, 4);
+    assert.deepEqual(temperatureProtections(druid, { temperature: "severe-cold", nearby: () => [] })[0].source, "Wandering Oasis", "the environment module's options");
+    assert.doesNotThrow(() => temperatureProtections(ally, { temperature: "severe-cold" }), "no canvas: no allies");
+    const feet = { type: "feat", name: "Land on Your Feet", sourceId: "Compendium.pf2e.ancestryfeatures.Item.sL1hHxrHdMNIZVAd" };
+    assert.deepEqual(fallEases({ items: [feet] }), [{ halved: true, landsOnFeet: true, source: "Land on Your Feet" }]);
+});
+
+test("an animal companion while it prepares: its class, before its minion trait", async () => {
+    const { isCompanion } = await import("../src/compiler/companion.js");
+    assert.ok(isCompanion({ type: "character", traits: new Set(["animal"]), items: [{ type: "class", slug: "animal-companion", name: "Animal Companion" }] }));
+    assert.ok(isCompanion({ type: "character", traits: new Set(["animal"]), items: [], flags: { "pf2e-automatic-feat-resolution": { master: "abc" } } }));
+    assert.ok(!isCompanion({ type: "character", traits: new Set(["human"]), items: [{ type: "class", slug: "fighter", name: "Fighter" }] }));
+});
+
+test("eidolon size and combat: Towering Size over Hulking Size; Expert Combat Eidolon by the summoner's", async () => {
+    const { companionRulesFrom } = await import("../src/rules/companion.js");
+    const feat = (name, id, pack = "feats-srd") => ({ name, sourceId: `Compendium.pf2e.${pack}.Item.${id}` });
+    assert.deepEqual(companionRulesFrom({ items: [feat("Hulking Size", "H6qletvAJUCC1aIa")] }).map((rule) => rule.value), ["large"]);
+    assert.deepEqual(companionRulesFrom({ items: [feat("Hulking Size", "H6qletvAJUCC1aIa"), feat("Towering Size", "ixIKF2LMmbFthI8Z")] }).map((rule) => rule.value), ["huge"]);
+    const plain = companionRulesFrom({ items: [feat("Expert Combat Eidolon", "pKttKO84dxzRLBIC")] });
+    assert.equal(plain.length, 1);
+    const expert = companionRulesFrom({ system: { proficiencies: { defenses: { unarmored: { rank: 2 } } } }, items: [feat("Expert Combat Eidolon", "pKttKO84dxzRLBIC"), { name: "Weapon Specialization", slug: "weapon-specialization" }] });
+    assert.deepEqual(expert.map((rule) => rule.path ?? rule.selector), ["system.proficiencies.attacks.unarmed.rank", "system.proficiencies.defenses.unarmored.rank", "unarmed-damage"]);
+});
+
+test("situational bonus notes: on the roll it names, yours only", () => {
+    const feat = (html) => ({ type: "feat", system: { actionType: { value: "passive" }, description: { value: html }, rules: [] } });
+    assert.deepEqual(readBonusNotesOf(feat("<p>You gain a +2 circumstance bonus to Survival checks made to prepare for this weather event.</p>")).map((rule) => rule.selector), ["survival"]);
+    assert.deepEqual(readBonusNotesOf(feat("<p>You gain a +4 circumstance bonus to Impersonate specific voices.</p>")).map((rule) => rule.selector), ["deception"]);
+    assert.deepEqual(readBonusNotesOf(feat("<p>Allies adjacent to you gain a +1 circumstance bonus to AC.</p>")), []);
+    assert.deepEqual(readBonusNotesOf(feat("<p>You gain a +1 circumstance bonus to AC against traps.</p>")), []);
 });

@@ -23,7 +23,7 @@ export function setUpRules() {
             if (this.actor?.type === "character" && Array.isArray(this.system?.rules)) {
                 // (Prepared again and again: the module's from the last time out first.)
                 const own = this.system.rules.filter((rule) => !ours.has(rule));
-                const added = rulesFor({ ...this, sourceId: this.sourceId, _stats: this._stats, flags: this.flags, system: { ...this.system, rules: own } }).map((rule) => {
+                const added = rulesFor({ ...this, actor: this.actor, sourceId: this.sourceId, _stats: this._stats, flags: this.flags, system: { ...this.system, rules: own } }).map((rule) => {
                     const copy = foundry.utils.deepClone(rule);
                     ours.add(copy);
                     return copy;
@@ -51,12 +51,22 @@ export function setUpRules() {
         return original.apply(this, args);
     };
     // (Its master isn't known before the world is ready, and its feats change: the companions prepare again.)
+    // (Its tokens too: a light from the rules, Sheathed in Light's, shows only once the token prepares again; round 53 Foundry test.)
+    const resetWithTokens = (companion) => {
+        companion.reset?.();
+        for (const token of companion.getActiveTokens?.(false, true) ?? []) {
+            token.reset?.();
+            const placed = token.object;
+            if (typeof placed?.initializeSources === "function") placed.initializeSources();
+            else placed?.initializeLightSource?.();
+        }
+    };
     const again = (master) => {
         if (master?.type !== "character" || isCompanion(master)) return;
-        for (const companion of companionsOf(master, { actors: [...game.actors], users: [...game.users] })) companion.reset?.();
+        for (const companion of companionsOf(master, { actors: [...game.actors], users: [...game.users] })) resetWithTokens(companion);
     };
     Hooks.once("ready", () => {
-        for (const actor of game.actors ?? []) if (isCompanion(actor)) actor.reset?.();
+        for (const actor of game.actors ?? []) if (isCompanion(actor)) resetWithTokens(actor);
     });
     for (const hook of ["createItem", "deleteItem"]) Hooks.on(hook, (item) => again(item?.parent));
 }

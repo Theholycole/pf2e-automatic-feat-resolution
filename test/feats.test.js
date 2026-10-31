@@ -152,7 +152,10 @@ test("a feat that changes the character's own numbers for a while: the module's 
     assert.deepEqual(climb.effect.rules, [{ key: "FlatModifier", selector: "athletics", type: "circumstance", value: 2, predicate: ["action:climb"] }]);
     assert.equal(climb.effect.duration.unit, "minutes");
     // Not: someone else's bonus, one against the triggering attack, one with no end and no stance.
-    assert.equal(compileFeat(feat("Eddies", "<p>All ranged attacks against you take a –1 circumstance penalty to the attack roll until the end of your next turn.</p>", 1), { dcs: DCS }), null);
+    // (Round 43: its words on a timer Effect, no rules.)
+    const eddies = compileFeat(feat("Eddies", "<p>All ranged attacks against you take a –1 circumstance penalty to the attack roll until the end of your next turn.</p>", 1), { dcs: DCS });
+    assert.equal(eddies.timer, true);
+    assert.deepEqual(eddies.effect.rules, []);
     assert.equal(compileFeat(feat("Dodge", "<p>You gain a +2 circumstance bonus to AC against the triggering attack.</p>", 1), { dcs: DCS }), null);
     assert.equal(compileFeat(feat("Forever", "<p>You gain a +1 status bonus to AC.</p>", 1), { dcs: DCS }), null);
 });
@@ -243,7 +246,8 @@ test("a reaction used before the character's own roll: a reminder before the sav
     assert.equal(preRollTrigger(reaction("You're about to roll initiative.")).event, "pre-initiative");
     assert.equal(preRollTrigger(reaction("You have the dying condition and are about to attempt a recovery check.")).event, "pre-recovery");
     assert.equal(preRollTrigger(reaction("You fail a Will save.")), null, "after the roll: a note on it");
-    assert.equal(preRollTrigger(reaction("Your ally is about to roll a saving throw.")), null);
+    // (Round 46: an ally's roll is asked of the roller, as another's pre-check.)
+    assert.equal(preRollTrigger(reaction("Your ally is about to roll a saving throw.")).event, "pre-check-other");
     assert.ok(asksForSave('<a class="inline-check" data-pf2-check="reflex" data-pf2-dc="25">'));
 });
 
@@ -621,4 +625,93 @@ test("condition feats: Friend of Fear lowers a gain, Calm and Centered a decreas
     assert.deepEqual(conditionAfter([calm], "stupefied", 2, 1), { value: 0, by: ["Calm and Centered"] });
     assert.deepEqual(conditionAfter([calm], "frightened", 3, 2), { value: 1, by: ["Calm and Centered"] });
     assert.equal(conditionAfter([calm], "frightened", 1, 2), null);
+});
+
+test("round 37: more reaction triggers read", async () => {
+    const { eventTrigger, preRollTrigger } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ name: "X", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` } } });
+    const read = (trigger) => eventTrigger(reaction(trigger));
+    const black = read("A creature within 30 feet you can see would succeed at a save.");
+    assert.deepEqual([black.event, black.who, black.outcomes, black.rolls, black.within], ["others-roll", "creature", ["criticalSuccess", "success"], ["saving-throw"], 30]);
+    assert.equal(read("An enemy critically misses a Strike or spell attack roll against your AC.").event, "critical-miss");
+    assert.equal(read("An opponent hits, but does not critically hit you, with a melee Strike.").event, "hit");
+    assert.equal(read("An attack from a creature that isn't adjacent to you damaged you.").event, "damaged");
+    assert.deepEqual([read("A physical attack would reduce you to 0 Hit Points.").event, read("A physical attack would reduce you to 0 Hit Points.").conditions], ["self-condition", ["0-hp"]]);
+    assert.equal(read("You witness an ally being reduced to 0 Hit Points by an enemy you can see.").event, "ally-condition");
+    assert.deepEqual([read("You Drop Prone or otherwise become Prone.").event, read("You Drop Prone or otherwise become Prone.").conditions], ["self-condition", ["prone"]]);
+    assert.equal(read("Your linked ally takes damage and is within 60 feet.").event, "ally-damaged");
+    assert.equal(read("An enemy within your reach would damage you or your ally with an attack.").event, "ally-damaged");
+    assert.deepEqual([read("An ally within 30 feet Casts a Spell.").event, read("An ally within 30 feet Casts a Spell.").within], ["ally-casts", 30]);
+    assert.equal(preRollTrigger(reaction("You attempt a basic Reflex save.")).event, "pre-save");
+    assert.equal(preRollTrigger(reaction("You attempt a saving throw against a disease or poison effect that affects an area.")).event, "pre-save");
+});
+
+test("round 37 fixes: not on a critical hit, the save a pre-save feat names, a critical success counts as succeeding", async () => {
+    const { eventTrigger, preRollTrigger, savesAsked, fitsSave } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ name: "X", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` } } });
+    assert.equal(eventTrigger(reaction("An opponent hits, but does not critically hit you, with a melee Strike.")).notCritical, true);
+    assert.equal(eventTrigger(reaction("An enemy hits you with a melee Strike.")).notCritical, undefined);
+    assert.deepEqual(eventTrigger(reaction("A creature within 30 feet you can see would succeed at a save.")).outcomes.sort(), ["criticalSuccess", "success"]);
+    const feline = preRollTrigger(reaction("You attempt a basic Reflex save."));
+    const basicReflex = savesAsked('<a class="inline-check" data-pf2-check="reflex" data-pf2-dc="24" data-pf2-basic="">basic Reflex</a>');
+    const will = savesAsked('<a class="inline-check" data-pf2-check="will" data-pf2-dc="24">Will</a>');
+    assert.ok(fitsSave(feline, basicReflex));
+    assert.ok(!fitsSave(feline, will));
+    assert.ok(!fitsSave(feline, savesAsked('<a data-pf2-check="reflex">Reflex</a>')));
+    assert.ok(fitsSave(preRollTrigger(reaction("You attempt a saving throw against a magical effect, but you haven't rolled yet.")), will));
+    // (PF2e 8.6's own markup: the label's text and the damaging-effect option, not the flavor attribute.)
+    const pf2e = (options, flavor, label) => `<a class="inline-check with-repost" ${options ? `data-pf2-roll-options="${options}" ` : ""}data-pf2-repost-flavor="${flavor}" data-pf2-check="reflex" data-pf2-dc="24"><i inert class="fa-solid fa-person-running"></i><span class="label"><span data-visibility="gm">DC 24</span> ${label}</span><i class="fa-solid fa-comment repost"></i></a>`;
+    assert.deepEqual(savesAsked(pf2e("damaging-effect", "Test Blast", "Basic Reflex")), [{ save: "reflex", basic: true }]);
+    assert.deepEqual(savesAsked(pf2e("", "Basic Trap", "Reflex")), [{ save: "reflex", basic: false }]);
+    assert.deepEqual(savesAsked(pf2e("", "Explosion", "Réflexe basique"), "basique"), [{ save: "reflex", basic: true }]);
+});
+
+test("round 38: a typo'd turn start, a duo's initiative", async () => {
+    const { turnTrigger } = await import("../src/compiler/turn-reminders.js");
+    const { preRollTrigger } = await import("../src/compiler/event-reminders.js");
+    const free = (trigger) => ({ name: "X", system: { actionType: { value: "free" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` } } });
+    assert.equal(turnTrigger(free("You turn begins.")).when, "start");
+    assert.equal(preRollTrigger(free("You and your mystic duo roll initiative in the same encounter.")).event, "pre-initiative");
+});
+
+test("round 38: a condition lost, a foe starting its turn near you", async () => {
+    const { eventTrigger } = await import("../src/compiler/event-reminders.js");
+    const make = (type, text) => ({ name: "X", system: { actionType: { value: type }, description: { value: text } } });
+    const bounce = eventTrigger(make("free", "<p><strong>Trigger</strong> You lose the Dying condition.</p><hr /><p>You Stand.</p>"));
+    assert.deepEqual([bounce.event, bounce.conditions], ["self-condition-lost", ["dying"]]);
+    const bane = eventTrigger(make("passive", "<p>Whenever an enemy starts its turn adjacent to you, it takes 2 void damage.</p>"));
+    assert.deepEqual([bane.event, bane.within], ["foe-turn-start", 5]);
+});
+
+test("before your own roll: which checks a pre-check feat fits", async () => {
+    const { preRollTrigger, fitsCheck } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ type: "feat", name: "T", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Text.</p>` } } });
+    const press = preRollTrigger(reaction("You attempt a melee Strike against your opponent, but haven't rolled yet."));
+    assert.equal(fitsCheck(press, { type: "attack-roll", melee: true }), true);
+    assert.equal(fitsCheck(press, { type: "attack-roll", melee: false, ranged: true }), false);
+    const knowledge = preRollTrigger(reaction("You would attempt a Recall Knowledge check using Nature."));
+    assert.equal(fitsCheck(knowledge, { type: "skill-check", statistic: "nature", options: ["action:recall-knowledge"] }), true);
+    assert.equal(fitsCheck(knowledge, { type: "skill-check", statistic: "nature", options: [] }), false);
+    assert.equal(preRollTrigger(reaction("You would attempt a roll affected by a misfortune effect.")), null);
+});
+
+test("before another's roll: who and which checks", async () => {
+    const { preRollTrigger, fitsOthersCheck } = await import("../src/compiler/event-reminders.js");
+    const reaction = (name, trigger) => ({ type: "feat", name, system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Text.</p>` } } });
+    const hinder = preRollTrigger(reaction("Hinder", "An enemy is about to use an action that requires a skill check or attack roll"));
+    assert.equal(hinder.who, "enemy");
+    assert.equal(fitsOthersCheck(hinder, { type: "attack-roll" }), true);
+    assert.equal(fitsOthersCheck(hinder, { type: "saving-throw" }), false);
+    assert.equal(preRollTrigger(reaction("Aid", "An ally is about to use an action that requires a skill check or attack roll.")), null);
+    assert.equal(preRollTrigger(reaction("Black Cat Curse", "A creature within 30 feet you can see would succeed at a save.")), null);
+    const muzzle = preRollTrigger(reaction("Plug Muzzle", "A creature within your reach would make a Strike with a ranged weapon or ranged unarmed attack."));
+    assert.equal(fitsOthersCheck(muzzle, { type: "attack-roll", ranged: false }), false);
+});
+
+test("a fall's reactions: as it starts, by height; another's in range; after it", async () => {
+    const { eventTrigger } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ type: "feat", name: "T", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Text.</p>` } } });
+    assert.deepEqual([eventTrigger(reaction("You fall from a height of 15 feet or higher.")).event, eventTrigger(reaction("You fall from a height of 15 feet or higher.")).feet], ["self-falling", 15]);
+    assert.equal(eventTrigger(reaction("A creature within 60 feet is falling.")).within, 60);
+    assert.equal(eventTrigger(reaction("You fall at least 10 feet and land on a solid surface.")).event, "self-fell");
 });

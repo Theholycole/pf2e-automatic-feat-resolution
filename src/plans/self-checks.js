@@ -89,5 +89,57 @@ export default [
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.OtbrIcEF7da4lDFK", name: "Transpose Self",
         selfCheck: { statistic: "arcana" },
         notes: ["With obstacles, creatures or difficult terrain in the way the DC is very hard (+5, by hand). Success: teleport up to 15 feet within line of sight; not again for 1 hour. Critical failure: you take force damage equal to your level; not again for 1 day."]
+    },
+    // (2026-10-31, round 50: more checks against your level's DC. Circadian Disciplinarian heals you on the card; the rest say each degree.)
+    {
+        uuid: pf2e("lFNyIFWPPXpS0qRM"), name: "On My Best Day",
+        selfCheck: { statistic: "incarnation-lore", adjustment: 5 },
+        notes: ["Until the end of your next turn: critical success +3 status bonus to AC and resistance to physical damage equal to your level (Sustain up to 1 minute); success +2 and half your level; failure +1 to AC; critical failure +1 to AC against the next attack only."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.TguWAmyYB94Uts5S", name: "Scout Battlefield",
+        selfCheck: { statistic: "perception" },
+        notes: ["Increase your frustrated condition by 1. On a success you find a piece of the battlefield within 25 feet your monster can use; Reap Battlefield can then reduce frustrated by 1."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.Mkd7Qhph9eP9g1tz", name: "Peace with Death",
+        selfCheck: { statistic: "religion", outcomes: both({ nativeEffects: [{ uuid: "Compendium.pf2e-team-plus-feats.pf2e-misc.Item.3DrxNxi9Xdd513ji", label: "Effect: Peace with Death" }] }) },
+        notes: ["Takes 10 minutes; you're then immune to it for 1 hour. The first time you're dying within the hour, your recovery check DCs drop by 5, and healing while dying adds your level (half on a success)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.OILWJgTq4PlQgwLZ", name: "Circadian Disciplinarian",
+        selfCheck: { statistic: "survival", outcomes: {
+            criticalSuccess: { effects: [{ kind: "heal", formula: "max(1,@actor.abilities.con.mod)*@actor.level", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] },
+            success: { effects: [{ kind: "heal", formula: "floor(max(1,@actor.abilities.con.mod)*@actor.level/2)", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] } } },
+        notes: ["Takes 1 hour (10 minutes if you're a master in Survival). More than a day without a full night's rest: you fail. On a success, also reduce drained by 1 by hand."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.HOEhWXCvEtLdxOuw", name: "Vocal Mediation",
+        // (One roll, yours: the card heals you; a card with targets rolls for each of them instead, round 52 Foundry test.)
+        selfCheck: { statistic: "performance", outcomes: {
+            criticalSuccess: { effects: [{ kind: "heal", formula: "2*@actor.level", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] },
+            success: { effects: [{ kind: "heal", formula: "@actor.level", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] } } },
+        notes: ["Takes 10 minutes. The card heals you; your allies within 30 feet regain the same (twice your level on a critical success, your level on a success) and lose fatigued: by hand. Also reduce doomed and drained by 2 on a critical success, 1 on a success, by hand."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.M8Z13CBNlNt1YZpC", name: "Astrological Divination",
+        selfCheck: { statistic: "occultism" },
+        notes: ["Takes 1 hour, once per day. +2 circumstance bonus with a clear night sky. Success: augury's effects for an event up to 12 hours ahead (1 day on a critical success)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.yF3ZY56V6rEZdF5Y", name: "Planar Pedagogy",
+        selfCheck: { statistic: "arcana" },
+        notes: ["Takes 1d4 hours. On a success you're trained in one plane's Lore for 1 day (expert if you're a master in Arcana, master if legendary)."]
+    },
+    // (Round 52 Foundry test: a Lore, and Perception against Deception, against each target's DC.)
+    {
+        uuid: pf2e("XbMfMJq2sCQHdo1w"), name: "Improvise Strategy",
+        selfCheck: { statistic: "warfare-lore", defense: "perception", target: "1 creature", range: "30 feet" },
+        notes: ["Success: the target gains your choice of clumsy 1, dazzled, off-guard or stupefied 1 until the end of your next turn (put it on by hand); it can end it with a concentrate action (auditory) or an Interact (visual). Except on a critical success it's immune for 1 hour. Critical failure: you're off-guard until the start of your next turn."]
+    },
+    {
+        uuid: pf2e("cErltcAC7OVnIyO1"), name: "Predictable!",
+        selfCheck: { statistic: "perception", defense: "deception", target: "1 enemy" },
+        notes: ["Use a hard DC of the foe's level instead if that's higher. Put PF2e's Effect: Predictable! on yourself from the feat: +2 to AC against it and your next save against it on a critical success, +1 on a success, –1 on a critical failure, until the start of your next turn."]
     }
 ];
