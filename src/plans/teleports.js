@@ -28,5 +28,10 @@ export default [
     { uuid: pf2e("etaixAdHNlHnLH0i"), name: "Guarded Advance", teleport: { within: 10, move: { verb: "Step", lines: ["Twice, and Raise a Shield, in any order"] } } },
     { uuid: pf2e("Nb8MUoTpyX9u8di4"), name: "Guarded Advance (Knight Vigilant)", teleport: { within: 5, move: { verb: "Step", lines: ["Before or after you Raise a Shield"] } } },
     { uuid: pf2e("Q47qXtK2cevjYUXe"), name: "Running Recharge", teleport: { speedTimes: 0.5, move: { verb: "Stride", lines: ["Or Step instead"] } }, notes: ["Your Spellstrike is recharged too."] },
-    { uuid: pf2e("vXH0HWMHzevA1Wox"), name: "Winding Flow", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Two of Stand, Step and Stride, in any order, not the same one twice"] } } }
+    { uuid: pf2e("vXH0HWMHzevA1Wox"), name: "Winding Flow", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Two of Stand, Step and Stride, in any order, not the same one twice"] } } },
+    // (Round 103: PF2e's own basic moves, posted from the sheet: the same card, Pick and click.)
+    { uuid: action("Bcxarzksqt9ezrs6"), name: "Stride", teleport: { speedTimes: 1, move: { verb: "Stride", lines: [] } } },
+    { uuid: action("UHpkTuCtyaPqiCAB"), name: "Step", teleport: { within: 5, move: { verb: "Step", lines: ["Doesn't trigger reactions triggered by move actions"] } } },
+    { uuid: action("Tj055UcNm6UEgtCg"), name: "Crawl", teleport: { within: 5, move: { verb: "Crawl", lines: ["You stay prone"] } } },
+    { uuid: action("eBgO5gp5kKhGtmk9"), name: "Water Transfer", teleport: { within: 120 }, notes: ["A space on land adjacent to the same body of water."] }
 ];
