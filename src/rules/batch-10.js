@@ -6,6 +6,8 @@ const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const suppress = (selector, slug, predicate = null) => ({ key: "AdjustModifier", selector, slug, suppress: true, ...(predicate ? { predicate } : {}) });
 
 export default [
+    // (Round 39: Aldori dueling swords gain the parry trait, so PF2e's Parry action works with them. The +2 with a free hand is the player's.)
+    { uuid: pf2e("NZgjqVV2HYzLCvvA"), name: "Aldori Parry", rules: [{ key: "ItemAlteration", itemType: "weapon", mode: "add", property: "traits", value: "parry", predicate: ["item:base:aldori-dueling-sword"] }] },
     { uuid: pf2e("1wTXeBrYU6BVEEOn"), name: "Stage Fighting", rules: [suppress("strike-attack-roll", "nonlethal")] },
     { uuid: pf2e("k5C1WNuYQ4u7nSHt"), name: "Nonlethal Takedown", rules: [suppress("strike-attack-roll", "nonlethal")] },
     { uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.XbYAgEhGa0ocdGi1", name: "Protector of the Wilds", rules: [suppress("strike-attack-roll", "nonlethal", [{ or: ["target:trait:animal", "target:trait:beast", "target:trait:plant", "target:trait:fungus"] }])] },

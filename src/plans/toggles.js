@@ -150,6 +150,12 @@ export default [
         toggle: { stance: true, rules: [bonus("ac", 1, "circumstance", ["self:effect:mounted"], "flair-rider-cover-ac"), bonus("reflex", 3, "circumstance", ["self:effect:mounted"], "flair-rider-reflex")] },
         notes: ["While mounted (PF2e's Effect: Mounted): lesser cover from your mount (+1 AC and Reflex), and the +3 to Reflex also cancels Mounted's -2."]
     },
+    // (Round 39: on the adjacent creature targeted, while the shield stays raised: to the start of your next turn, when Raise a Shield ends.)
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.YwVdaszwpDJd6kf9", name: "Devoted Guardian",
+        toggle: { who: "target", rules: [bonus("ac", 1, "circumstance", undefined, "devoted-guardian")], duration: ROUND },
+        notes: ["Only while your shield stays raised and the creature stays adjacent to you; +2 instead if the shield is a tower shield (raise it on the Effect by hand)."]
+    },
     // A bonus for one moment, used as a reaction or an action (2026-10-31, the loop): the module's Effect, to the end of the turn or the start
     // of your next; what it's only against is a note.
     {
