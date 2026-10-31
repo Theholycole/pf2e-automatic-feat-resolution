@@ -681,3 +681,15 @@ test("round 38: a condition lost, a foe starting its turn near you", async () =>
     const bane = eventTrigger(make("passive", "<p>Whenever an enemy starts its turn adjacent to you, it takes 2 void damage.</p>"));
     assert.deepEqual([bane.event, bane.within], ["foe-turn-start", 5]);
 });
+
+test("before your own roll: which checks a pre-check feat fits", async () => {
+    const { preRollTrigger, fitsCheck } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ type: "feat", name: "T", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Text.</p>` } } });
+    const press = preRollTrigger(reaction("You attempt a melee Strike against your opponent, but haven't rolled yet."));
+    assert.equal(fitsCheck(press, { type: "attack-roll", melee: true }), true);
+    assert.equal(fitsCheck(press, { type: "attack-roll", melee: false, ranged: true }), false);
+    const knowledge = preRollTrigger(reaction("You would attempt a Recall Knowledge check using Nature."));
+    assert.equal(fitsCheck(knowledge, { type: "skill-check", statistic: "nature", options: ["action:recall-knowledge"] }), true);
+    assert.equal(fitsCheck(knowledge, { type: "skill-check", statistic: "nature", options: [] }), false);
+    assert.equal(preRollTrigger(reaction("You would attempt a roll affected by a misfortune effect.")), null);
+});

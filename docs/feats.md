@@ -622,3 +622,10 @@ Not an immunity, a once-a-day, or the time an activity takes ("rest for 10 minut
 Cole's card: a passive's bonus only in a moment PF2e can't see ("+2 circumstance bonus to Survival checks made to prepare for this
 weather event") is a note on that roll, the sentence as its text, for the GM to add when it fits (src/rules/read.js readBonusNotes,
 src/rules/batch-13.js, 22 feats). Only the character's own bonus, only on a roll (not AC or a DC).
+
+## Round 45: before your own roll (2026-10-31)
+
+A reaction or free action used before the character's own roll ("You attempt a melee Strike against your opponent, but haven't rolled
+yet", "You are about to attempt a check", "You attempt a flat check for Steady Spellcasting"): as PF2e starts that check (Check.roll),
+in an encounter, the roller is asked first (Roll; Roll, don't ask this encounter; Stop, I'll use it first). Not one that hangs on a
+fortune or misfortune effect. 9 feats (scripts/pre-roll.js).

@@ -8,6 +8,7 @@ import { registerConditionFeats } from "./conditions.js";
 import { registerTerrainOptions } from "./terrain.js";
 import { registerCompanionGrowth } from "./companion-growth.js";
 import { registerGrants } from "./grants.js";
+import { registerPreRoll } from "./pre-roll.js";
 import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
@@ -227,6 +228,8 @@ Hooks.on("canvasReady", () => {
 });
 
 Hooks.once("ready", () => {
+    // (Before your own roll, a feat used then: scripts/pre-roll.js; round 45.)
+    registerPreRoll();
     Hooks.on("preCreateChatMessage", recordTargets);
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {

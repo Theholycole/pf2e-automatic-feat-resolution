@@ -253,7 +253,32 @@ export function preRollTrigger(given) {
         const save = /\b(Fortitude|Reflex|Will)\b/i.exec(trigger)?.[1]?.toLowerCase() ?? null;
         return { event: "pre-save", trigger, kind, ...(save ? { save } : {}), ...(/\bbasic\b/i.test(trigger) ? { basic: true } : {}) };
     }
+    // (Your own Strike or check, "You attempt a melee Strike against your opponent, but haven't rolled yet", "You are about to attempt a
+    // check": asked as the roll starts, before its dice; round 45.)
+    // (Not one that hangs on a fortune or misfortune effect: no roll says it has one before it's rolled.)
+    if (/\b(?:mis)?fortune\b/i.test(trigger)) return null;
+    if (/\bflat check\b/i.test(trigger)) return { event: "pre-check", check: "flat", trigger, kind };
+    const action = /\bRecall Knowledge\b/i.test(trigger) ? { action: "recall-knowledge" } : {};
+    if (/\b(?:Strike|attack roll)s?\b/i.test(trigger)) return { event: "pre-check", check: "attack", ...(/\bmelee\b/i.test(trigger) ? { melee: true } : /\branged\b/i.test(trigger) ? { ranged: true } : {}), trigger, kind };
+    const skill = /\b(Acrobatics|Arcana|Athletics|Crafting|Deception|Diplomacy|Intimidation|Medicine|Nature|Occultism|Performance|Religion|Society|Stealth|Survival|Thievery|Perception)\b/i.exec(trigger)?.[1]?.toLowerCase();
+    if (skill) return { event: "pre-check", check: skill, ...action, trigger, kind };
+    if (/\b(?:skill )?checks?\b|\broll\b/i.test(trigger)) return { event: "pre-check", check: /\bskill check\b/i.test(trigger) || action.action ? "skill" : "any", ...action, trigger, kind };
     return null;
+}
+
+const SKILLS = new Set(["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"]);
+// Whether a pre-check read fits a roll about to happen: { type: PF2e's check type ("attack-roll", "skill-check", "perception-check",
+// "flat-check", "saving-throw", "initiative"), statistic slug, melee, ranged }.
+export function fitsCheck(read, roll) {
+    if (read?.event !== "pre-check" || !roll) return false;
+    const { type, statistic } = roll;
+    if (read.action && !(roll.options ?? []).includes(`action:${read.action}`)) return false;
+    if (read.check === "flat") return type === "flat-check";
+    if (read.check === "attack") return type === "attack-roll" && (!read.melee || roll.melee === true) && (!read.ranged || roll.ranged === true);
+    if (read.check === "skill") return type === "skill-check";
+    if (read.check === "any") return ["attack-roll", "skill-check", "perception-check", "saving-throw"].includes(type);
+    if (read.check === "perception") return type === "perception-check" || statistic === "perception";
+    return SKILLS.has(read.check) && statistic === read.check;
 }
 
 // Whether a posted message's text asks for a save: PF2e's inline save links.
