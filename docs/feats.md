@@ -488,3 +488,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Round 25: Reclaim Power passes. Fated Not to Die took unconscious with dying (PF2e grants it from dying): unconscious again after, as My Legend Must Be Told.
 - Round 26: Fated Not to Die passes (dying gone, unconscious kept, 0 HP).
 - Then: Quicken Heartbeat (quickened through your next turn; slowed by hand), Raise Neck (reach 10 on the nagaji fangs, AdjustStrike).
+- Round 27: Quicken Heartbeat passes. Raise Neck's "reach-10" was ignored (a character weapon trait is only "reach"): now "reach".

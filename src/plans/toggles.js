@@ -199,7 +199,7 @@ export default [
     },
     {
         uuid: "Compendium.pf2e.actionspf2e.Item.MLOkyKi1Y3N6y56Q", name: "Raise Neck",
-        toggle: { rules: [{ key: "AdjustStrike", mode: "add", property: "weapon-traits", value: "reach-10", definition: ["item:slug:fangs"] }], duration: THIS_TURN },
-        notes: ["Your nagaji fangs Strike has reach 10 feet until the end of your turn."]
+        toggle: { rules: [{ key: "AdjustStrike", mode: "add", property: "weapon-traits", value: "reach", definition: ["item:slug:fangs"] }], duration: THIS_TURN },
+        notes: ["Your nagaji fangs Strike has reach 10 feet until the end of your turn (PF2e's reach trait: 10 feet for a Medium creature)."]
     }
 ];
