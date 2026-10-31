@@ -35,5 +35,11 @@ export default [
         uuid: pf2e("xEeCaJsQeDtRAVk1"), name: "Plant Banner",
         affect: { target: "each ally within 30 feet", effects: [{ kind: "temp-hp", formula: "4*(1+floor(@actor.level/4))", duration: rounds(1) }] },
         notes: ["Renewed for another round each time an ally starts its turn in the burst. Apply PF2e's Effect: Plant Banner from the feat for the banner's other rules."]
+    },
+    // (Round 51.)
+    {
+        uuid: pf2e("Ofk2WfHbj3nWRhJy"), name: "Healer's Halo",
+        affect: { target: "1 creature within 30 feet", effects: [{ kind: "heal", formula: "1d6" }] },
+        notes: ["Only while your Halo is active, on a creature that just recovered Hit Points from a positive healing effect. It's then immune for 10 minutes."]
     }
 ];

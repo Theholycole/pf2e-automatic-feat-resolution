@@ -654,3 +654,7 @@ conditions. Cloudleaper Lizardfolk's falls do no damage; Reflection's trait.
 
 - Seven more checks against your level's DC (src/plans/self-checks.js): On My Best Day, Scout Battlefield, Peace with Death (its Teams+ Effect), Circadian Disciplinarian (heals you and ends fatigued), Vocal Mediation (heals you and your allies within 30 feet), Astrological Divination, Planar Pedagogy.
 - Given items no longer give a feat that hangs on something: a sentence that starts with If/When/Once/After, or says "for the next", "later", "instead", "until" or a duration (Fisheye's Breath Control "for the next hour"). Tested in Foundry: Summiting Dragonblood and Automaton Lore still give theirs. Defaulted to the recommended option; Cole can object.
+
+## Round 51 (2026-10-31): check cards for reactions and actions against a creature
+
+- Check cards (src/plans/checks-2.js): Interrupt Charge, Keep up Appearances, Improvise Strategy, Overawe Crowd, Predictable!. Healer's Halo heals 1d6 (src/plans/heals.js).
