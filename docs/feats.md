@@ -591,3 +591,10 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   PF2e's own: the item's system.subfeatures.proficiencies. A scan found 50 of the module's rule entries (darkvision feats, Fearsense,
   Earthsense, the proficiency raises of batch 9, most of batch 12, Stargazer's Eyes) that PF2e already gives by subfeatures.senses or
   .proficiencies; they're dropped, and the count takes subfeatures as PF2e's own. Count: 2,395 of 4,826 left.
+
+## Round 41: companion growth (2026-10-31)
+
+A master's feat that advances its companion (Mature Animal Companion, Incredible Companion, Specialized Companion, the construct and
+reanimated stages; 31 feats, src/plans/companion-growth.js) puts the animal companions module's item on the companion as the feat is
+gained, on the active GM's client, the GM choosing where the feat gives a choice (Nimble or Savage; a second specialization). Deleting
+the feat deletes the item it added. Open question for Cole: whether to do this at all (the card on companion advancement).
