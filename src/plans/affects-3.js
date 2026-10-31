@@ -138,5 +138,15 @@ export default [
         uuid: "Compendium.pf2e.feats-srd.Item.lT6yLoMfalzxGL8y", name: "Retributive Focus",
         regain: { resource: "focus", value: 1 },
         notes: ["Only when an enemy triggers your champion's reaction and your focus pool is empty."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.GdqIBsraQK2FIofQ", name: "Fog of the Imperial",
+        affect: { target: "you and each ally within 5 feet", effects: [{ slug: "concealed", duration: null }] },
+        notes: ["Every creature in the fog is concealed, enemies too, and those outside are concealed to those in it. It lasts while you channel your dragon (remove it then); each Sustain can widen it by 5 feet."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.QuRhGFEhvF7z0Pz9", name: "Immortal Techniques",
+        affect: { target: "you", effects: [{ kind: "temp-hp", formula: "20", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
+        notes: ["Post it the first time each round you use an action with both the monk and stance traits."]
     }
 ];

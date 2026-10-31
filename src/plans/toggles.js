@@ -219,5 +219,28 @@ export default [
         uuid: pf2e("axGS5bBJ9vl5AePc"), name: "Phase Out",
         toggle: { who: "target", rules: [{ key: "Resistance", type: "all-damage", value: "max(1,floor(@actor.level/2))", exceptions: ["force", "spirit", "vitality"] }] },
         notes: ["Target your eidolon. It can't Strike or Grapple, Reposition, Shove or Trip while phased out; it Dismisses it to return: post Phase Out again."]
+    },
+    // (Round 68: Teams+ actions.)
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.34APHg5Ezt0yYwJ6", name: "Spirit of the Rushing River",
+        toggle: {
+            rules: [
+                { key: "Immunity", type: "immobilized" }, { key: "Immunity", type: "grabbed" }, { key: "Immunity", type: "restrained" },
+                { key: "Resistance", type: "fire", value: "max(1,floor(@actor.level/2))" }, { key: "Resistance", type: "physical", value: "max(1,floor(@actor.level/2))" },
+                { key: "Weakness", type: "area-damage", value: "max(1,floor(@actor.level/2))" }, { key: "Weakness", type: "splash-damage", value: "max(1,floor(@actor.level/2))" }
+            ],
+            duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false }
+        },
+        notes: ["You gain the swarm and water traits and the Torrential Flow action, and fit through gaps a few inches wide. You can't speak, cast spells, use hand manipulate actions, activate items or Strike with your body. Dismiss it: post it again."]
+    },
+    {
+        uuid: pf2e("zytTsipimVTmPc5U"), name: "Selfless Parry",
+        toggle: { who: "target", rules: [bonus("ac", 1)] },
+        notes: ["Target your allies adjacent to you while you benefit from Dueling Parry; post it again when that ends or they move away. With Dueling Riposte, you can riposte an enemy in reach that critically fails a Strike against one of them."]
+    },
+    {
+        uuid: pf2e("P6cTyDMTXcC8HBDr"), name: "Esoteric Warden",
+        toggle: { rules: [bonus("ac", 1, "status"), bonus("saving-throw", 1, "status")] },
+        notes: ["After you Exploit a Vulnerability successfully: only against that creature's next attack and your next save against it (+2 on a critical success). Once a day per creature; it ends if you Exploit Vulnerability again. Post it again to take it off."]
     }
 ];
