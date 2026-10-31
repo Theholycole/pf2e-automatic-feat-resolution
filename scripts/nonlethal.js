@@ -36,7 +36,45 @@ export async function toggleNonlethal(actor = speakerActor()) {
     return true;
 }
 
+// Nonlethal damage that brings a creature to 0 HP knocks it out instead (Cole's call, 2026-10-31): PF2e 8.6's applyDamage never checks for
+// nonlethal, and marks it defeated as for lethal damage. After PF2e applies it: no dying, no defeated or dead mark it didn't have, and
+// unconscious, as the environment module does for nonlethal falls (its scripts/foundry.js nonlethalDamage).
+const NONLETHAL_OPTIONS = ["nonlethal", "item:trait:nonlethal", "damage:trait:nonlethal"];
+
+export function isNonlethal(options = {}) {
+    const sets = [options.rollOptions, options.damage?.options?.rollOptions];
+    return sets.some((set) => set && NONLETHAL_OPTIONS.some((option) => (typeof set.has === "function" ? set.has(option) : Array.isArray(set) && set.includes(option))));
+}
+
+function wrapApplyDamage() {
+    let proto = CONFIG.PF2E?.Actor?.documentClasses?.character?.prototype;
+    while (proto && !Object.hasOwn(proto, "applyDamage")) proto = Object.getPrototypeOf(proto);
+    if (!proto) return console.warn(`${MODULE_ID} | PF2e's actors have no applyDamage; nonlethal knock-outs are off.`);
+    const original = proto.applyDamage;
+    proto.applyDamage = async function (options = {}, ...rest) {
+        const nonlethal = isNonlethal(options);
+        const hp = () => Number(this.hitPoints?.value ?? this.system?.attributes?.hp?.value);
+        const before = hp();
+        const doc = options.token?.document ?? options.token ?? this.token ?? this.getActiveTokens?.(false, true)?.[0] ?? null;
+        const defeated = Boolean(doc?.combatant?.isDefeated);
+        const dead = Boolean(this.statuses?.has?.("dead"));
+        const result = await original.call(this, options, ...rest);
+        if (!nonlethal || !(before > 0) || hp() > 0) return result;
+        try {
+            for (const condition of (this.itemTypes?.condition ?? []).filter((entry) => entry.slug === "dying")) await condition.delete().catch(() => null);
+            if (!defeated && doc?.combatant?.isDefeated) await doc.combatant.update({ defeated: false });
+            if (!dead && this.statuses?.has?.("dead")) await this.toggleStatusEffect?.("dead", { active: false, overlay: true }).catch(() => null);
+            if (!this.hasCondition?.("unconscious")) await this.increaseCondition?.("unconscious");
+            await ChatMessage.create({ content: `<p>${foundry.utils.escapeHTML(this.name)} is knocked out by nonlethal damage: unconscious at 0 HP, not dying.</p>`, whisper: game.users.filter((user) => user.isGM).map((user) => user.id) });
+        } catch (error) {
+            console.warn(`${MODULE_ID} | nonlethal knock-out`, error);
+        }
+        return result;
+    };
+}
+
 export function registerNonlethal() {
+    Hooks.once("setup", wrapApplyDamage);
     Hooks.on("chatMessage", (_log, message) => {
         if (String(message ?? "").trim().toLowerCase() !== "/nonlethal") return true;
         toggleNonlethal();

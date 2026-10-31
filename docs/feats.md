@@ -555,7 +555,8 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Round 34: Improvisational Defender and Ankle Biter pass. PF2e 8.6.1 has no penalty (and no toggle) for a nonlethal Strike with a lethal
   weapon. Cole (2026-10-31): there's none native to PF2e, so the module gives one: the Nonlethal Attacks Effect (/nonlethal, or
   api.toggleNonlethal), src/plans/nonlethal.js. Lethal weapons gain the nonlethal trait and a -2 circumstance (slug nonlethal) on Strikes;
-  Stage Fighting, Nonlethal Takedown and Protector of the Wilds suppress it.
+  Stage Fighting, Nonlethal Takedown and Protector of the Wilds suppress it. Round 36: all pass. PF2e doesn't knock out on nonlethal
+  damage either; the module now does (applyDamage wrapped: nonlethal damage to 0 HP leaves it unconscious, not dying or dead).
 
 ### Batch 11 (2026-10-31)
 
