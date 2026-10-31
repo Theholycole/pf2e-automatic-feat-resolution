@@ -47,6 +47,8 @@ export const COMPANION_RULES = [
     // (Round 52: a companion's skill and creature type.)
     { uuid: pf2e("mXNwdRSM9kZrT2Um"), name: "Fell Rider", rules: [{ key: "ActiveEffectLike", mode: "upgrade", path: "system.skills.intimidation.rank", value: 1 }] },
     { uuid: pf2e("espST21gwaZQFxpw"), name: "Undead Companion", rules: [{ key: "ActorTraits", add: ["undead"], remove: ["animal"] }, { key: "ActiveEffectLike", mode: "override", path: "system.attributes.hp.negativeHealing", value: true }] },
+    // (Round 58: as PF2e's own Agile Grace.)
+    { uuid: pf2e("UANazM5XMYdMkVtX"), name: "Nimble Form", rules: [{ key: "MultipleAttackPenalty", selector: "attack", predicate: ["item:trait:agile"], value: -3 }] },
     // (Clerics+ sacred animal: bright light 20 feet, dim 20 more; it can suppress it, by turning the light off on its token.)
     { uuid: "Compendium.clerics-remaster.clerics-features.Item.yNMcUM88PbPkko2t", name: "Sheathed in Light", rules: [{ key: "TokenLight", value: { bright: 20, dim: 40 } }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
