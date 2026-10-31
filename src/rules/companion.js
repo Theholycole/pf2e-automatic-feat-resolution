@@ -23,6 +23,7 @@ export const COMPANION_RULES = [
     { uuid: pf2e("N02sHmzuF9XQj93m"), name: "Resilient Shell", rules: [{ key: "Resistance", type: "physical", value: "ternary(gte(@actor.level,17),6,5)" }] },
     { uuid: pf2e("U6lS758rtYGR6aw9"), name: "Amphibious Form", rules: [{ key: "ActorTraits", add: ["amphibious"] }] },
     { uuid: pf2e("cTTOH6yJibgvRlLX"), name: "Demon-Hunting Companion", rules: [sense("scent", "imprecise", 30)] },
+    { uuid: pf2e("Veaf8vm2M9w8bcBI"), name: "Alacritous Action", rules: [{ key: "FlatModifier", selector: "land-speed", value: 10 }] },
     // (An apocalypse mount's fly Speed as its land Speed.)
     { uuid: pf2e("XHbdG50JIO8pEaQ4"), name: "Night Terror", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.movement.speeds.land.value" }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
