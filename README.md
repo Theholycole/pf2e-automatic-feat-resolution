@@ -20,6 +20,11 @@ See [docs/feats.md](docs/feats.md).
 - **Strike feats:** "Stride twice, then make a melee Strike. If it hits, …" becomes a Strike activity. The player uses the feat, then rolls the Strike from the sheet, and when it hits the card offers its results. What the reader doesn't read goes to the GM as notes on the card.
 - Anything else stays PF2e's for now.
 
+## Setup note
+
+A player character with no player owner (a GM-run PC) is on the foes' side to PF2e unless its sheet's Alliance is set to "Party". The
+reaction prompts and reminders read sides the way PF2e does, so set it for such characters.
+
 ## Development
 
 Clone it next to the suite's other repositories (`pf2e-resolution-core`, `pf2e-automatic-ability-resolution`): it imports them by the relative paths Foundry's modules folder gives them. `npm test` runs the tests.
