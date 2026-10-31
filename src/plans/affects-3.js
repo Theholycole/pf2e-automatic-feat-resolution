@@ -101,5 +101,26 @@ export default [
         uuid: pf2e("XyQpqznuO5LGFvhz"), name: "Coordinated Distraction",
         affect: { target: "1 enemy within 30 feet", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" } }] },
         notes: ["Only against the first Strike your chosen ally (within 30 feet) makes on their next turn: remove it after that Strike, or if they don't Strike the target. Auditory or visual, as you describe it."]
+    },
+    {
+        uuid: pf2e("9SdFlVQW4vM8ggh8"), name: "Fane's Escape",
+        affect: { target: "you", effects: [{ slug: "hidden", duration: { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" } }] },
+        notes: ["Hidden only to creatures that see you; then Sneak, with cover enough until the end of your turn. Gathering the cards again takes several minutes."]
+    },
+    // (Round 66.)
+    {
+        uuid: pf2e("vzKvihYNModB7sJ7"), name: "Play Dead",
+        affect: { target: "you", effects: [{ slug: "prone", duration: null }] },
+        notes: ["While you don't move or act beyond your mind, you seem a plain skeleton: seeing through it takes a Seek or Recall Knowledge against your Deception DC. No use against those who know you're undead."]
+    },
+    {
+        uuid: pf2e("OJLGFnmbT418dC18"), name: "Stand Firm",
+        affect: { target: "1 ally within 30 feet", effects: [{ kind: "condition", slug: "frightened", value: 0, duration: null, stack: { by: -2 } }] },
+        notes: ["If they're fleeing, they can retry the save at once: on a failure (not a critical failure) they spend one fewer action fleeing. Immune to it until your next turn starts."]
+    },
+    {
+        uuid: pf2e("AYVf9MU8oo1QWbGv"), name: "Wave the Flag",
+        affect: { target: "each ally within 30 feet", effects: [{ kind: "condition", slug: "frightened", value: 0, duration: null, stack: { by: -1 } }] },
+        notes: ["Only allies benefiting from your Cavalier's Banner. Each can retry a save against one mental effect now, and is then immune to Wave the Flag for 10 minutes."]
     }
 ];

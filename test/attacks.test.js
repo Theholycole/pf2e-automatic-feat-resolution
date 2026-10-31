@@ -10,3 +10,9 @@ test("an attack roll's modifier: the best spell attack, or the best Strike that 
     assert.equal(attackModifier({ roll: "strike" }, dcs), 21);
     assert.equal(attackModifier({ roll: "strike", group: "bow" }, dcs), null);
 });
+
+test("a built attack: a weapon category's proficiency plus an ability plus a bonus (round 66, Spirit's Wrath)", () => {
+    const dcs = { abilities: { str: 4 }, attacks: { proficiency: { martial: 12 } } };
+    assert.equal(attackModifier({ roll: "built", proficiency: "martial", ability: "str", bonus: 2 }, dcs), 18);
+    assert.equal(attackModifier({ roll: "built", proficiency: "advanced", ability: "str" }, dcs), null);
+});

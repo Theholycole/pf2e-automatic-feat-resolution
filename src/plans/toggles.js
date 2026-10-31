@@ -213,5 +213,11 @@ export default [
         uuid: pf2e("V7n3kVSl0G6a29KG"), name: "Flailtongue",
         toggle: { rules: [{ key: "Strike", category: "unarmed", group: "flail", label: "Flailtongue", slug: "flailtongue", img: "systems/pf2e/icons/unarmed-attacks/jaws.webp", damage: { base: { damageType: "bludgeoning", dice: 1, die: "d6" } }, traits: ["unarmed", "disarm", "sweep", "trip"] }] },
         notes: ["While it's out you can't make a jaws Strike. Post Flailtongue again when you Interact to reset your jaw."]
+    },
+    // (Round 66: on the eidolon, posted with it targeted.)
+    {
+        uuid: pf2e("axGS5bBJ9vl5AePc"), name: "Phase Out",
+        toggle: { who: "target", rules: [{ key: "Resistance", type: "all-damage", value: "max(1,floor(@actor.level/2))", exceptions: ["force", "spirit", "vitality"] }] },
+        notes: ["Target your eidolon. It can't Strike or Grapple, Reposition, Shove or Trip while phased out; it Dismisses it to return: post Phase Out again."]
     }
 ];

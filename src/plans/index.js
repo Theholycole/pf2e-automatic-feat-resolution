@@ -173,6 +173,12 @@ export function handAttack(item, entry, dcs = null) {
 
 // The character's modifier for the attack: its best spell attack, or its best Strike of that group and reach.
 export function attackModifier(attack, dcs) {
+    // (roll "built": the feat's own modifier, a weapon category's proficiency bonus plus an ability modifier plus a bonus.)
+    if (attack?.roll === "built") {
+        const proficiency = dcs?.attacks?.proficiency?.[attack.proficiency];
+        const ability = dcs?.abilities?.[attack.ability];
+        return Number.isFinite(proficiency) && Number.isFinite(ability) ? proficiency + ability + (attack.bonus ?? 0) : null;
+    }
     if (attack?.roll === "spell") return Number.isFinite(dcs?.attacks?.spell) ? dcs.attacks.spell : Number.isFinite(dcs?.spell) ? dcs.spell - 10 : null;
     const fits = (dcs?.attacks?.strikes ?? []).filter((strike) => Number.isFinite(strike.mod) && (!attack?.group || strike.group === attack.group) && (attack?.ranged === undefined || Boolean(strike.ranged) === attack.ranged));
     return fits.length ? Math.max(...fits.map((strike) => strike.mod)) : null;

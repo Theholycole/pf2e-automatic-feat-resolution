@@ -51,8 +51,15 @@ function ownDCs(actor) {
         ranged: Boolean(action.item.isRanged),
         mod: Number(action.totalModifier ?? action.variants?.[0]?.modifier)
     })).filter((strike) => Number.isFinite(strike.mod));
+    // (A proficiency bonus by weapon category, for an attack the feat builds itself: Spirit's Wrath's wisp, martial plus Strength plus 2.)
+    const level = Number(actor.level) || 0;
+    const proficiency = {};
+    for (const [category, entry] of Object.entries(actor.system?.proficiencies?.attacks ?? {})) {
+        const rank = Number(entry?.rank);
+        if (Number.isFinite(rank)) proficiency[category] = rank > 0 ? rank * 2 + level : 0;
+    }
     return {
-        attacks: { spell: spellAttacks.length ? Math.max(...spellAttacks) : null, strikes },
+        attacks: { spell: spellAttacks.length ? Math.max(...spellAttacks) : null, strikes, proficiency },
         level: Number(actor.level) || Number(actor.system?.details?.level?.value) || null,
         abilities,
         class: value(actor.classDC) ?? (Object.values(byClass).length ? Math.max(...Object.values(byClass)) : null),

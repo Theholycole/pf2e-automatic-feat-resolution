@@ -35,5 +35,12 @@ export default [
         uuid: pf2e("APfPNpUQlKlCAJkS"), name: "Miraculous Intervention",
         attack: { roll: "strike", against: "ac", target: "the adjacent fiend or undead using a reaction" },
         notes: ["Roll only if its level is higher than yours; otherwise you disrupt the reaction without a roll. You can use a spell attack roll instead. On a success you disrupt it."]
+    },
+    // (Round 66: an attack the feat builds, martial proficiency plus Strength plus a +2 item bonus.)
+    {
+        uuid: pf2e("gO729iC9b5ypes2K"), name: "Spirit's Wrath",
+        attack: { roll: "built", proficiency: "martial", ability: "str", bonus: 2, against: "ac", target: "1 enemy", range: "120 feet",
+            outcomes: { success: { damage: "(4d8 + @actor.abilities.con.mod)[spirit]" }, criticalSuccess: { damage: "2*(4d8 + @actor.abilities.con.mod)[spirit]", effects: [{ kind: "condition", slug: "frightened", value: 1, duration: null }] } } },
+        notes: ["Only while raging. Your circumstance and status bonuses and penalties apply to the wisp's roll and damage too (not your Rage damage or weapon specialization). It counts toward your multiple attack penalty."]
     }
 ];
