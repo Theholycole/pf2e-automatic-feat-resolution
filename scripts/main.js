@@ -147,7 +147,7 @@ async function cardForFeat(message) {
     }
     // (A reroll or a Stride, Step or Leap feat, read by the item module's readers: its card — PF2e's reroll of the roll; Pick and click, the
     // token moved; round 94.)
-    if (plan?.builtin === "teleport" || plan?.builtin === "reroll") return postItemCard(item, plan, sourceToken, message);
+    if (["teleport", "reroll", "roll-twice"].includes(plan?.builtin)) return postItemCard(item, plan, sourceToken, message);
     // (A save at a DC the character hasn't got, Primal Howl's spell DC on a master with no spellcasting: said to the GM, not silent;
     // round 77 Foundry test.)
     if (!plan) {
@@ -306,7 +306,7 @@ Hooks.on("canvasReady", () => {
 
 Hooks.once("ready", () => {
     // (The item module's move reader, by its own path beside this module's; round 94.)
-    if (game.modules.get(ITEM_MODULE)?.active) Promise.all([import("../../pf2e-automatic-item-resolution/src/compiler/move.js"), import("../../pf2e-automatic-item-resolution/src/compiler/rerolls.js"), import("../../pf2e-automatic-item-resolution/src/compiler/spend.js")]).then(([move, rerolls, spend]) => { itemReaders = { movePlan: move.movePlan, rerollPlan: rerolls.rerollPlan, withSpend: spend.withSpend }; }).catch((error) => console.warn(`${MODULE_ID} | the item module's readers didn't load.`, error));
+    if (game.modules.get(ITEM_MODULE)?.active) Promise.all([import("../../pf2e-automatic-item-resolution/src/compiler/move.js"), import("../../pf2e-automatic-item-resolution/src/compiler/rerolls.js"), import("../../pf2e-automatic-item-resolution/src/compiler/spend.js"), import("../../pf2e-automatic-item-resolution/src/compiler/fortune.js")]).then(([move, rerolls, spend, fortune]) => { itemReaders = { movePlan: move.movePlan, rerollPlan: rerolls.rerollPlan, withSpend: spend.withSpend, rollTwicePlan: fortune.rollTwicePlan }; }).catch((error) => console.warn(`${MODULE_ID} | the item module's readers didn't load.`, error));
     // (A fall, the environment module's hooks: scripts/reminders.js; round 47.)
     Hooks.on("pf2e-automatic-environment-resolution.falling", (data) => { if (isActiveGM()) onFalling(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
     Hooks.on("pf2e-automatic-environment-resolution.fell", (data) => { if (isActiveGM()) onFell(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });

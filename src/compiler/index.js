@@ -28,16 +28,21 @@ const NOT_MOVES = /^Fabricate Rift$/;
 // an attack sent elsewhere, Sidestep's and Redirect Elements': not its user's reroll card.)
 const NOT_REROLLS = /^(?:Redirect Elements|Sidestep|Impossible Technique|Focus Ally|Correct the Story|Companion's Reprise|Shadows Within Shadows)$/;
 // An action's own item-module card (round 94, Cole's pick "Item cards first"), read by that module's readers when it's on (options.itemReaders:
-// its src/compiler/rerolls.js rerollPlan, its src/compiler/move.js movePlan) → its "reroll" or "teleport" plan, or null. A passive's: none.
+// its src/compiler/rerolls.js rerollPlan, fortune.js rollTwicePlan, move.js movePlan) → its "reroll", "roll-twice" or "teleport" plan, or null. A passive's: none.
 function itemCardFor(item, readers) {
     if (!readers || (item.system?.actionType?.value ?? "passive") === "passive") return null;
     const base = { source: { name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type }, rank: 1, traits: [...(item.system?.traits?.value ?? [])], activation: { time: null, traits: [] } };
     // (Its inline checks as their words, "a DC 30 [[/act high-jump]]{Athletics} check": the card's lines are plain text.)
     const html = String(item.system?.description?.value ?? "").replace(/\[\[[^\]]*\]\]\{([^}]*)\}/g, "$1").replace(/@Check\[(\w+)[^\]]*\](?:\{([^}]*)\})?/g, (_, skill, label) => label ?? `${skill.charAt(0).toUpperCase()}${skill.slice(1)}`);
     const reroll = typeof readers.rerollPlan === "function" && !NOT_REROLLS.test(item.name) ? readers.rerollPlan(html, base) : null;
-    const card = reroll ?? (typeof readers.movePlan === "function" && !NOT_MOVES.test(item.name) ? readers.movePlan(html, base) : null);
-    // (Its cost, Rewrite Fate's "Spend a Mythic Point": the item module's card spends it, or refuses — its src/compiler/spend.js.)
     const plain = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    // (Its user's next roll rolled twice, the better kept: the item module's fortune card, PF2e's RollTwice — its src/compiler/fortune.js.)
+    // (Liberate Self's "Attempt to Escape, rolling the check twice": that Escape's check, by hand. Vision of Foresight's "a saving throw or
+    // skill check" the reader takes for a save alone: not its card.)
+    const escape = item.name === "Liberate Self" ? { ...base, builtin: "roll-twice", automation: { level: "automatic" }, targeting: { target: "the user", range: null, area: null }, trigger: { event: "use" }, rollTwice: { selector: "check", keep: "higher", predicate: [{ or: ["action:escape"] }] }, notes: ["Then Escape: its check is rolled twice, the better kept."] } : null;
+    const twice = escape ?? (!reroll && typeof readers.rollTwicePlan === "function" && item.name !== "Vision of Foresight" ? readers.rollTwicePlan(plain, base) : null);
+    const card = reroll ?? twice ?? (typeof readers.movePlan === "function" && !NOT_MOVES.test(item.name) ? readers.movePlan(html, base) : null);
+    // (Its cost, Rewrite Fate's "Spend a Mythic Point": the item module's card spends it, or refuses — its src/compiler/spend.js.)
     const spent = card && typeof readers.withSpend === "function" ? readers.withSpend(card, plain) : card;
     // (Rewrite Fate's "reroll the check or save": either roll, not a save alone.)
     if (spent?.reroll && /\breroll the (?:check or save|save or check)\b/i.test(plain)) spent.reroll = { ...spent.reroll, what: "roll", statistic: undefined };
