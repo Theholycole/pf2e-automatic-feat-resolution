@@ -9,6 +9,7 @@ import { registerTerrainOptions } from "./terrain.js";
 import { registerCompanionGrowth } from "./companion-growth.js";
 import { registerGrants } from "./grants.js";
 import { registerPreRoll } from "./pre-roll.js";
+import { registerManeuverMap } from "./maneuver-map.js";
 import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
@@ -233,6 +234,8 @@ Hooks.once("ready", () => {
     Hooks.on("pf2e-automatic-environment-resolution.fell", (data) => { if (isActiveGM()) onFell(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
     // (Before your own roll, a feat used then: scripts/pre-roll.js; round 45.)
     registerPreRoll();
+    // (A maneuver's lower multiple attack penalty, Agile Maneuvers: scripts/maneuver-map.js; round 54.)
+    registerManeuverMap();
     Hooks.on("preCreateChatMessage", recordTargets);
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {
