@@ -98,5 +98,10 @@ export default [
         uuid: pf2e("IyWtJ1KSd6TTvfYQ"), name: "Momentary Respite",
         text: "<p>You regain @Damage[8d8[healing]] Hit Points.</p>",
         activity: true, notes: ["Spend a Mythic Point. Remove your persistent damage conditions; you're immune to persistent damage until the end of your next turn."]
+    },
+    {
+        uuid: pf2e("hSHteYr1g1gKHcwM"), name: "Fey Skin",
+        text: "<p>You regain @Damage[(@actor.level)[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes; on top of any Treat Wounds healing. (Its extra Hit Points and cold iron weakness are PF2e's own rules.)"]
     }
 ];
