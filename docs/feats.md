@@ -456,3 +456,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   made (Bloom of Health's half level), with the character as its origin. Posting it again with the same target takes it off. With no target,
   the GM is told to target first. Plans: Protect Ally, Transfusion, Bloom of Health, Little Buddy, Snap Falling Fruit, Redirecting Draft
   (the last two only against the triggering attack, so a note says to delete them after).
+
+### Round 20 (2026-10-31)
+
+- Protect Ally, Transfusion, Bloom of Health (fast healing 4 at 8th level, a number), Snap Falling Fruit, Redirecting Draft: all pass, on
+  the target only, on and off; with nothing targeted, the GM is told to target first. Little Buddy did nothing: an NPC's action, and the
+  module played only characters' and familiars'. An NPC's is now played only when it's an ally's Effect (the ability module plays the rest).
