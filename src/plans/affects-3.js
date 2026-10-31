@@ -148,5 +148,10 @@ export default [
         uuid: "Compendium.pf2e.feats-srd.Item.QuRhGFEhvF7z0Pz9", name: "Immortal Techniques",
         affect: { target: "you", effects: [{ kind: "temp-hp", formula: "20", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
         notes: ["Post it the first time each round you use an action with both the monk and stance traits."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.gYrJJcG5PDe5aMep", name: "Dominance of Nature",
+        affect: { target: "1 animal, beast, elemental or plant within 30 feet", effects: [{ kind: "condition", slug: "slowed", value: 1, duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
+        notes: ["If its level is at most yours − 3, it's controlled by you for 1 round instead (swap the condition by hand). Sustain it up to 1 minute. At the end of each of its turns it attempts a @Check[will|against:class-spell] save to end it. Immune for 1 day after."]
     }
 ];

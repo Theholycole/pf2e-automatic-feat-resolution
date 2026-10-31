@@ -263,5 +263,10 @@ export default [
         uuid: "Compendium.pf2e-team-plus-alchemists.pf2e-misc.Item.E6QgnzfIIEHC6dJ6", name: "Greater Field Discovery (Gastronome)",
         toggle: { who: "target", rules: [bonus("attack-roll", 1, "status"), bonus("damage", 1, "status"), bonus("saving-throw", 1, "status", ["item:trait:mental"])] },
         notes: ["Target the creatures with temporary Hit Points from your alchemical food: post it again when those run out."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-magic.items.Item.zAPlXKTaxdmY6xFL", name: "Eyes of Shadow",
+        toggle: { who: "target", rules: [{ key: "Sense", selector: "darkvision" }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
+        notes: ["Dismiss your shadow weapon. Target one creature within 30 feet; it ends early when you draw the shadow weapon again (post it again). The creature is then immune for 10 minutes."]
     }
 ];
