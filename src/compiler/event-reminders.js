@@ -64,6 +64,15 @@ export function eventTrigger(given) {
         const skills = [...check[2].matchAll(/Recall Knowledge|[A-Z][a-z]+/g)].map((match) => match[0].toLowerCase()).filter((word) => word !== "recall knowledge");
         return { ...read("own-check"), outcomes: [...new Set(outcomes)], skills };
     }
+    // ("You fail, but don't critically fail, an attempt to Disable a Device on a trap": that action's check, any skill; "You roll a skill
+    // check or saving throw and don't like the result": any degree; round 48.)
+    const attempt = /^You ((?:(?:critically )?(?:succeed|fail)(?:,? \(?but (?:don't|do not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on )?(?:an|your) attempt to ([A-Z][a-z]+(?: (?:a |an |the )?[A-Z][a-z]+)*)\b/.exec(trigger);
+    if (attempt) {
+        const words = attempt[1].toLowerCase();
+        const outcomes = [...(/critically succeed/.test(words) ? ["criticalSuccess"] : []), ...(/(?<!critically )succeed/.test(words) ? ["success"] : []), ...(/(?<!critically )fail/.test(words) ? ["failure", ...(/but (?:don't|do not) critically fail/.test(words) ? [] : ["criticalFailure"])] : []), ...(/critically fail(?!\))/.test(words) && !/but (?:don't|do not) critically fail/.test(words) ? ["criticalFailure"] : [])];
+        return { ...read("own-check"), outcomes: [...new Set(outcomes)], skills: [], action: attempt[2].toLowerCase().replace(/\s+(?:a|an|the)\s+/g, " ").replace(/\s+/g, "-") };
+    }
+    if (/^You roll a skill check(?: or saving throw)? and don't like the result\b/i.test(trigger)) return { ...read("own-check"), outcomes: ["criticalSuccess", "success", "failure", "criticalFailure"], skills: [] };
     // (Another creature's roll result: "A creature within 30 feet critically fails an attack roll, skill check, or saving throw", "An ally
     // within 30 feet of you critically succeeds at an attack roll or skill check", "An enemy critically succeeds at an attack roll or saving
     // throw", "You or an ally within 30 feet fails an attack roll or skill check", "An ally misses … with their attack": others-roll, by who

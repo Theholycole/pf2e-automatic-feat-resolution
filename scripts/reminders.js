@@ -122,7 +122,7 @@ export async function onRollMessage(message) {
     if (["skill-check", "perception-check"].includes(context?.type) && message.actor?.type === "character" && context.outcome) {
         const roller = message.actor;
         const domains = context.domains ?? [];
-        const due = [...roller.itemTypes.feat, ...roller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-check" && read.outcomes.includes(context.outcome) && (!read.skills.length || read.skills.some((skill) => domains.includes(skill) || (context.options ?? []).includes(`action:${skill}`))));
+        const due = [...roller.itemTypes.feat, ...roller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-check" && read.outcomes.includes(context.outcome) && (!read.action || (context.options ?? []).includes(`action:${read.action}`)) && (!read.skills.length || read.skills.some((skill) => domains.includes(skill) || (context.options ?? []).includes(`action:${skill}`))));
         if (due.length) await whisper(roller, `<strong>${escape(roller.name)}</strong>: your check's result.`, due);
         return;
     }
