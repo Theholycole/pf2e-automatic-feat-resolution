@@ -90,5 +90,16 @@ export default [
         uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.E9CLWaNP0QjvV8fe", name: "Fever Shiver",
         affect: { target: "you", effects: [{ kind: "condition", slug: "sickened", value: 0, duration: null, stack: { by: -1 } }] },
         notes: ["Then raise your frustrated condition by 1. Or instead, attempt a new save against an affliction (and see the feat for what that costs): remove the card's change then."]
+    },
+    // (Round 65: the sweep.)
+    {
+        uuid: pf2e("CjafX7d1XktxeyTa"), name: "Deific Font",
+        affect: { target: "you", effects: [{ kind: "condition", slug: "drained", value: 1, duration: null, stack: { by: 1 } }] },
+        notes: ["Before the end of your next turn, a spell of 4th rank or lower you cast spends no slot, or a focus spell no Focus Point; it loses its tradition trait and gains divine."]
+    },
+    {
+        uuid: pf2e("XyQpqznuO5LGFvhz"), name: "Coordinated Distraction",
+        affect: { target: "1 enemy within 30 feet", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" } }] },
+        notes: ["Only against the first Strike your chosen ally (within 30 feet) makes on their next turn: remove it after that Strike, or if they don't Strike the target. Auditory or visual, as you describe it."]
     }
 ];
