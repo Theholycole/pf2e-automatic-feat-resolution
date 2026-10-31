@@ -187,7 +187,7 @@ export default [
     },
     {
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.aVhhPuhF87ACfFFd", name: "Assess Terrain",
-        selfCheck: { statistic: "survival", dc: 15, target: "a 5-foot burst of natural difficult terrain within 30 feet" },
-        notes: ["DC 15 for a 5-foot burst; an expert can take DC 20 for a 10-foot burst, a master DC 30 for a 20-foot burst (judge those against the roll by hand; legendary: 10 higher to include cold, earth, plant, water or wood terrain).", "Critical success: the difficult terrain is normal for you for up to 1 minute, and greater difficult terrain is difficult until the end of your next turn. Success: normal until the end of your next turn. Critical failure: the whole area is difficult (or greater difficult) terrain for you until the end of your next turn."]
+        selfCheck: { statistic: "survival", dc: 15 },
+        notes: ["Choose a 5-foot burst of natural difficult terrain within 30 feet. DC 15 for a 5-foot burst; an expert can take DC 20 for a 10-foot burst, a master DC 30 for a 20-foot burst (judge those against the roll by hand; legendary: 10 higher to include cold, earth, plant, water or wood terrain).", "Critical success: the difficult terrain is normal for you for up to 1 minute, and greater difficult terrain is difficult until the end of your next turn. Success: normal until the end of your next turn. Critical failure: the whole area is difficult (or greater difficult) terrain for you until the end of your next turn."]
     }
 ];
