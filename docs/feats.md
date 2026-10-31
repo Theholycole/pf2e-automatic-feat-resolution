@@ -468,3 +468,8 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - A toggle can be a stance (`stance: true`): the module's Stance Effect, which another of the module's stances ends. Haft Striker Stance and
   Forest's Heart add their Strikes (Strike rules; the haft's runes by hand), Jester's Gambol its resistance against animals, beasts, fey,
   fungi and plants (by the damage's origin traits), Flair Rider Stance its lesser cover and Reflex while mounted.
+
+### A bonus for one moment (2026-10-31)
+
+- Duck and Weave, Stoic as Hell, Alien Brain, Focus Anger: the module's Effect to the start of your next turn or the end of this one, what
+  it's only against a note (delete it after the triggering save). Defend Summoner: on the summoner, targeted.

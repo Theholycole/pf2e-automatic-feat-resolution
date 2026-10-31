@@ -149,5 +149,32 @@ export default [
         uuid: pf2e("dyjYNaE6Nc6zpsUM"), name: "Flair Rider Stance",
         toggle: { stance: true, rules: [bonus("ac", 1, "circumstance", ["self:effect:mounted"], "flair-rider-cover-ac"), bonus("reflex", 3, "circumstance", ["self:effect:mounted"], "flair-rider-reflex")] },
         notes: ["While mounted (PF2e's Effect: Mounted): lesser cover from your mount (+1 AC and Reflex), and the +3 to Reflex also cancels Mounted's -2."]
+    },
+    // A bonus for one moment, used as a reaction or an action (2026-10-31, the loop): the module's Effect, to the end of the turn or the start
+    // of your next; what it's only against is a note.
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.EkvtLALpIufz8rx7", name: "Duck and Weave",
+        toggle: { rules: [bonus("ac", 2, "circumstance", undefined, "duck-and-weave")], duration: ROUND },
+        notes: ["Only against the one creature within 30 feet you chose. Until then you can't Strike or take hostile actions against any other creature."]
+    },
+    {
+        uuid: pf2e("9Co9SUJmey3LrlLl"), name: "Stoic as Hell",
+        toggle: { rules: [bonus("saving-throw", 2, "circumstance", undefined, "stoic-as-hell"), bonus("will-dc", 2, "circumstance", undefined, "stoic-as-hell-dc")], duration: THIS_TURN },
+        notes: ["Only against the triggering emotion or controlled effect: delete the Effect after it. If you critically succeed (or it critically fails against your Will DC), you're also immune to the effect for 1 hour."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.HHcEB8E1PidijRqC", name: "Alien Brain",
+        toggle: { rules: [bonus("saving-throw", 2, "status", undefined, "alien-brain")], duration: THIS_TURN },
+        notes: ["Only against the triggering mental effect: delete the Effect after it. It's +3 if you're frustrated 3 (edit the value). On a critical success against a creature's effect, it becomes stupefied (by hand)."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.fOeKR7JM4UOK0ZOd", name: "Focus Anger",
+        toggle: { rules: [bonus("saving-throw", 2, "circumstance", undefined, "focus-anger")], duration: THIS_TURN },
+        notes: ["Only against the triggering mental save: delete the Effect after it. Then you enter your monster form."]
+    },
+    {
+        uuid: pf2e("xlparPCGhkgjdhx2"), name: "Defend Summoner",
+        toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "defend-summoner")], duration: ROUND },
+        notes: ["Target your summoner. Only while you're within your eidolon's reach."]
     }
 ];
