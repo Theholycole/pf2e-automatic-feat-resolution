@@ -6,39 +6,63 @@ const MODULE_ID = "pf2e-automatic-feat-resolution";
 
 const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character]);
 
-export async function applyFeatEffect(item, plan) {
+export async function applyFeatEffect(item, plan, recipients = null) {
     const actor = item?.actor;
     const effect = plan?.effect;
     if (!actor || !effect?.rules?.length) return null;
     const ours = (each) => each.flags?.[MODULE_ID]?.effect;
-    // (Used again: the old one goes, so the time starts over and the bonus doesn't stack with itself.)
-    const old = actor.itemTypes.effect.filter((each) => ours(each) && (each.flags[MODULE_ID].effect.source === item.sourceId || each.flags[MODULE_ID].effect.item === item.id || (effect.stance && each.flags[MODULE_ID].effect.stance)));
-    if (old.length) await actor.deleteEmbeddedDocuments("Item", old.map((each) => each.id));
-    // (A toggled passive's Effect, on: posting it again turns it off.)
-    // (Its chat line, on and off, as PF2e-linked toggles have; 2026-10-30 Foundry test.)
     const say = (line) => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>` });
-    if (plan.toggle && old.length) {
-        await say(`Effect: ${escape(effect.name)} ends on ${escape(actor.name)}.`);
-        return null;
-    }
-    const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
-    const [created] = await actor.createEmbeddedDocuments("Item", [{
-        name: `${effect.stance ? "Stance" : "Effect"}: ${effect.name}`,
-        type: "effect",
-        img: item.img,
-        flags: { [MODULE_ID]: { effect: { item: item.id, source: item.sourceId ?? null, stance: Boolean(effect.stance) } } },
-        system: {
-            description: { value: `<p>From <strong>${escape(item.name)}</strong>.</p>${notes}` },
-            duration: effect.duration,
-            start: { value: game.time.worldTime, initiative: game.combat?.started ? game.combat.combatant?.initiative ?? null : null },
-            rules: foundry.utils.deepClone(effect.rules),
-            traits: { value: effect.stance ? ["stance"] : [], otherTags: [] },
-            tokenIcon: { show: true },
-            level: { value: Number(actor.level) || 1 }
+    // (On another creature, who "target": its numbers the character's, "@actor.level" worked out here, not the target's own; 2026-10-31.)
+    const rules = recipients ? effect.rules.map((rule) => withNumbers(rule, actor.getRollData?.() ?? {})) : effect.rules;
+    const lines = [];
+    let created = null;
+    for (const each of recipients ?? [actor]) {
+        // (Used again: the old one goes, so the time starts over and the bonus doesn't stack with itself.)
+        const old = each.itemTypes.effect.filter((other) => ours(other) && (other.flags[MODULE_ID].effect.source === item.sourceId || other.flags[MODULE_ID].effect.item === item.id || (effect.stance && other.flags[MODULE_ID].effect.stance)));
+        if (old.length) await each.deleteEmbeddedDocuments("Item", old.map((other) => other.id));
+        // (A toggled passive's Effect, on: posting it again turns it off.)
+        // (Its chat line, on and off, as PF2e-linked toggles have; 2026-10-30 Foundry test.)
+        if (plan.toggle && old.length) {
+            lines.push(`Effect: ${escape(effect.name)} ends on ${escape(each.name)}.`);
+            continue;
         }
-    }]);
-    if (plan.toggle && created) await say(`Effect: ${escape(effect.name)} on ${escape(actor.name)}.`);
+        const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
+        [created] = await each.createEmbeddedDocuments("Item", [{
+            name: `${effect.stance ? "Stance" : "Effect"}: ${effect.name}`,
+            type: "effect",
+            img: item.img,
+            flags: { [MODULE_ID]: { effect: { item: item.id, source: item.sourceId ?? null, stance: Boolean(effect.stance) } } },
+            system: {
+                description: { value: `<p>From <strong>${escape(item.name)}</strong>.</p>${notes}` },
+                duration: effect.duration,
+                start: { value: game.time.worldTime, initiative: game.combat?.started ? game.combat.combatant?.initiative ?? null : null },
+                rules: foundry.utils.deepClone(rules),
+                traits: { value: effect.stance ? ["stance"] : [], otherTags: [] },
+                tokenIcon: { show: true },
+                level: { value: Number(actor.level) || 1 },
+                ...(recipients ? { context: { origin: { actor: actor.uuid, token: null, item: item.uuid ?? null }, target: null, roll: null } } : {})
+            }
+        }]);
+        if (plan.toggle && created) lines.push(`Effect: ${escape(effect.name)} on ${escape(each.name)}.`);
+    }
+    if (lines.length) await say(lines.join(" "));
     return created ?? null;
+}
+
+// A rule's formulas with the character's numbers in ("5 * floor(@actor.level / 2)" → 3 at 6th level); a formula that isn't arithmetic once
+// filled stays as it is.
+function withNumbers(rule, data) {
+    const fill = (value) => {
+        if (typeof value !== "string" || !value.includes("@")) return value;
+        const filled = Roll.replaceFormulaData(value, data, { missing: "0" });
+        try {
+            const total = Roll.safeEval(filled);
+            return Number.isFinite(total) ? total : filled;
+        } catch {
+            return filled;
+        }
+    };
+    return Object.fromEntries(Object.entries(rule).map(([key, value]) => [key, fill(value)]));
 }
 
 // A compendium UUID by name, as PF2e's texts link some ("…feat-effects.Item.Effect: Formation Training") → by id, the pack's entry of that

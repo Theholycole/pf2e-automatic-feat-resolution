@@ -78,14 +78,17 @@ async function cardForFeat(message) {
         if (item !== posted) plan = compileItem(item);
     }
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
+    // (On the player's targets, who "target": as a passive's PF2e Effect is.)
+    const targetActors = () => (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
+    const untargeted = () => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });
+    if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : untargeted();
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     // (A Focus or Mythic Point back: added to the pool, up to its maximum; 2026-10-30, the loop.)
     if (plan?.builtin === "regain-point") return regainPoint(item, plan);
     // (A passive's PF2e Effect for its moment, on and off: on the character, or on the player's targets; 2026-10-30, docs/rules.md.)
     if (plan?.builtin === "passive-effect") {
-        const targets = (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
-        const actors = plan.who === "you" ? [item.actor] : targets;
-        if (!actors.length) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });
+        const actors = plan.who === "you" ? [item.actor] : targetActors();
+        if (!actors.length) return untargeted();
         return togglePassiveEffect(item, plan, actors);
     }
     const play = abilityApi()?.live?.playAbility;

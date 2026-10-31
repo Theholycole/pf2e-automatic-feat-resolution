@@ -448,3 +448,11 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 
 - Deft Cooperation (+1 attack and AC to the end of your next turn) passes. Born in the Saddle's +1 to Reflex applied unmounted too; it's
   now predicated on PF2e's Effect: Mounted ("self:effect:mounted"), whose -2 it softens to -1.
+
+### Allies' Effects from an action (2026-10-31)
+
+- An action that gives an ally a bonus PF2e has no Effect for (Protect Ally's +1 AC, Transfusion's fast healing) is a toggle with
+  `who: "target"`: the module's own Effect on each of the player's targets, its formulas worked out from the character's numbers when it's
+  made (Bloom of Health's half level), with the character as its origin. Posting it again with the same target takes it off. With no target,
+  the GM is told to target first. Plans: Protect Ally, Transfusion, Bloom of Health, Little Buddy, Snap Falling Fruit, Redirecting Draft
+  (the last two only against the triggering attack, so a note says to delete them after).

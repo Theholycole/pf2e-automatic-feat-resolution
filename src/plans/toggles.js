@@ -95,5 +95,37 @@ export default [
         uuid: pf2e("8pmd9gMl3TamFx3u"), name: "Deft Cooperation",
         toggle: { rules: [bonus("attack", 1, "circumstance", undefined, "deft-cooperation-attack"), bonus("ac", 1, "circumstance", undefined, "deft-cooperation-ac")], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
         notes: ["After you successfully Aid an ally's attack roll or AC: only against that enemy, until the end of your next turn."]
+    },
+    // Actions whose bonus goes on an ally, with no PF2e Effect for it (2026-10-31, the loop): who "target", the module's Effect on each of the
+    // player's targets, its numbers the character's. Posting it again with the same target takes it off.
+    {
+        uuid: pf2e("ASWqQ6RB7cfCsUo0"), name: "Protect Ally",
+        toggle: { who: "target", rules: [bonus("ac", 1, "circumstance", undefined, "protect-ally")], duration: ROUND },
+        notes: ["On one adjacent ally, until the start of your next turn; it ends early once the ally isn't adjacent to you. Only one ally at a time."]
+    },
+    {
+        uuid: pf2e("q4wFELOV4BQO4cDd"), name: "Transfusion",
+        toggle: { who: "target", rules: [{ key: "FastHealing", value: 1 }], duration: { value: 5, unit: "rounds", expiry: "turn-start", sustained: false } },
+        notes: ["Spend 5 sanguimancy Hit Points (by hand). Each 5 more raises the fast healing by 1, to 8 at most: edit the Effect's value."]
+    },
+    {
+        uuid: pf2e("Fe5m807oeqJw3YUd"), name: "Bloom of Health",
+        toggle: { who: "target", rules: [{ key: "FastHealing", value: "floor(@actor.level / 2)" }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
+        notes: ["On your knights who hear you: target them first."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-items.Item.FVp2POzJHwBGZVi4", name: "Little Buddy",
+        toggle: { who: "target", rules: [bonus("attack", 1, "status", undefined, "little-buddy-attack"), bonus("damage", 2, "status", undefined, "little-buddy-damage")] },
+        notes: ["For the rest of the encounter: delete the Effect when it ends. The ally is then immune to Little Buddy for 1 day."]
+    },
+    {
+        uuid: pf2e("YKPaD42aJf2C5V3B"), name: "Snap Falling Fruit",
+        toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "snap-falling-fruit")], duration: THIS_TURN },
+        notes: ["Only against the triggering physical ranged attack (target yourself if it's you): delete the Effect after it. If it misses, you knock it out of the air."]
+    },
+    {
+        uuid: pf2e("G3NBWaItq6oLEJxx"), name: "Redirecting Draft",
+        toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "redirecting-draft")], duration: THIS_TURN },
+        notes: ["Only against the triggering ranged physical Strike (target yourself if it's you): delete the Effect after it."]
     }
 ];

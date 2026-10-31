@@ -567,6 +567,18 @@ test("toggled Effects: a passive's PF2e Effect, on the character or its target",
     assert.equal(leak.effect, "Compendium.pf2e-team-plus-magic.misc.Item.ehRD6fl2IfuURuaM");
 });
 
+test("an ally's Effect from an action: the module's own, on the player's targets", async () => {
+    const action = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Choose an ally.</p>" }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
+    const protect = compileFeat(action("Protect Ally", "Compendium.pf2e.feats-srd.Item.ASWqQ6RB7cfCsUo0"), { dcs: DCS });
+    assert.equal(protect.builtin, "feat-effect");
+    assert.equal(protect.who, "target");
+    assert.deepEqual(protect.effect.rules[0], { key: "FlatModifier", selector: "ac", type: "circumstance", value: 1, slug: "protect-ally" });
+    const bloom = compileFeat(action("Bloom of Health", "Compendium.pf2e.feats-srd.Item.Fe5m807oeqJw3YUd"), { dcs: DCS });
+    assert.equal(bloom.effect.rules[0].value, "floor(@actor.level / 2)");
+    const shadow = compileFeat({ ...action("Shadow Master", "Compendium.pf2e.feats-srd.Item.BqcAwmNjDlKEI84X"), system: { ...action().system, actionType: { value: "passive" } } }, { dcs: DCS });
+    assert.equal(shadow.who, undefined);
+});
+
 test("linked Effects by hand: an action's Effect the reader leaves, on the character, its target or its allies", async () => {
     const action = (name, uuid) => ({ name, type: "feat", sourceId: uuid, system: { description: { value: "<p>Stride once.</p>" }, actionType: { value: "action" }, actions: { value: 1 }, traits: { value: [] }, rules: [] } });
     const dash = compileFeat(action("Plane-Stepping Dash", "Compendium.pf2e.feats-srd.Item.s6C5jtru8j0sONa6"), { dcs: DCS });
