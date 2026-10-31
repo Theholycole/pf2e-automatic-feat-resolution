@@ -307,5 +307,11 @@ export default [
         uuid: "Compendium.pf2e.actionspf2e.Item.vFaNE7s7vFs9BxJW", name: "Set Free",
         toggle: { rules: [{ key: "RollTwice", selector: "check", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN },
         notes: ["Your check to remove or counteract the confused, controlled, fascinated, immobilized, paralyzed or restrained effect: rolled twice, the better kept."]
+    },
+    // (Round 105: its action, posted from the sheet: spiritsense for the minute.)
+    {
+        uuid: pf2e("uEaXm7eCfeQgtD38"), name: "Rivethun Spiritual Attunement",
+        toggle: { rules: [{ key: "Sense", selector: "spiritsense", acuity: "imprecise", range: 60 }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
+        notes: ["Once per day, an action with the concentrate trait."]
     }
 ];
