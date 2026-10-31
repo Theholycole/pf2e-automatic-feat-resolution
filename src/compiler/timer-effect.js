@@ -11,6 +11,9 @@ const OTHERS = /^(?:the target|the (?:enemy|foe|ally|opponent)|targets|the trigg
 const OTHERS_ANYWHERE = /\b(?:the target|the triggering (?:creature|enemy|foe|ally)|each (?:enemy|foe|ally)|enemies|foes|your allies|that (?:enemy|foe|ally))\b/i;
 // (Not a timer: an immunity, a once-a-day, what you can't do again.)
 const NOT_TIMED = /\bimmune\b|\b(?:rest|rests|spend|spends|work|works|study|meditate|meditates|pray|prays|practice|train|wait|search|searches|investigate|concentrate|perform|performs|craft|crafting|taking|takes|take)\b[^.,]{0,30}\bfor (?:\d+|one|a|an|two|three|ten) (?:round|minute|hour)s?\b|\bcan't (?:\w+ ){0,4}again\b|\bcan't attempt\b|\bcan't use [^.]* again\b/i;
+// (Not one a roll's outcome decides, "On a critical failure, the creature also becomes Off-Guard …": the check's card's, after the roll;
+// round 43, To War!.)
+const OUTCOME = /^(?:on an? (?:critical )?(?:success|failure|hit)|(?:critical )?(?:success|failure)\b|if (?:you|it|they|the (?:target|creature|enemy|strike|attack)|this (?:shot|strike|attack)|your (?:strike|attack|check)) (?:succeeds?|fails?|hits?|critically|misses?|is hit|are hit)|if the (?:target|creature|enemy) (?:fails|succeeds|critically))/i;
 // (Links as their words, "@UUID[…Concealed]{Concealed}" "Concealed", so a sentence doesn't end in a compendium path.)
 const linkWords = (html) => html.replace(/@(?:UUID|Compendium)\[([^\]]+)\](?:\{([^}]*)\})?/g, (_all, path, label) => label ?? path.split(".").at(-1)).replace(/@\w+\[[^\]]*\](?:\{([^}]*)\})?/g, (_all, label) => label ?? "");
 
@@ -20,7 +23,7 @@ export function timerEffect(item) {
     const html = linkWords(String(item.system?.description?.value ?? "").replace(HEADINGS, " "));
     const text = htmlToPlainText(html).replace(/\s+/g, " ").trim();
     const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text];
-    const at = sentences.findIndex((sentence) => LASTS.test(sentence) && !NOT_TIMED.test(sentence));
+    const at = sentences.findIndex((sentence) => LASTS.test(sentence) && !NOT_TIMED.test(sentence) && !OUTCOME.test(sentence.trim()));
     if (at < 0) return null;
     const sentence = sentences[at].trim();
     const duration = effectDuration(sentence.replace(/beginning of your next turn/i, "start of your next turn"));

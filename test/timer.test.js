@@ -11,9 +11,15 @@ test("timer effect: yours, the target's, none", () => {
     assert.equal(self.who, undefined);
     assert.deepEqual(self.effect.rules, []);
     assert.equal(self.effect.duration.expiry, "turn-start");
-    const target = timerEffect(act("<p>On a critical failure, the creature also becomes @UUID[Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg]{Off-Guard} until the end of your next turn.</p>"));
+    const target = timerEffect(act("<p>The creature also becomes @UUID[Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg]{Off-Guard} until the end of your next turn.</p>"));
     assert.equal(target.who, "target");
     assert.equal(target.effect.duration.expiry, "turn-end");
     assert.equal(timerEffect(act("<p>The ally is then immune to Stand Firm for 1 minute.</p>")), null);
     assert.equal(timerEffect(act("<p>For 1 minute, you gain a lot.</p>", "passive")), null);
+});
+
+test("timer effect: none for an outcome's", () => {
+    const act = (html) => ({ name: "Test", system: { actionType: { value: "action" }, description: { value: html } } });
+    assert.equal(timerEffect(act("<p>On a critical failure, the creature also becomes Off-Guard until the end of your next turn.</p>")), null);
+    assert.equal(timerEffect(act("<p>If this shot hits its target, the target becomes Off-Guard until the end of your next turn.</p>")), null);
 });

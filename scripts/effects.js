@@ -36,7 +36,7 @@ export async function applyFeatEffect(item, plan, recipients = null) {
             img: item.img,
             flags: { [MODULE_ID]: { effect: { item: item.id, source: item.sourceId ?? null, stance: Boolean(effect.stance) } } },
             system: {
-                description: { value: `<p>From <strong>${escape(item.name)}</strong>.</p>${notes}` },
+                description: { value: `<p>From <strong>${escape(String(item.name ?? "").trim())}</strong>.</p>${notes}` },
                 duration: effect.duration,
                 start: { value: game.time.worldTime, initiative: game.combat?.started ? game.combat.combatant?.initiative ?? null : null },
                 rules: foundry.utils.deepClone(rules),
