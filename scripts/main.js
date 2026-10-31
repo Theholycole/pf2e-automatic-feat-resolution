@@ -17,7 +17,7 @@ import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
 import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
-import { actingItem } from "../src/compiler/companion.js";
+import { actingItem, findMaster } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
 import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
@@ -132,7 +132,7 @@ async function cardForFeat(message) {
     // round 77 Foundry test.)
     if (!plan) {
         const missing = missingDC(item);
-        if (missing) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: no ${missing} was found for ${item.actor.name}, so there's no card. Call for the save by hand, at the DC you set.</p>` });
+        if (missing) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: no ${missing} was found for ${dcOwner(item.actor).name}, so there's no card. Call for the save by hand, at the DC you set.</p>` });
     }
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
     if (!(plan.resolution && CARD_KINDS.has(plan.resolution.kind)) && !allCards()) return;
@@ -160,6 +160,9 @@ async function cardForFeat(message) {
     if (/^you and\b/i.test(plan.targeting?.target ?? "") && source) targets.push(source);
     return play(item, plan, sourceToken, new Set(targets));
 }
+
+// Whose DC a companion's save uses: its master's (scripts/character.js); round 78 Foundry test, the whisper named the companion.
+const dcOwner = (actor) => findMaster(actor, { actors: [...(game.actors ?? [])], users: [...(game.users ?? [])] }) ?? actor;
 
 // The DC a feat's save is against that the character lacks ("spell DC", "class DC"), or null.
 function missingDC(item) {
