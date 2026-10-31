@@ -6,6 +6,7 @@ import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { registerConditionFeats } from "./conditions.js";
 import { registerTerrainOptions } from "./terrain.js";
+import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
@@ -202,6 +203,8 @@ Hooks.once("init", () => {
     registerConditionFeats();
     // (Difficult terrain's roll option, for the feats that make foes in it off-guard: scripts/terrain.js.)
     registerTerrainOptions();
+    // (The /nonlethal command: scripts/nonlethal.js.)
+    registerNonlethal();
 });
 
 // (In init, after PF2e's own: by setup the world's tokens had prepared without them; 2026-10-30 Foundry test. PF2e's hearing and tremorsense,
@@ -261,5 +264,5 @@ Hooks.once("ready", () => {
     });
     const module = game.modules.get(MODULE_ID);
     // (What its feats ease of the weather, the temperature and falls, for the environment module: src/plans/environment.js.)
-    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs, temperatureProtections, weatherIgnores, fallEases });
+    if (module) module.api = Object.freeze({ compileFeat: compileItem, characterDCs, temperatureProtections, weatherIgnores, fallEases, toggleNonlethal });
 });

@@ -553,8 +553,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   -2, slug improvised), Ankle Biter (prone's attack penalty). Night Terror: the apocalypse mount's fly Speed as its land Speed
   (system.movement.speeds.land.value in PF2e 8.6; Climbing Limbs+ the same).
 - Round 34: Improvisational Defender and Ankle Biter pass. PF2e 8.6.1 has no penalty (and no toggle) for a nonlethal Strike with a lethal
-  weapon, so Stage Fighting, Nonlethal Takedown and Protector of the Wilds were dropped. Decision for Cole: should the module add that -2
-  itself (a nonlethal toggle on Strikes), which those three would then cancel?
+  weapon. Cole (2026-10-31): there's none native to PF2e, so the module gives one: the Nonlethal Attacks Effect (/nonlethal, or
+  api.toggleNonlethal), src/plans/nonlethal.js. Lethal weapons gain the nonlethal trait and a -2 circumstance (slug nonlethal) on Strikes;
+  Stage Fighting, Nonlethal Takedown and Protector of the Wilds suppress it.
 
 ### Batch 11 (2026-10-31)
 
