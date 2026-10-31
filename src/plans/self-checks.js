@@ -194,5 +194,10 @@ export default [
         uuid: pf2e("epzeES7xJxvIXDdj"), name: "Dance of Intercession",
         selfCheck: { statistic: "performance", dc: 35 },
         notes: ["You Stride up to half your Speed as you dance. The second use in a day is one degree worse, the third two degrees worse: adjust by hand.", "Critical success: cast the 3-action @UUID[Compendium.pf2e.spells-srd.Item.rfZpqmj0AIIdkVIs]{Heal} or @UUID[Compendium.pf2e.spells-srd.Item.wdA52JJnsuQWeyqz]{Harm} at rank 9 during the Stride, with no spell slot; success: rank 7; failure: rank 5. Critical failure: nothing more, and no more dances until your next daily preparations."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.YWRrxFEnT8n6Ykf1", name: "Beseech Fate",
+        selfCheck: { statistic: "diplomacy", level: "target", adjustment: 2, target: "you or 1 creature", range: "30 feet" },
+        notes: ["Once per day. Against the hard DC of the target's level, or the DC of the effect that caused the condition if that is higher: the GM's call.", "On a success, suppress its clumsy, enfeebled, frightened, sickened or stupefied condition by hand. A condition that lasts longer than 1 minute comes back after 1 minute, and the suppressed time counts toward its duration."]
     }
 ];
