@@ -196,5 +196,10 @@ export default [
         uuid: pf2e("jP0D4CIyloiBaEh4"), name: "Sharpened Senses",
         toggle: { rules: [bonus("perception", 2, "circumstance", ["action:seek"], "sharpened-senses")], duration: THIS_TURN },
         notes: ["Seek now; the +2 only if you use one of your senses from Natural Senses."]
+    },
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.MLOkyKi1Y3N6y56Q", name: "Raise Neck",
+        toggle: { rules: [{ key: "AdjustStrike", mode: "add", property: "weapon-traits", value: "reach-10", definition: ["item:slug:fangs"] }], duration: THIS_TURN },
+        notes: ["Your nagaji fangs Strike has reach 10 feet until the end of your turn."]
     }
 ];

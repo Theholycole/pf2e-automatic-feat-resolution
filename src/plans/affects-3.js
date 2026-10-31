@@ -68,5 +68,10 @@ export default [
         // (Unconscious again after dying ends, as My Legend Must Be Told: PF2e's dying takes its unconscious with it; 2026-10-31 Foundry test.)
         affect: { target: "you", effects: [{ kind: "end-condition", slug: "dying", stabilize: true }, { kind: "condition", slug: "unconscious", value: null, duration: null }] },
         notes: ["You stay unconscious at 0 Hit Points. If the harrow card you draw is from the suit of Shields, you wake and regain 1d6 + your level Hit Points (by hand)."]
+    },
+    {
+        uuid: pf2e("i8MnyasCDo3j65Xd"), name: "Quicken Heartbeat",
+        affect: { target: "you", effects: [{ slug: "quickened", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" } }] },
+        notes: ["Quickened during your next turn, the extra action only to Stride or Strike. If you're slowed, reduce slowed by 1 instead (don't apply this)."]
     }
 ];
