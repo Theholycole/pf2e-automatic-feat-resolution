@@ -22,6 +22,6 @@ export default [
     {
         uuid: "Compendium.pf2e.actionspf2e.Item.r0qPSxLoa1xRSWYL", name: "Forced Pact", target: "1 creature within 60 feet",
         text: `<p>The target attempts a @Check[will|against:class-spell] save.</p><hr /><p><strong>Failure</strong> The pact holds: if you or the target uses an action with the chosen trait within the next minute, that creature takes 10d6 mental damage and the pact ends.</p><p><strong>Critical Failure</strong> As failure, but the target takes the damage whichever of you uses the action.</p>`,
-        notes: ["Choose attack, move, manipulate or concentrate. When the pact triggers, roll @Damage[10d6[mental]] for whoever takes it."]
+        notes: ["Choose attack, move, manipulate or concentrate.", "Failure: if you or the target uses an action with the chosen trait within the next minute, that creature takes @Damage[10d6[mental]] damage and the pact ends.", "Critical Failure: as failure, except the target takes the damage if either of you uses an action with the chosen trait."]
     }
 ];

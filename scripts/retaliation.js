@@ -39,9 +39,17 @@ async function onMessage(message) {
     }
 }
 
+// The character's class DC: its class's, else the highest of its other class DCs (an archetype's or an effect's; round 58 Foundry test).
+function classDC(actor) {
+    const own = actor.classDC?.dc?.value;
+    if (Number.isFinite(own)) return own;
+    const all = Object.values(actor.classDCs ?? {}).map((statistic) => statistic?.dc?.value).filter(Number.isFinite);
+    return all.length ? Math.max(...all) : actor.system?.attributes?.classDC?.value;
+}
+
 // The attacker's save, as a chat card with PF2e's own save button and the outcomes as text.
 async function postSave(entry, defender, defenderToken, attacker, attackerToken) {
-    const base = entry.save.dc === "spell" ? defender.spellcasting?.base?.dc?.value ?? defender.attributes?.spellDC?.value : defender.classDC?.dc?.value ?? defender.system?.attributes?.classDC?.value;
+    const base = entry.save.dc === "spell" ? defender.spellcasting?.base?.dc?.value ?? defender.attributes?.spellDC?.value : classDC(defender);
     if (!Number.isFinite(base)) return;
     const options = defender.getRollOptions?.(["all"]) ?? [];
     const dc = base + (entry.save.harder && options.includes(entry.save.harder.option) ? entry.save.harder.by : 0);
