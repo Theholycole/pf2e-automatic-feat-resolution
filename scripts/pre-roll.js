@@ -13,10 +13,24 @@ const quiet = new Set();
 const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character]);
 const optionsOf = (context) => [...(context?.options ?? [])];
 // (The started encounter the creature is in, not the tracker's viewed one; round 45 test.)
-const encounterOf = (actor) => (game.combats ?? []).find((combat) => combat.started && combat.combatants.some((each) => each.actor === actor)) ?? null;
+// (By id: a Strike's context.actor is PF2e's contextual clone, not the actor the combatant has; round 45 test.)
+const sameActor = (a, b) => Boolean(a && b) && (a === b || (a.uuid && a.uuid === b.uuid) || (!a.isToken && !b.isToken && a.id === b.id));
+const encounterOf = (actor) => (game.combats ?? []).find((combat) => combat.started && combat.combatants.some((each) => sameActor(each.actor, actor))) ?? null;
+// (The real actor behind the clone: the token's for an unlinked one, else the world's.)
+const realActor = (context) => {
+    const given = context?.actor;
+    if (!given) return null;
+    return (given.isToken ? context.token?.actor ?? given.token?.actor : game.actors?.get(given.id)) ?? context.token?.actor ?? given;
+};
+// (Ally or enemy by PF2e's alliances, isAllyOf; a token's disposition when there's none; round 45 test, Divine Rebuttal on a foe's save.)
+const sideOf = (roller, actor, rollerToken, token) => {
+    if (typeof actor.isAllyOf === "function") return actor.isAllyOf(roller) ? "ally" : actor.isEnemyOf?.(roller) ?? !actor.isAllyOf(roller) ? "enemy" : null;
+    return rollerToken && token ? (rollerToken.document.disposition === token.document.disposition ? "ally" : "enemy") : null;
+};
 
-function dueFor(context) {
-    const actor = context?.actor;
+function dueFor(given) {
+    const context = { ...given, actor: realActor(given) };
+    const actor = context.actor;
     const combat = encounterOf(actor);
     if (!actor || !combat) return [];
     const roll = {
@@ -44,16 +58,16 @@ function othersDue(context, roll) {
     const out = [];
     for (const combatant of combat.combatants) {
         const actor = combatant.actor;
-        if (actor?.type !== "character" || actor === roller) continue;
+        if (actor?.type !== "character" || sameActor(actor, roller)) continue;
         const token = combatant.token?.object ?? null;
-        const side = rollerToken && token ? (rollerToken.document.disposition === token.document.disposition ? "ally" : "enemy") : null;
+        const side = sideOf(roller, actor, rollerToken, token);
         for (const item of [...actor.itemTypes.feat, ...actor.itemTypes.action]) {
             if (quiet.has(`${combat.id}.${actor.id}.${item.id}`)) continue;
             const read = preRollTrigger(item);
             if (!fitsOthersCheck(read, roll)) continue;
             if (read.who !== "creature" && read.who !== side) continue;
             if (read.within && !(token && rollerToken && (token.distanceTo?.(rollerToken) ?? Infinity) <= read.within)) continue;
-            if (read.againstYou && context.target?.actor !== actor) continue;
+            if (read.againstYou && !sameActor(context.target?.actor, actor)) continue;
             out.push({ item, read, by: actor });
         }
     }
@@ -85,9 +99,9 @@ export function registerPreRoll() {
             if (game.settings.get(MODULE_ID, SETTING) && !context?.isReroll) {
                 const due = dueFor(context);
                 if (due.length) {
-                    const answer = await ask(context.actor, due);
+                    const answer = await ask(realActor(context), due);
                     if (answer === "stop") return null;
-                    if (answer === "quiet") for (const { item, by } of due) quiet.add(`${encounterOf(context.actor)?.id}.${(by ?? context.actor).id}.${item.id}`);
+                    if (answer === "quiet") for (const { item, by } of due) quiet.add(`${encounterOf(realActor(context))?.id}.${(by ?? realActor(context)).id}.${item.id}`);
                 }
             }
         } catch (error) {
