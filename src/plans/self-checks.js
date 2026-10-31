@@ -163,5 +163,26 @@ export default [
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.kcMcqQOa32dVJqvi", name: "Venomous Visionary",
         selfCheck: { statistic: "survival", defense: "deception", target: "1 creature you can perceive", range: "30 feet" },
         notes: ["Against the target's Stealth DC instead if it is higher, or the poison's DC for an object: by hand. On a success you learn as detect poison whether it is poisonous or venomous (a 2nd-rank @UUID[Compendium.pf2e.spells-srd.Item.QqxwHeYEVylkYjsO] if you're legendary in Survival). Not on the same target again for 1 day."]
+    },
+    // (Round 89: fixed DCs the feat names.)
+    {
+        uuid: pf2e("lleedxE6fTDSK6og"), name: "Resuscitate",
+        selfCheck: { statistic: "medicine", dc: 40, target: "1 creature dead no more than 3 rounds" },
+        notes: ["On a success it returns to life with the effects of @UUID[Compendium.pf2e.spells-srd.Item.IkGYwHRLhkuoGReG]{Raise Dead}, keeping its wounded condition increased by 1 (wounded 1 if it had none): by hand. Either way it is immune to Resuscitate for 1 day."]
+    },
+    {
+        uuid: pf2e("ZO37MZEQVNNtg46b"), name: "Desperate Resuscitation",
+        selfCheck: { statistic: "medicine", dc: 40, target: "1 creature dead no more than 3 rounds" },
+        notes: ["On a success it returns to life with the effects of @UUID[Compendium.pf2e.spells-srd.Item.IkGYwHRLhkuoGReG]{Raise Dead}, keeping its wounded condition increased by 1 (wounded 1 if it had none): by hand. Either way it is immune to Desperate Resuscitation for 1 day."]
+    },
+    {
+        uuid: pf2e("xYNMWGEmpbtrtWXQ"), name: "Unwind Death",
+        selfCheck: { statistic: "crafting", dc: 40, target: "1 creature dead no more than 3 rounds" },
+        notes: ["On a success it returns to life with the effects of @UUID[Compendium.pf2e.spells-srd.Item.IkGYwHRLhkuoGReG]{Raise Dead}, keeping its wounded condition increased by 1 (wounded 1 if it had none): by hand. Either way it is immune to Unwind Death for 1 day."]
+    },
+    {
+        uuid: pf2e("LyqXT4XYYlgf8KYK"), name: "Propelled Leap",
+        selfCheck: { statistic: "athletics", dc: 30, outcomes: { criticalFailure: { effects: [{ kind: "condition", slug: "off-guard", value: null, duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] } } },
+        notes: ["Swim toward the surface at up to twice your swim Speed first (less than 10 feet: an automatic failure). You Leap 15 feet up on a critical success, 10 on a success, 5 on a failure, and 5 feet across. Near something to hold with a free hand: Grab an Edge; otherwise you fall back into the water unharmed."]
     }
 ];
