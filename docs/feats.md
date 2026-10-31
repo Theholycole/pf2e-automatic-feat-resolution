@@ -659,3 +659,4 @@ conditions. Cloudleaper Lizardfolk's falls do no damage; Reflection's trait.
 
 - Check cards (src/plans/checks-2.js): Interrupt Charge, Keep up Appearances, Improvise Strategy, Overawe Crowd, Predictable!. Healer's Halo heals 1d6 (src/plans/heals.js).
 - Round 52: save cards for Gluttonous Feast and Arrange the Board (src/plans/saves-5.js); heals for Life's Blood and Natural Remedy.
+- Round 52 companions (src/rules/companion.js): Fell Rider (companion trained in Intimidation), Undead Companion (undead instead of animal, void healing), Sheathed in Light (Clerics+: the sacred animal sheds bright light 20 feet, dim 40).
