@@ -5,6 +5,9 @@
 import { sourceOf } from "./index.js";
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
+const classFeature = (id) => `Compendium.pf2e.classfeatures.Item.${id}`;
+const hasItem = (master, uuid) => (master?.items ?? []).some((item) => sourceOf(item) === uuid);
+const hasSlug = (master, slug) => (master?.items ?? []).some((item) => item.slug === slug || item.system?.slug === slug);
 const sense = (selector, acuity = null, range = null) => ({ key: "Sense", selector, ...(acuity ? { acuity } : {}), ...(range ? { range } : {}) });
 
 export const COMPANION_RULES = [
@@ -26,6 +29,19 @@ export const COMPANION_RULES = [
     { uuid: pf2e("Veaf8vm2M9w8bcBI"), name: "Alacritous Action", rules: [{ key: "FlatModifier", selector: "land-speed", value: 10 }] },
     // (An apocalypse mount's fly Speed as its land Speed.)
     { uuid: pf2e("XHbdG50JIO8pEaQ4"), name: "Night Terror", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.movement.speeds.land.value" }] },
+    // (Round 42, evolution feats and the summoner's eidolon features: size, unarmed specialization, proficiency.)
+    { uuid: pf2e("H6qletvAJUCC1aIa"), name: "Hulking Size", rules: (master) => (hasItem(master, pf2e("ixIKF2LMmbFthI8Z")) ? [] : [{ key: "CreatureSize", value: "large" }]) },
+    { uuid: pf2e("ixIKF2LMmbFthI8Z"), name: "Towering Size", rules: [{ key: "CreatureSize", value: "huge" }] },
+    { uuid: classFeature("oCnyGRvkfjTsZXcX"), name: "Eidolon Weapon Specialization", rules: [
+        { key: "FlatModifier", selector: "unarmed-damage", slug: "weapon-specialization", label: "PF2E.WeaponSpecialization", value: 2, hideIfDisabled: true, predicate: [{ gte: ["item:proficiency:rank", 2] }] },
+        { key: "AdjustModifier", mode: "upgrade", selector: "unarmed-damage", slug: "weapon-specialization", value: 3, priority: 0, predicate: ["item:proficiency:rank:3"] },
+        { key: "AdjustModifier", mode: "upgrade", selector: "unarmed-damage", slug: "weapon-specialization", value: 4, priority: 0, predicate: ["item:proficiency:rank:4"] }] },
+    { uuid: classFeature("B5SyM7qHrU0gTGR0"), name: "Greater Eidolon Specialization", rules: [{ key: "AdjustModifier", mode: "multiply", selector: "unarmed-damage", slug: "weapon-specialization", value: 2 }] },
+    { uuid: pf2e("pKttKO84dxzRLBIC"), name: "Expert Combat Eidolon", rules: (master) => [
+        { key: "ActiveEffectLike", mode: "upgrade", path: "system.proficiencies.attacks.unarmed.rank", value: 2 },
+        ...((master?.system?.proficiencies?.defenses?.unarmored?.rank ?? 0) >= 2 ? [{ key: "ActiveEffectLike", mode: "upgrade", path: "system.proficiencies.defenses.unarmored.rank", value: 2 }] : []),
+        ...(hasSlug(master, "weapon-specialization") ? [{ key: "FlatModifier", selector: "unarmed-damage", slug: "weapon-specialization", label: "PF2E.WeaponSpecialization", value: 2, hideIfDisabled: true, predicate: [{ gte: ["item:proficiency:rank", 2] }] }] : [])] },
+    { uuid: pf2e("lpG7ZXFDZygmkbH4"), name: "Bloodletting Claws", rules: [{ key: "Note", selector: "unarmed-attack-roll", outcome: ["criticalSuccess"], predicate: [{ or: ["item:damage:type:slashing", "item:damage:type:piercing"] }, "item:melee"], title: "Bloodletting Claws", text: "The target takes @Damage[(1d6+@item.system.runes.potency)[persistent,bleed]] damage." }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
 ];
 
@@ -36,7 +52,7 @@ export function companionRulesFrom(master) {
     const out = [];
     for (const item of master?.items ?? []) {
         const entry = BY_UUID.get(sourceOf(item));
-        if (entry) out.push(...entry.rules.map((rule) => ({ label: item.name, ...rule })));
+        if (entry) out.push(...(typeof entry.rules === "function" ? entry.rules(master) : entry.rules).map((rule) => ({ label: item.name, ...rule })));
     }
     return out;
 }

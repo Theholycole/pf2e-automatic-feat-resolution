@@ -7,6 +7,7 @@ import { setUpRules } from "./rules.js";
 import { registerConditionFeats } from "./conditions.js";
 import { registerTerrainOptions } from "./terrain.js";
 import { registerCompanionGrowth } from "./companion-growth.js";
+import { registerGrants } from "./grants.js";
 import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
@@ -208,6 +209,8 @@ Hooks.once("init", () => {
     registerNonlethal();
     // (A master's feat that advances its companion: scripts/companion-growth.js.)
     registerCompanionGrowth();
+    // (A feat's given spell or action: scripts/grants.js.)
+    registerGrants();
 });
 
 // (In init, after PF2e's own: by setup the world's tokens had prepared without them; 2026-10-30 Foundry test. PF2e's hearing and tremorsense,

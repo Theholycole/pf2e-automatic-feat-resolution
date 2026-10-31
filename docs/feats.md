@@ -598,3 +598,13 @@ A master's feat that advances its companion (Mature Animal Companion, Incredible
 reanimated stages; 31 feats, src/plans/companion-growth.js) puts the animal companions module's item on the companion as the feat is
 gained, on the active GM's client, the GM choosing where the feat gives a choice (Nimble or Savage; a second specialization). Deleting
 the feat deletes the item it added. Open question for Cole: whether to do this at all (the card on companion advancement).
+
+## Round 42: eidolon size and combat; given items (2026-10-31)
+
+- Eidolon (on the eidolon from the summoner's feats, src/rules/companion.js): Hulking Size (Large) and Towering Size (Huge, over
+  Hulking), Eidolon Weapon Specialization and Greater Eidolon Specialization (as PF2e's Weapon Specialization, unarmed only), Expert
+  Combat Eidolon (expert unarmed; unarmored defense and weapon specialization when the summoner has them), Bloodletting Claws (the
+  critical bleed as a note).
+- Given items (src/plans/grants.js, scripts/grants.js): "You gain the X warden spell / hex / action", "Your familiar gains the X
+  activity". PF2e gives 682 such feats by GrantItem; for the rest, the module adds the item as the feat is gained (a spell into the
+  actor's focus spellcasting) and removes it as the feat goes. 64 feats.

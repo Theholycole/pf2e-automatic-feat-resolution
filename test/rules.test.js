@@ -82,7 +82,7 @@ test("a reaction triggered by the character's own roll: a note on that roll, for
 
 test("a master's feats' rules for its companion: PF2e's safe keys, labelled with the feat", async () => {
     const { COMPANION_RULES, companionRulesFrom } = await import("../src/rules/companion.js");
-    for (const entry of COMPANION_RULES) for (const rule of entry.rules) assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
+    for (const entry of COMPANION_RULES) for (const rule of typeof entry.rules === "function" ? entry.rules({ items: [] }) : entry.rules) assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
     const summoner = { items: [{ name: "Expanded Senses", sourceId: "Compendium.pf2e.feats-srd.Item.rPzEnABFjkbOARiB" }, { name: "Other", sourceId: "Compendium.pf2e.feats-srd.Item.nothingHere00000" }] };
     assert.deepEqual(companionRulesFrom(summoner).map((rule) => rule.selector), ["low-light-vision", "darkvision", "scent"]);
     assert.equal(companionRulesFrom(summoner)[2].range, 30);
@@ -110,4 +110,15 @@ test("an animal companion while it prepares: its class, before its minion trait"
     assert.ok(isCompanion({ type: "character", traits: new Set(["animal"]), items: [{ type: "class", slug: "animal-companion", name: "Animal Companion" }] }));
     assert.ok(isCompanion({ type: "character", traits: new Set(["animal"]), items: [], flags: { "pf2e-automatic-feat-resolution": { master: "abc" } } }));
     assert.ok(!isCompanion({ type: "character", traits: new Set(["human"]), items: [{ type: "class", slug: "fighter", name: "Fighter" }] }));
+});
+
+test("eidolon size and combat: Towering Size over Hulking Size; Expert Combat Eidolon by the summoner's", async () => {
+    const { companionRulesFrom } = await import("../src/rules/companion.js");
+    const feat = (name, id, pack = "feats-srd") => ({ name, sourceId: `Compendium.pf2e.${pack}.Item.${id}` });
+    assert.deepEqual(companionRulesFrom({ items: [feat("Hulking Size", "H6qletvAJUCC1aIa")] }).map((rule) => rule.value), ["large"]);
+    assert.deepEqual(companionRulesFrom({ items: [feat("Hulking Size", "H6qletvAJUCC1aIa"), feat("Towering Size", "ixIKF2LMmbFthI8Z")] }).map((rule) => rule.value), ["huge"]);
+    const plain = companionRulesFrom({ items: [feat("Expert Combat Eidolon", "pKttKO84dxzRLBIC")] });
+    assert.equal(plain.length, 1);
+    const expert = companionRulesFrom({ system: { proficiencies: { defenses: { unarmored: { rank: 2 } } } }, items: [feat("Expert Combat Eidolon", "pKttKO84dxzRLBIC"), { name: "Weapon Specialization", slug: "weapon-specialization" }] });
+    assert.deepEqual(expert.map((rule) => rule.path ?? rule.selector), ["system.proficiencies.attacks.unarmed.rank", "system.proficiencies.defenses.unarmored.rank", "unarmed-damage"]);
 });
