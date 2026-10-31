@@ -72,7 +72,7 @@ const ACTION_STATISTICS = {
     "pick-a-lock": ["thievery"], "disable-a-device": ["thievery"], steal: ["thievery"], "palm-an-object": ["thievery"], "conceal-an-object": ["thievery"]
 };
 const ACTION_NAMES = Object.keys(ACTION_STATISTICS).map((slug) => slug.split("-").map((word) => (["a", "an"].includes(word) ? word : word[0].toUpperCase() + word.slice(1))).join(" "));
-const NOTE_LEAD = new RegExp(String.raw`^(?:When|Whenever|If|Each time) you (successfully |critically succeed (?:at|on|to) |succeed (?:at|on|to) |critically fail (?:at|on|to) |fail (?:at|on|to) |roll a (?:success|critical success|failure|critical failure) (?:at|on|to) )?(?:an? |your |the )?(?:check to |checks? to |attempt to )?(${ACTION_NAMES.join("|")})\b(?! [A-Z])`);
+const NOTE_LEAD = new RegExp(String.raw`^(?:(?:Additionally|In addition|Also|Then|However|Finally),? )?(?:[Ww]hen|[Ww]henever|[Ii]f|[Ee]ach time) you (successfully |critically succeed (?:at|on|to) |succeed (?:at|on|to) |critically fail (?:at|on|to) |fail (?:at|on|to) |roll a (?:success|critical success|failure|critical failure) (?:at|on|to) )?(?:an? |your |the )?(?:check to |checks? to |attempt to )?(${ACTION_NAMES.join("|")})\b(?! [A-Z])`);
 const OUTCOMES = { successfully: ["success", "criticalSuccess"], succeed: ["success", "criticalSuccess"], "critically succeed": ["criticalSuccess"], fail: ["failure", "criticalFailure"], "critically fail": ["criticalFailure"], "roll a success": ["success"], "roll a critical success": ["criticalSuccess"], "roll a failure": ["failure"], "roll a critical failure": ["criticalFailure"] };
 
 // The leads that aren't a skill action: a Strike's degrees (its attack roll), initiative. Each selector once per passive.

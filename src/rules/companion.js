@@ -42,6 +42,8 @@ export const COMPANION_RULES = [
         ...((master?.system?.proficiencies?.defenses?.unarmored?.rank ?? 0) >= 2 ? [{ key: "ActiveEffectLike", mode: "upgrade", path: "system.proficiencies.defenses.unarmored.rank", value: 2 }] : []),
         ...(hasSlug(master, "weapon-specialization") ? [{ key: "FlatModifier", selector: "unarmed-damage", slug: "weapon-specialization", label: "PF2E.WeaponSpecialization", value: 2, hideIfDisabled: true, predicate: [{ gte: ["item:proficiency:rank", 2] }] }] : [])] },
     { uuid: pf2e("lpG7ZXFDZygmkbH4"), name: "Bloodletting Claws", rules: [{ key: "Note", selector: "unarmed-attack-roll", outcome: ["criticalSuccess"], predicate: [{ or: ["item:damage:type:slashing", "item:damage:type:piercing"] }, "item:melee"], title: "Bloodletting Claws", text: "The target takes @Damage[(1d6+@item.system.runes.potency)[persistent,bleed]] damage." }] },
+    // (Round 49: "When one of your companions rolls a success on a saving throw, it gets a critical success instead.")
+    { uuid: pf2e("WlFJyOz73m67HmW2"), name: "Heightened Instincts", rules: [{ key: "AdjustDegreeOfSuccess", selector: "saving-throw", adjustment: { success: "one-degree-better" } }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
 ];
 
