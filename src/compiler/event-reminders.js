@@ -116,7 +116,7 @@ export function eventTrigger(given) {
         // ("An attack or effect would reduce you to 0 Hit Points", "You witness an ally being reduced to 0 Hit Points", "You Drop Prone or
         // otherwise become Prone"; round 37.)
         const who = /^(?:An?|Another|Your|One of your) (?:adjacent )?all(?:y|ies)\b|^You witness an ally\b/i.test(trigger) ? "ally-condition"
-            : /^(?:A|An)\b[^.]*\bwould reduce you to 0 (?:Hit Points|HP)\b|^You\b[^.]*\bbecome (?:the )?[A-Za-z-]+(?: condition)?\.$/i.test(trigger) ? "self-condition" : /^(?:A|Another) creature\b/i.test(trigger) ? "creature-condition" : /^You(?:'re| are)? (?:would )?(?:gain|become|are reduced|reduced|fall|would be reduced)\b/i.test(trigger) ? "self-condition" : null;
+            : /^(?:A|An)\b[^.]*\bwould reduce you to 0 (?:Hit Points|HP)\b|^You\b[^.]*\bbecome (?:the )?[A-Za-z-]+(?: condition)?\.$/i.test(trigger) ? "self-condition" : /^(?:A|An|Another) (?:[\w-]+ ){0,3}?(?:creature|enemy|foe)\b/i.test(trigger) ? "creature-condition" : /^You(?:'re| are)? (?:would )?(?:gain|become|are reduced|reduced|fall|would be reduced)\b|^You are [A-Z][a-z-]+ \d+ or greater and your\b/i.test(trigger) ? "self-condition" : null;
         if (who) return { ...read(who), conditions };
     }
     const ally = /\b(?:an|your|one of your|a) (?:adjacent |linked |designated )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
@@ -148,7 +148,10 @@ const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled
 // "gains the Frightened condition", "would become Frightened, Drained, …", "becomes frightened or stupefied", "falls to 0 Hit Points" → the
 // conditions (with "0-hp" for the last), or null.
 function conditionsOf(trigger) {
-    if (/\b(?:falls to|is reduced to|are reduced to|'re reduced to|would be reduced to|being reduced to|would reduce you to|brings? [^.]*? to|drops to) 0 (?:Hit Points|HP)\b/i.test(trigger) && !/\bbrings an enemy\b/i.test(trigger)) return ["0-hp"];
+    if (/\b(?:falls to|is reduced to|are reduced to|'re reduced to|would be reduced to|being reduced to|would reduce you to|brings? [^.]*? to|drops to) (?:0|zero) (?:Hit Points|HP)\b|\bdies\b/i.test(trigger) && !/\bbrings an enemy\b/i.test(trigger)) return ["0-hp"];
+    // ("You are Doomed 1 or greater and your doomed value would increase": Know Thy Doom's; round 48.)
+    const raised = /\byour ([A-Za-z-]+) (?:condition )?value would increase\b/i.exec(trigger)?.[1]?.toLowerCase();
+    if (raised && CONDITION_WORDS.includes(raised)) return [raised];
     const match = /\b(?:gains?|would gain|becomes?|would become)(?: the)? ((?:[A-Za-z-]+(?:,? (?:or|and) |, ))*[A-Za-z-]+)(?: condition)?\b/i.exec(trigger);
     if (!match) return null;
     const words = match[1].toLowerCase().split(/,? (?:or|and) |, /).map((word) => word.trim());
