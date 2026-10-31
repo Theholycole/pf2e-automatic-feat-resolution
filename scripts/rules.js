@@ -51,12 +51,23 @@ export function setUpRules() {
         return original.apply(this, args);
     };
     // (Its master isn't known before the world is ready, and its feats change: the companions prepare again.)
+    // (Its tokens too: a light from the rules, Sheathed in Light's, shows only once the token prepares again; round 53 Foundry test.)
+    const resetWithTokens = (companion) => {
+        companion.reset?.();
+        for (const token of companion.getActiveTokens?.(false, true) ?? []) {
+            token.reset?.();
+            const placed = token.object;
+            if (typeof placed?.initializeSources === "function") placed.initializeSources();
+            else placed?.initializeLightSource?.();
+            placed?.renderFlags?.set?.({ refreshLighting: true });
+        }
+    };
     const again = (master) => {
         if (master?.type !== "character" || isCompanion(master)) return;
-        for (const companion of companionsOf(master, { actors: [...game.actors], users: [...game.users] })) companion.reset?.();
+        for (const companion of companionsOf(master, { actors: [...game.actors], users: [...game.users] })) resetWithTokens(companion);
     };
     Hooks.once("ready", () => {
-        for (const actor of game.actors ?? []) if (isCompanion(actor)) actor.reset?.();
+        for (const actor of game.actors ?? []) if (isCompanion(actor)) resetWithTokens(actor);
     });
     for (const hook of ["createItem", "deleteItem"]) Hooks.on(hook, (item) => again(item?.parent));
 }
