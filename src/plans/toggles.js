@@ -207,5 +207,11 @@ export default [
         uuid: "Compendium.pf2e.actionspf2e.Item.MLOkyKi1Y3N6y56Q", name: "Raise Neck",
         toggle: { rules: [{ key: "AdjustStrike", mode: "add", property: "weapon-traits", value: "reach", definition: ["item:slug:fangs"] }], duration: THIS_TURN },
         notes: ["Your nagaji fangs Strike has reach 10 feet until the end of your turn (PF2e's reach trait: 10 feet for a Medium creature)."]
+    },
+    // (Round 53: a free action that grows an attack until you put it away.)
+    {
+        uuid: pf2e("V7n3kVSl0G6a29KG"), name: "Flailtongue",
+        toggle: { rules: [{ key: "Strike", category: "unarmed", group: "flail", label: "Flailtongue", slug: "flailtongue", img: "systems/pf2e/icons/unarmed-attacks/jaws.webp", damage: { base: { damageType: "bludgeoning", dice: 1, die: "d6" } }, traits: ["unarmed", "disarm", "sweep", "trip"] }] },
+        notes: ["While it's out you can't make a jaws Strike. Post Flailtongue again when you Interact to reset your jaw."]
     }
 ];
