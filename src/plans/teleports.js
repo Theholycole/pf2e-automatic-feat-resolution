@@ -16,5 +16,5 @@ export default [
     { uuid: pf2e("meQJfsKVar9tm6c9"), name: "Running Reload", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["Or Step or Sneak instead", "Then Interact to reload"] } } },
     { uuid: misc("34Mp77lZxHkFQbsT"), name: "Quick Footed", teleport: { speedTimes: 1, move: { verb: "Stride", lines: [] } }, notes: ["First increase your frustrated condition by 1."] },
     { uuid: misc("JXJwAHcjmuEvqGyN"), name: "Winding Movements", teleport: { speedTimes: 1, move: { verb: "Stride", lines: ["You don't provoke reactions from this Stride"] } }, notes: ["First increase your frustrated condition by 1."] },
-    { uuid: misc("WQNkkfjLe4i4Vj7c"), name: "Beneath My Feet", teleport: { speedTimes: 2, move: { verb: "Stride", lines: ["Through the spaces of creatures at least one size smaller, Trampling each"] } }, notes: ["Each creature you Trample (once each) takes bludgeoning damage equal to one of your monster form's Strikes, basic Reflex save: by hand."] }
+    { uuid: misc("WQNkkfjLe4i4Vj7c"), name: "Beneath My Feet", teleport: { speedTimes: 2, move: { verb: "Stride", lines: ["Through the spaces of creatures at least one size smaller, Trampling each creature whose space you enter"] } }, notes: ["Each creature you Trample (once each) takes bludgeoning damage equal to one of your monster form's Strikes, basic Reflex save: by hand."] }
 ];
