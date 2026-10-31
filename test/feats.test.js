@@ -791,3 +791,18 @@ test("round 106: reaction offers fit their triggering rolls", async () => {
     assert.ok(!offerFits(byName("Feed on Pain"), rollOf({ type: "damage-roll" }, { fire: 9 }), { who: "self" }));
     assert.equal(levelDC(3), 18);
 });
+
+test("round 107: Redirecting Shot and Pinpoint Assault offers", async () => {
+    const { REACTION_OFFERS, offerFits, rollOf, withD20 } = await import("../src/plans/offers.js");
+    const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);
+    const miss = rollOf({ type: "attack-roll", domains: ["attack-roll", "ranged-attack-roll"], options: ["item:ranged"], outcome: "failure", dc: { value: 20 } });
+    assert.ok(offerFits(byName("Redirecting Shot"), miss, { who: "ally" }));
+    assert.ok(!offerFits(byName("Redirecting Shot"), miss, { who: "self" }));
+    assert.ok(!offerFits(byName("Redirecting Shot"), rollOf({ type: "attack-roll", domains: ["attack-roll"], options: ["item:melee"], outcome: "failure" }), { who: "ally" }));
+    assert.deepEqual(withD20(15, 5, 12, 20), { total: 22, degree: "success" });
+    assert.deepEqual(withD20(15, 5, 20, 20), { total: 30, degree: "criticalSuccess" });
+    assert.deepEqual(withD20(15, 5, 1, 20), { total: 11, degree: "criticalFailure" });
+    const damage = rollOf({ type: "damage-roll", domains: ["damage", "ranged-strike-damage"], options: ["item:ranged"] }, { piercing: 8 });
+    assert.ok(offerFits(byName("Pinpoint Assault"), damage, { who: "self" }));
+    assert.ok(!offerFits(byName("Pinpoint Assault"), rollOf({ type: "damage-roll", domains: ["damage"], options: ["item:melee"] }, { slashing: 8 }), { who: "self" }));
+});

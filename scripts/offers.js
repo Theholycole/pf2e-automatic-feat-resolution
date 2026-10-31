@@ -2,7 +2,7 @@
 // off a character's reaction whispers its owners (and the GM) a card with a button that does the reaction's effect: a check at a DC from the
 // trigger, the same action against the same target, temporary Hit Points or an Effect. The player decides whether to use it.
 
-import { REACTION_OFFERS, effectRulesFor, levelDC, offerFits, offerOf, rollOf, tempHPFrom } from "../src/plans/offers.js";
+import { REACTION_OFFERS, effectRulesFor, levelDC, offerFits, offerOf, rollOf, tempHPFrom, withD20 } from "../src/plans/offers.js";
 import { applyFeatEffect } from "./effects.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -30,8 +30,11 @@ function damageTotals(message) {
 
 export async function onOfferMessage(message) {
     const context = message.flags?.pf2e?.context;
-    if (!context?.type || !["skill-check", "damage-roll"].includes(context.type)) return;
+    if (!context?.type || !["skill-check", "damage-roll", "attack-roll"].includes(context.type)) return;
     const roll = rollOf(context, context.type === "damage-roll" ? damageTotals(message) : null);
+    // (The roll itself, for a d20 in its place or its damage again: its message, total and d20.)
+    const first = message.rolls?.[0];
+    Object.assign(roll, { message: message.id, total: Number(first?.total) || 0, die: Number(first?.dice?.find((die) => die.faces === 20)?.total) || null });
     const roller = message.actor ?? null;
     const rollerToken = message.token?.object ?? roller?.getActiveTokens?.(true)[0] ?? null;
     const targetDoc = context.target?.token ? fromUuidSync(context.target.token) : null;
@@ -56,7 +59,8 @@ export async function onOfferMessage(message) {
 
 function triggerWords(entry, roll, roller, actor, target) {
     const whose = roller === actor ? "Your" : `${escape(roller.name)}'s`;
-    if (roll.roll === "damage-roll") return `${whose} damage roll has ${roll.damage[entry.on.damageType]} ${entry.on.damageType} damage.`;
+    if (roll.roll === "damage-roll") return entry.on.damageType ? `${whose} damage roll has ${roll.damage[entry.on.damageType]} ${entry.on.damageType} damage.` : `${whose} ${roll.ranged ? "ranged " : ""}damage roll is ${roll.total}.`;
+    if (roll.roll === "attack-roll") return `${whose} ${roll.ranged ? "ranged " : ""}attack${target ? ` on ${escape(target.name)}` : ""} ${roll.outcome === "criticalFailure" ? "critically misses" : roll.outcome === "failure" ? "misses" : roll.outcome === "criticalSuccess" ? "critically hits" : "hits"} (${roll.total}${roll.dc ? ` against ${roll.dc}` : ""}).`;
     const degree = { criticalSuccess: "critically succeeds", success: "succeeds", failure: "fails", criticalFailure: "critically fails" }[roll.outcome] ?? roll.outcome;
     const skill = roll.skill ? roll.skill[0].toUpperCase() + roll.skill.slice(1) : "skill";
     return `${whose} ${skill} check${roll.action ? ` (${roll.action.replace(/-/g, " ")})` : ""}${target ? ` against ${escape(target.name)}` : ""} ${degree}.`;
@@ -70,6 +74,8 @@ function buttonLabel(entry, roll, target) {
     }
     if (does.kind === "same-action") return `${(roll.action ?? "Action").replace(/-/g, " ").replace(/^./, (letter) => letter.toUpperCase())} ${escape(target?.name ?? "")}`.trim();
     if (does.kind === "temp-hp") return `Gain ${tempHPFrom(entry, roll)} temporary Hit Points`;
+    if (does.kind === "replace-d20") return "Roll a d20 for it";
+    if (does.kind === "reroll-damage") return "Roll the damage again";
     return "Use it";
 }
 
@@ -113,6 +119,19 @@ async function use(message) {
         const current = Number(actor.system?.attributes?.hp?.temp) || 0;
         if (amount > current) await actor.update({ "system.attributes.hp.temp": amount });
         return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${escape(actor.name)} ${amount > current ? `gains ${amount} temporary Hit Points` : `keeps its ${current} temporary Hit Points (more than ${amount})`}.</p>${(entry.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("")}` });
+    }
+    if (does.kind === "replace-d20") {
+        const d20 = await new Roll("1d20").evaluate();
+        const result = withD20(roll.total, roll.die ?? 0, d20.total, roll.dc);
+        const words = { criticalSuccess: "a critical hit", success: "a hit", failure: "a miss", criticalFailure: "a critical miss" }[result.degree] ?? "for the GM to compare";
+        return d20.toMessage({ speaker: ChatMessage.getSpeaker({ actor }), flavor: `<strong>${escape(item.name)}</strong>: the ally's attack uses this d20 instead of its ${roll.die}: ${result.total}${roll.dc ? ` against ${roll.dc}` : ""}, ${words}.${(entry.notes ?? []).map((note) => `<br>${escape(note)}`).join("")}` });
+    }
+    if (does.kind === "reroll-damage") {
+        const original = game.messages.get(roll.message)?.rolls?.[0];
+        if (!original) return ui.notifications.warn(`${item.name}: the damage roll's message is gone.`);
+        const again = await original.reroll();
+        const higher = Math.max(Number(original.total) || 0, Number(again.total) || 0);
+        return again.toMessage({ speaker: ChatMessage.getSpeaker({ actor }), flavor: `<strong>${escape(item.name)}</strong>: the damage again, ${again.total} (it was ${original.total}): keep ${higher}.` });
     }
     if (does.kind === "effect") {
         const rules = effectRulesFor(entry, roll);

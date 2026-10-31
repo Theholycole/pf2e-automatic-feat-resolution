@@ -9,12 +9,15 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 // on: what triggers it.
 //   { roll: "skill-check", by: "self"|"ally"|"self-or-ally", skills, actions?, outcomes } — a skill check's degree (actions: the PF2e action slugs
 //   it must be for, from the roll's "action:<slug>" option); within: "reach" for a roller in your reach.
-//   { roll: "damage-roll", by: "self", damageType } — your damage roll with damage of that type.
+//   { roll: "damage-roll", by: "self", damageType?, ranged? } — your damage roll with damage of that type (ranged: a ranged Strike's).
+//   { roll: "attack-roll", by, ranged?, outcomes } — an attack roll's degree (ranged: a ranged attack's).
 // does: what the button does.
 //   { kind: "check", statistic, dc: "trigger" (the triggering check's DC) | "target-level" (a standard DC of its target's level) } ;
 //   { kind: "same-action" } — the triggering action, against the triggering target;
 //   { kind: "temp-hp", half: true } — temporary Hit Points from the triggering damage of that type;
-//   { kind: "effect", rules, duration } — an Effect on you; skill: the triggering check's skill fills "{skill}" in the rules.
+//   { kind: "effect", rules, duration } — an Effect on you; skill: the triggering check's skill fills "{skill}" in the rules;
+//   { kind: "replace-d20" } — a d20 the triggering roll uses instead of its own, its new total and degree against the same DC;
+//   { kind: "reroll-damage" } — the triggering damage rolled again, the higher to keep.
 // untrained: only when you're untrained in the triggering skill.
 export const REACTION_OFFERS = [
     {
@@ -47,6 +50,19 @@ export const REACTION_OFFERS = [
         untrained: true,
         does: { kind: "effect", rules: [{ key: "FlatModifier", selector: "{skill}", type: "proficiency", value: "@actor.level", label: "Watch and Learn" }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
         notes: ["Your level as a proficiency bonus to that skill for 1 minute. Not trained actions."]
+    },
+    // (Round 107.)
+    {
+        uuid: pf2e("HKNOA5WGBWGEpdmH"), name: "Redirecting Shot",
+        on: { roll: "attack-roll", by: "ally", ranged: true, outcomes: ["failure", "criticalFailure"] },
+        does: { kind: "replace-d20" },
+        notes: ["Needs a loaded firearm or crossbow, which you discharge; the ally's attack uses a thrown weapon or ammunition, and its target is in your first range increment. The attack also ignores lesser or standard cover and the concealed flat check (not in the new total)."]
+    },
+    {
+        uuid: teams("pf2e-team-plus-feats", "pf2e-misc", "Ig9HaamKNFhmhIYk"), name: "Pinpoint Assault",
+        on: { roll: "damage-roll", by: "self", ranged: true },
+        does: { kind: "reroll-damage" },
+        notes: ["Only against the required enemy of Honed-Shot Precision. Take the higher of the two."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));
@@ -59,7 +75,8 @@ export function rollOf(context, damageTotals = null) {
     const action = options.find((option) => /^action:[a-z-]+$/.test(option))?.slice(7) ?? null;
     const domains = context.domains ?? [];
     const skill = context.type === "skill-check" ? (domains.find((domain) => SKILLS.has(domain)) ?? null) : null;
-    return { roll: context.type, skill, action, outcome: context.outcome ?? null, dc: Number(context.dc?.value) || null, damage: damageTotals ?? {} };
+    const ranged = options.includes("item:ranged") || domains.some((domain) => /^ranged-(?:strike-)?(?:attack-roll|damage)$/.test(domain));
+    return { roll: context.type, skill, action, outcome: context.outcome ?? null, dc: Number(context.dc?.value) || null, damage: damageTotals ?? {}, ranged };
 }
 const SKILLS = new Set(["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"]);
 
@@ -69,7 +86,8 @@ export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarg
     const on = entry?.on;
     if (!on || !roll || on.roll !== roll.roll) return false;
     if (!(on.by === who || (on.by === "self-or-ally" && ["self", "ally"].includes(who)))) return false;
-    if (on.roll === "damage-roll") return (roll.damage?.[on.damageType] ?? 0) > 0;
+    if (on.ranged && !roll.ranged) return false;
+    if (on.roll === "damage-roll") return !on.damageType || (roll.damage?.[on.damageType] ?? 0) > 0;
     if (on.skills && !on.skills.includes(roll.skill)) return false;
     if (on.actions && !on.actions.includes(roll.action)) return false;
     if (on.outcomes && !on.outcomes.includes(roll.outcome)) return false;
@@ -89,3 +107,13 @@ export const tempHPFrom = (entry, roll) => Math.floor((roll.damage?.[entry.on.da
 
 // The Effect's rules with the triggering skill filled in.
 export const effectRulesFor = (entry, roll) => (entry.does.rules ?? []).map((rule) => JSON.parse(JSON.stringify(rule).replaceAll("{skill}", roll.skill ?? "skill-check")));
+
+// A d20 in place of the triggering roll's: its new total and degree against the same DC (a natural 20 or 1 one step better or worse).
+export function withD20(total, oldDie, newDie, dc) {
+    const value = total - oldDie + newDie;
+    if (!Number.isFinite(dc)) return { total: value, degree: null };
+    let step = value >= dc + 10 ? 3 : value >= dc ? 2 : value <= dc - 10 ? 0 : 1;
+    if (newDie === 20) step = Math.min(3, step + 1);
+    if (newDie === 1) step = Math.max(0, step - 1);
+    return { total: value, degree: ["criticalFailure", "failure", "success", "criticalSuccess"][step] };
+}
