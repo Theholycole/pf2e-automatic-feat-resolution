@@ -201,5 +201,11 @@ export default [
         uuid: "Compendium.pf2e.feats-srd.Item.Oef5B7jxmu5nFxLa", name: "Mythic Refocus",
         regain: { resource: "focus", value: 99 },
         notes: ["Spend the Mythic Point by hand."]
+    },
+    // (Round 83: "you can produce the effects of Invisibility on yourself": cast through the spell module, as a spell-like feat is.)
+    {
+        uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.auMlFNuu48YRtkeS", name: "Phase Frame",
+        text: `<p>You cast @UUID[Compendium.pf2e.spells-srd.Item.XXqE1eY3w3z6xJCB]{Invisibility} on yourself.</p>`,
+        notes: ["Once per day (once per hour if you're legendary in Crafting, heightened to half your level rounded up: set the rank by hand)."]
     }
 ];
