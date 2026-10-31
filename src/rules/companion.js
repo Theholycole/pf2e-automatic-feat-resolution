@@ -17,9 +17,9 @@ export const COMPANION_RULES = [
     // (Batch 9: a dragon companion's fly Speed, a megafauna companion's size, a construct innovation's climb Speed as its land Speed.)
     { uuid: pf2e("RkaE55TeCvwmQq7E"), name: "Wing Rider", rules: [{ key: "BaseSpeed", selector: "fly", value: 25 }] },
     { uuid: pf2e("HxTqYtXRqFkkLfDQ"), name: "Gigantic Megafauna Companion", rules: [{ key: "CreatureSize", value: "huge" }] },
-    { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.MYqJqQAi6B5WlZpK", name: "Climbing Limbs+", rules: [{ key: "BaseSpeed", selector: "climb", value: "@actor.system.attributes.speed.value" }] },
+    { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.MYqJqQAi6B5WlZpK", name: "Climbing Limbs+", rules: [{ key: "BaseSpeed", selector: "climb", value: "@actor.system.movement.speeds.land.value" }] },
     // (An apocalypse mount's fly Speed as its land Speed.)
-    { uuid: pf2e("XHbdG50JIO8pEaQ4"), name: "Night Terror", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.attributes.speed.value" }] },
+    { uuid: pf2e("XHbdG50JIO8pEaQ4"), name: "Night Terror", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.movement.speeds.land.value" }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
 ];
 
