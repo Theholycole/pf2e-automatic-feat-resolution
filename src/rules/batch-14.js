@@ -13,5 +13,8 @@ export default [
         { key: "Note", selector: "medicine", predicate: ["action:battle-medicine"], outcome: ["success", "criticalSuccess"], title: "{item|name}", text: "<p>You can also reduce the target's sickened, enfeebled or clumsy condition by 1 (not one an effect keeps applying, like enlarge). Legendary in Medicine: frightened or stunned instead.</p>" }] },
     // (Round 78: the Swim half; a success to Balance on a wet surface is the player's, as PF2e can't see the surface.)
     { uuid: pf2e("kS4wxSKrZxcOvSNK"), name: "Shore Step", rules: [
-        { key: "AdjustDegreeOfSuccess", selector: "athletics", predicate: ["action:swim"], adjustment: { success: "one-degree-better" } }] }
+        { key: "AdjustDegreeOfSuccess", selector: "athletics", predicate: ["action:swim"], adjustment: { success: "one-degree-better" } }] },
+    // (Round 80: an unarmed attack the feat gives; its Enhancement's climb Speed and free hand are the player's.)
+    { uuid: pf2e("0wuB3W7EeXrnhCmw"), name: "Powerful Tail", rules: [
+        { key: "Strike", category: "unarmed", group: "brawling", slug: "tail", label: "PF2E.BattleForm.Attack.Tail", img: "systems/pf2e/icons/unarmed-attacks/tail.webp", damage: { base: { damageType: "bludgeoning", dice: 1, die: "d6" } }, range: null, traits: ["unarmed"] }] }
 ];

@@ -100,6 +100,8 @@ export function handAct(item, entry, basicActions) {
     // (Dazzling Display, 2026-10-30 Foundry test: "immune for 1 minute", not Demoralize's 10 — entry.immunity, the feat's own duration.)
     if (entry.immunity && plan.trigger?.immunity) plan.trigger.immunity = { ...plan.trigger.immunity, raw: entry.immunity.raw ?? plan.trigger.immunity.raw, duration: entry.immunity.duration };
     plan.notes = [...(entry.notes ?? [])];
+    // (Round 80: a maneuver its companion makes, Abrasive Drag's mount: played as the companion's, as a strike entry's by is.)
+    if (entry.by) plan.by = entry.by;
     return plan;
 }
 
