@@ -115,10 +115,11 @@ export default [
     },
     {
         uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.HOEhWXCvEtLdxOuw", name: "Vocal Mediation",
-        selfCheck: { statistic: "performance", target: "you and allies within 30 feet", range: "30 feet", outcomes: {
-            criticalSuccess: { effects: [{ kind: "heal", formula: "2*@actor.level" }, { kind: "end-condition", slugs: ["fatigued"] }] },
-            success: { effects: [{ kind: "heal", formula: "@actor.level" }, { kind: "end-condition", slugs: ["fatigued"] }] } } },
-        notes: ["Takes 10 minutes. Target yourself and your allies within 30 feet. Also reduce doomed and drained by 2 on a critical success, 1 on a success, by hand."]
+        // (One roll, yours: the card heals you; a card with targets rolls for each of them instead, round 52 Foundry test.)
+        selfCheck: { statistic: "performance", outcomes: {
+            criticalSuccess: { effects: [{ kind: "heal", formula: "2*@actor.level", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] },
+            success: { effects: [{ kind: "heal", formula: "@actor.level", recipient: "self" }, { kind: "end-condition", slugs: ["fatigued"] }] } } },
+        notes: ["Takes 10 minutes. The card heals you; your allies within 30 feet regain the same (twice your level on a critical success, your level on a success) and lose fatigued: by hand. Also reduce doomed and drained by 2 on a critical success, 1 on a success, by hand."]
     },
     {
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.M8Z13CBNlNt1YZpC", name: "Astrological Divination",
@@ -129,5 +130,16 @@ export default [
         uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.yF3ZY56V6rEZdF5Y", name: "Planar Pedagogy",
         selfCheck: { statistic: "arcana" },
         notes: ["Takes 1d4 hours. On a success you're trained in one plane's Lore for 1 day (expert if you're a master in Arcana, master if legendary)."]
+    },
+    // (Round 52 Foundry test: a Lore, and Perception against Deception, against each target's DC.)
+    {
+        uuid: pf2e("XbMfMJq2sCQHdo1w"), name: "Improvise Strategy",
+        selfCheck: { statistic: "warfare-lore", defense: "perception", target: "1 creature", range: "30 feet" },
+        notes: ["Success: the target gains your choice of clumsy 1, dazzled, off-guard or stupefied 1 until the end of your next turn (put it on by hand); it can end it with a concentrate action (auditory) or an Interact (visual). Except on a critical success it's immune for 1 hour. Critical failure: you're off-guard until the start of your next turn."]
+    },
+    {
+        uuid: pf2e("cErltcAC7OVnIyO1"), name: "Predictable!",
+        selfCheck: { statistic: "perception", defense: "deception", target: "1 enemy" },
+        notes: ["Use a hard DC of the foe's level instead if that's higher. Put PF2e's Effect: Predictable! on yourself from the feat: +2 to AC against it and your next save against it on a critical success, +1 on a success, –1 on a critical failure, until the start of your next turn."]
     }
 ];

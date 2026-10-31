@@ -47,18 +47,8 @@ export default [
         notes: ["A creature you fool can't benefit from the emotion effect or use abilities that need you under it (a will-o'-wisp's Feed on Fear)."]
     },
     {
-        uuid: pf2e("XbMfMJq2sCQHdo1w"), name: "Improvise Strategy", target: "1 creature within 30 feet",
-        text: check("warfare-lore", "perception", "the Perception DC of a creature within 30 feet") + results({ criticalSuccess: "The target gains your choice of clumsy 1, dazzled, off-guard or stupefied 1 until the end of your next turn, and isn't immune to Improvise Strategy.", success: "The target gains your choice of clumsy 1, dazzled, off-guard or stupefied 1 until the end of your next turn.", criticalFailure: `You are ${offGuard} until the start of your next turn.` }),
-        notes: ["Pick the condition and put it on by hand. Add auditory or visual: the target can end it with a concentrate action (auditory) or an Interact (visual). Except on a critical success, the target is immune for 1 hour."]
-    },
-    {
         uuid: "Compendium.pf2e.actionspf2e.Item.QGeA2sPtDdryTpWw", name: "Overawe Crowd", target: "the swarm or troop",
         text: check("intimidation", "will", "the Will DC of the swarm or troop") + results({ criticalSuccess: `The target Strides twice in a direction you choose; you can move with it. It is ${stunned}.`, success: `The target Strides twice in a direction you choose; you can move with it. It is ${stunned}.`, failure: `The target Strides once in a direction you choose and you move with it. It is ${stunned}.`, criticalFailure: `The target is ${stunned}.` }),
         notes: ["Spend 1 Mythic Point; roll at mythic proficiency, by hand. Move the tokens by hand. The target is then immune for 24 hours."]
-    },
-    {
-        uuid: pf2e("cErltcAC7OVnIyO1"), name: "Predictable!", target: "1 enemy",
-        text: check("perception", "deception", "the foe's Deception DC") + results({ criticalSuccess: "+2 circumstance bonus to your AC against it until the start of your next turn, and to your next save against it.", success: "+1 circumstance bonus to your AC against it until the start of your next turn, and to your next save against it.", criticalFailure: "–1 circumstance penalty to your AC against it until the start of your next turn, and to your next save against it." }),
-        notes: ["Use a hard DC of the foe's level instead if that's higher. Put PF2e's Effect: Predictable! on yourself from the feat and pick the degree."]
     }
 ];

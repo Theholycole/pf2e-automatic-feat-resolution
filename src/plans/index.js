@@ -144,7 +144,9 @@ export function handSelfCheck(item, entry, dcs = null) {
     const check = entry.selfCheck;
     const level = Number(dcs?.level ?? item.actor?.level);
     // (check.level "target": "the hard DC for the target's level" — each target's own, the ability module's card works it out.)
-    const byTarget = check.level === "target";
+    // (check.defense "perception": against each target's Perception DC, a check the text reader doesn't take (a Lore, Perception against
+    // Deception; round 52 Foundry test).)
+    const byTarget = check.level === "target" || Boolean(check.defense);
     if (!byTarget && (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length)) return null;
     const row = (degree) => ({ ...NONE(), effects: withCharacterNumbers(check.outcomes?.[degree]?.effects ?? [], dcs, item), ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
     return {
@@ -155,7 +157,7 @@ export function handSelfCheck(item, entry, dcs = null) {
         activation: { time: actionsOf(item), traits: [] },
         targeting: { target: check.target ?? "you", range: check.range ?? null, area: null },
         trigger: { event: "use", immunity: null },
-        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: byTarget ? { dc: "level", adjustment: check.adjustment ?? 0 } : { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
+        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: check.defense ? { dc: "target", statistic: check.defense } : byTarget ? { dc: "level", adjustment: check.adjustment ?? 0 } : { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
             outcomes: { criticalSuccess: row("criticalSuccess"), success: row("success"), failure: row("failure"), criticalFailure: row("criticalFailure") } },
         automation: { level: "automatic" },
         notes: [...(entry.notes ?? [])]
