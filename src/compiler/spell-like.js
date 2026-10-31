@@ -17,7 +17,7 @@ export function spellLike(item, dcs) {
     // (Not its trigger or requirements, "You cast Spellsurge", "You have cast Summon Undead this turn": what it does.)
     const html = String(item?.system?.description?.value ?? "").replace(/<p>\s*<strong>\s*(?:Trigger|Requirements?|Prerequisites?)\s*<\/strong>[\s\S]*?<\/p>/gi, "");
     // The sentence that names the spell as what the feat does.
-    const lead = /(?:\b(?:has|have|gain|gains|get|with|is subject to) the effects? of|\b[Yy]ou (?:can )?cast)\s+(?:(?:a|an|the|either a|one)\s+)?((?:the\s+)?(?:\d+-action version of\s+)?(?:(?:\d+)(?:st|nd|rd|th)-rank\s+)?)(?:<(?:em|i)>)?@UUID\[/;
+    const lead = /(?:\b(?:has|have|gain|gains|get|with|is subject to) the effects? of|\b[Yy]ou (?:can )?cast)\s+(?:(?:a|an|the|either a|one)\s+)?((?:the\s+)?(?:\d+[-‐‑–]action version of\s+)?(?:(?:\d+)(?:st|nd|rd|th)-rank\s+)?)(?:<(?:em|i)>)?@UUID\[/;
     const found = lead.exec(html);
     if (!found) return null;
     const at = found.index + found[0].length - "@UUID[".length;
@@ -36,8 +36,10 @@ export function spellLike(item, dcs) {
     const words = found[1] ?? "";
     let rank = finite(RANK.exec(words.trim())?.[1]);
     const after = plainOf(html.slice(at));
+    // ("heightened to a rank one lower than half your level rounded up", Blessing of the Five.)
+    if (rank === null && /heightened to a rank one lower than half your level(?:,)? rounded up/i.test(after)) rank = Math.max(1, Math.ceil((Number(dcs?.level) || 1) / 2) - 1);
     if (rank === null && /(?:heightened to|with) (?:a rank equal to )?half your level(?:,)? rounded up/i.test(after)) rank = Math.max(1, Math.ceil((Number(dcs?.level) || 1) / 2));
-    const actions = finite(/(\d)-action version/i.exec(words)?.[1]);
+    const actions = finite(/(\d)[-‐‑–]action version/i.exec(words)?.[1]);
     // The DC it names; otherwise the character's best of class and spell DC (an innate spell from a feat).
     const best = [dcs?.class, dcs?.spell].map(finite).filter((value) => value !== null);
     let dc = null;

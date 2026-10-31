@@ -147,5 +147,16 @@ export default [
         uuid: pf2e("gCUJYnWPQ9VM8eXk"), name: "Commitment to Protection",
         selfCheck: { statistic: "warfare-lore", level: "target", adjustment: 2, target: "1 creature or hazard you can see" },
         notes: ["Target the creature or hazard, not the ally. Then put @UUID[Compendium.pf2e.feat-effects.Item.eu7DEgjicyYyosCl]{Effect: Commitment to Protection} on an ally within 30 feet and pick the degree: +2 AC on a critical success, +1 on a success, −1 on a critical failure, against that creature's next attack. Legendary in Warfare Lore: a failure or critical failure is a success."]
+    },
+    // (Round 85: the hard DC and the standard DC of the target's level.)
+    {
+        uuid: pf2e("YeQn7mJoFO7PR6uO"), name: "Soul Thief",
+        selfCheck: { statistic: "occultism", level: "target", adjustment: 2, target: "1 creature of at least 18th level that died within the last minute" },
+        notes: ["Once per day. On a success you capture its soul in a gem (three gems at most). Swallowing a gem later: @UUID[Compendium.pf2e.feat-effects.Item.evFqVITRiK6AZd6d]{Effect: Soul Thief}."]
+    },
+    {
+        uuid: pf2e("iLFGrBeG2yas8cxm"), name: "By Your Name",
+        selfCheck: { statistic: "crafting", level: "target", adjustment: 0, target: "1 creature whose name you know" },
+        notes: ["Once per hour; not against the same target again for 24 hours.", "Success: for 1 minute you can Trace their name as a diacritic rune; when the base rune is invoked on them, they take a −2 circumstance penalty to saves against it. Critical success: also a status bonus to its damage equal to half your level."]
     }
 ];

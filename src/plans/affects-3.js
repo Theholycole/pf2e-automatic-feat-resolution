@@ -213,5 +213,11 @@ export default [
         text: `<p>You cast a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.uqlxMQQeSGWEVjki]{Truesight} on yourself.</p>`,
         castWith: "perception",
         notes: ["Once per hour. Its counteract checks use your Perception modifier."]
+    },
+    // (Round 85: "as a 5th-rank Translocate spell" isn't a sentence the spell reader takes.)
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.fPTwCnKYesk1PvuI", name: "Burn Identity",
+        text: `<p>You cast a 5th-rank @UUID[Compendium.pf2e.spells-srd.Item.VlNcjmYyu95vOUe8]{Translocate} on yourself.</p>`,
+        notes: ["Once per week. Everyone who has seen you in the last 24 hours (exempt any you choose) attempts a Will save against your class DC or spell DC, whichever is higher, or forgets your appearance as a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.FhOaQDTSnsY7tiam]{Rewrite Memory}: the GM rolls those.", "As a 10-minute activity instead: teleport yourself and up to four targets touched to the nearest border of Andoran, by hand."]
     }
 ];

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { characterStrike, compileFeat, dcFor, fillCharacterDCs, fillCharacterNumbers } from "../src/compiler/index.js";
+import { spellLike } from "../src/compiler/spell-like.js";
 import { activityRider, strikeMatches } from "../../pf2e-automatic-ability-resolution/src/live/activity.js";
 
 // A 8th-level character: class DC 25, spell DC 27 (occult), Strength +4.
@@ -714,4 +715,12 @@ test("a fall's reactions: as it starts, by height; another's in range; after it"
     assert.deepEqual([eventTrigger(reaction("You fall from a height of 15 feet or higher.")).event, eventTrigger(reaction("You fall from a height of 15 feet or higher.")).feet], ["self-falling", 15]);
     assert.equal(eventTrigger(reaction("A creature within 60 feet is falling.")).within, 60);
     assert.equal(eventTrigger(reaction("You fall at least 10 feet and land on a solid surface.")).event, "self-fell");
+});
+
+test("a 3‐action version (a typographic hyphen) at a rank one lower than half the level, rounded up (Blessing of the Five)", () => {
+    const item = { name: "Blessing of the Five", type: "feat", system: { actionType: { value: "action" }, actions: { value: 3 }, traits: { value: [] },
+        description: { value: "<p>You cast the 3‐action version of @UUID[Compendium.pf2e.spells-srd.Item.rfZpqmj0AIIdkVIs]{Heal}, heightened to a rank one lower than half your level rounded up.</p>" } } };
+    const plan = spellLike(item, { level: 9, class: 27, spell: 28 });
+    assert.equal(plan.rank, 4);
+    assert.equal(plan.actions, 3);
 });
