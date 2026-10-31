@@ -771,3 +771,23 @@ test("a short teleport by hand: the teleport plan (round 99, Dart Between)", () 
     assert.equal(dart?.builtin, "teleport");
     assert.deepEqual(dart.teleport, { within: 60, from: "self" });
 });
+
+test("round 106: reaction offers fit their triggering rolls", async () => {
+    const { REACTION_OFFERS, offerFits, rollOf, levelDC, tempHPFrom, effectRulesFor } = await import("../src/plans/offers.js");
+    const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);
+    const check = (skill, outcome, action = null, dc = 20) => rollOf({ type: "skill-check", domains: ["skill-check", skill], options: action ? [`action:${action}`] : [], outcome, dc: { value: dc } });
+    assert.ok(offerFits(byName("Furious Outburst"), check("diplomacy", "failure", "make-an-impression"), { who: "ally" }));
+    assert.ok(!offerFits(byName("Furious Outburst"), check("diplomacy", "success", "make-an-impression"), { who: "ally" }));
+    assert.ok(!offerFits(byName("Furious Outburst"), check("diplomacy", "failure", "request"), { who: "self" }));
+    assert.ok(offerFits(byName("Repeat Lesson"), check("athletics", "criticalFailure", "trip"), { who: "ally", hasTarget: true, inReach: true }));
+    assert.ok(!offerFits(byName("Repeat Lesson"), check("athletics", "failure", "trip"), { who: "self", hasTarget: true, inReach: true }));
+    assert.ok(!offerFits(byName("Repeat Lesson"), check("athletics", "failure", "trip"), { who: "ally", hasTarget: true, inReach: false }));
+    assert.ok(offerFits(byName("Watch and Learn"), check("stealth", "success"), { who: "ally", untrainedIn: () => true }));
+    assert.ok(!offerFits(byName("Watch and Learn"), check("stealth", "success"), { who: "ally", untrainedIn: () => false }));
+    assert.equal(effectRulesFor(byName("Watch and Learn"), check("stealth", "success"))[0].selector, "stealth");
+    const damage = rollOf({ type: "damage-roll" }, { mental: 9, slashing: 4 });
+    assert.ok(offerFits(byName("Feed on Pain"), damage, { who: "self" }));
+    assert.equal(tempHPFrom(byName("Feed on Pain"), damage), 4);
+    assert.ok(!offerFits(byName("Feed on Pain"), rollOf({ type: "damage-roll" }, { fire: 9 }), { who: "self" }));
+    assert.equal(levelDC(3), 18);
+});
