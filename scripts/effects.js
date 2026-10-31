@@ -43,7 +43,9 @@ export async function applyFeatEffect(item, plan, recipients = null) {
                 traits: { value: effect.stance ? ["stance"] : [], otherTags: [] },
                 tokenIcon: { show: true },
                 level: { value: Number(actor.level) || 1 },
-                ...(recipients ? { context: { origin: { actor: actor.uuid, token: null, item: item.uuid ?? null }, target: null, roll: null } } : {})
+                // (plan.ownTurn: it lasts until the end of the recipient's own turn, Ambersoul's sap; no origin, as PF2e anchors an Effect
+                // to its origin's initiative; round 81 Foundry test.)
+                ...(recipients && !plan.ownTurn ? { context: { origin: { actor: actor.uuid, token: null, item: item.uuid ?? null }, target: null, roll: null } } : {})
             }
         }]);
         if (plan.toggle && created) lines.push(`Effect: ${escape(effect.name)} on ${escape(each.name)}.`);

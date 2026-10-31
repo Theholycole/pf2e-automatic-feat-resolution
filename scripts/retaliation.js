@@ -31,7 +31,7 @@ async function onMessage(message) {
         // (Ambersoul's sap: an Effect on the attacker, as a who "target" feat's; round 81.)
         if (entry.effect) {
             const item = defender.items.find((each) => sourceOf(each) === entry.uuid);
-            if (item) await applyFeatEffect(item, { builtin: "feat-effect", who: "target", effect: { name: entry.name, rules: effectRules(entry, event.options), duration: entry.effect.duration, stance: false }, notes: [] }, [attacker]);
+            if (item) await applyFeatEffect(item, { builtin: "feat-effect", who: "target", effect: { name: entry.name, rules: effectRules(entry, event.options), duration: entry.effect.duration, stance: false }, notes: [], ownTurn: true }, [attacker]);
             continue;
         }
         if (entry.save) { await postSave(entry, defender, targetToken, attacker, attackerToken); continue; }
