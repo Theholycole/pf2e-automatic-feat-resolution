@@ -636,3 +636,10 @@ fortune or misfortune effect. 9 feats (scripts/pre-roll.js).
 an attack roll or skill check" (Harbinger's Caw), "An ally is about to roll a saving throw" (Divine Rebuttal): as that roll starts, in
 an encounter, its roller is asked first, the feat's character named, with the same three buttons. By side (the tokens' dispositions),
 range, and "against you" (the Strike's target). Not Aid (it needs preparing first), not "would succeed" (after the roll). 11 feats.
+
+## Round 47: falls (2026-10-31)
+
+The environment module's fall hooks: as a creature starts to fall ("falling", before the GM applies it), its own reactions ("You fall
+from a height of 15 feet or higher": Cushion Landing, Arrest a Fall, Grab an Edge, Contingency Leap) and others' in range ("A creature
+within 60 feet is falling": Air Cushion) are whispered; once it's done ("fell"), "You fall at least 10 feet and land" (Impressive
+Landing). Round 45's fix: the before-the-roll prompts use the reminders' own setting and the encounter the creature is in.

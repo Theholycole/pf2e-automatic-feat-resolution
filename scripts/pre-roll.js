@@ -7,15 +7,18 @@
 import { fitsCheck, fitsOthersCheck, preRollTrigger } from "../src/compiler/event-reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
-const SETTING = "eventReminders";
+// (The reaction reminders' own setting, scripts/reminders.js; round 45 test: there is no "eventReminders".)
+const SETTING = "turnReminders";
 const quiet = new Set();
 const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character]);
 const optionsOf = (context) => [...(context?.options ?? [])];
+// (The started encounter the creature is in, not the tracker's viewed one; round 45 test.)
+const encounterOf = (actor) => (game.combats ?? []).find((combat) => combat.started && combat.combatants.some((each) => each.actor === actor)) ?? null;
 
 function dueFor(context) {
     const actor = context?.actor;
-    if (!actor || !game.combat?.started) return [];
-    if (!game.combat.combatants.some((each) => each.actor === actor)) return [];
+    const combat = encounterOf(actor);
+    if (!actor || !combat) return [];
     const roll = {
         type: context.type,
         statistic: (context.domains ?? []).find((domain) => /^[a-z]+$/.test(domain) && domain !== "check" && domain !== "all") ?? null,
@@ -25,7 +28,7 @@ function dueFor(context) {
     };
     if (context.type === "skill-check") roll.statistic = (context.domains ?? []).find((domain) => ["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"].includes(domain)) ?? roll.statistic;
     const own = actor.type === "character" ? [...actor.itemTypes.feat, ...actor.itemTypes.action]
-        .filter((item) => !quiet.has(`${game.combat.id}.${actor.id}.${item.id}`))
+        .filter((item) => !quiet.has(`${combat.id}.${actor.id}.${item.id}`))
         .map((item) => ({ item, read: preRollTrigger(item), by: null }))
         .filter(({ read }) => fitsCheck(read, roll)) : [];
     return [...own, ...othersDue(context, roll)];
@@ -35,16 +38,17 @@ function dueFor(context) {
 // side and how far its token is; round 46.)
 function othersDue(context, roll) {
     const roller = context?.actor;
-    if (!roller || !game.combat?.started) return [];
+    const combat = encounterOf(roller);
+    if (!roller || !combat) return [];
     const rollerToken = context.token?.object ?? roller.getActiveTokens?.(true)?.[0] ?? null;
     const out = [];
-    for (const combatant of game.combat.combatants) {
+    for (const combatant of combat.combatants) {
         const actor = combatant.actor;
         if (actor?.type !== "character" || actor === roller) continue;
         const token = combatant.token?.object ?? null;
         const side = rollerToken && token ? (rollerToken.document.disposition === token.document.disposition ? "ally" : "enemy") : null;
         for (const item of [...actor.itemTypes.feat, ...actor.itemTypes.action]) {
-            if (quiet.has(`${game.combat.id}.${actor.id}.${item.id}`)) continue;
+            if (quiet.has(`${combat.id}.${actor.id}.${item.id}`)) continue;
             const read = preRollTrigger(item);
             if (!fitsOthersCheck(read, roll)) continue;
             if (read.who !== "creature" && read.who !== side) continue;
@@ -83,7 +87,7 @@ export function registerPreRoll() {
                 if (due.length) {
                     const answer = await ask(context.actor, due);
                     if (answer === "stop") return null;
-                    if (answer === "quiet") for (const { item, by } of due) quiet.add(`${game.combat.id}.${(by ?? context.actor).id}.${item.id}`);
+                    if (answer === "quiet") for (const { item, by } of due) quiet.add(`${encounterOf(context.actor)?.id}.${(by ?? context.actor).id}.${item.id}`);
                 }
             }
         } catch (error) {

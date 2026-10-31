@@ -17,7 +17,7 @@ import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
-import { onConditionGained, onConditionLost, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
+import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
@@ -228,6 +228,9 @@ Hooks.on("canvasReady", () => {
 });
 
 Hooks.once("ready", () => {
+    // (A fall, the environment module's hooks: scripts/reminders.js; round 47.)
+    Hooks.on("pf2e-automatic-environment-resolution.falling", (data) => { if (isActiveGM()) onFalling(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
+    Hooks.on("pf2e-automatic-environment-resolution.fell", (data) => { if (isActiveGM()) onFell(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
     // (Before your own roll, a feat used then: scripts/pre-roll.js; round 45.)
     registerPreRoll();
     Hooks.on("preCreateChatMessage", recordTargets);

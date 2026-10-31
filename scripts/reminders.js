@@ -334,3 +334,34 @@ export async function onFoeAction(message) {
     if (!traits.length) return;
     await remindFoeActs(token, (read) => read.traits.some((trait) => traits.includes(trait)), `uses ${item.name} (${traits.join(", ")})`);
 }
+
+// A fall (round 47): the environment module's "falling" hook as a creature starts to fall, before the GM applies its damage, and "fell"
+// once it's done. The faller's own feats ("You fall from a height of 15 feet or higher": Cushion Landing, Arrest a Fall, Grab an Edge),
+// others' in range ("A creature within 60 feet is falling": Air Cushion); after, "You fall at least 10 feet and land" (Impressive Landing).
+const feetOf = (value) => Number(value) || 0;
+export async function onFalling({ token, feet } = {}) {
+    if (!game.settings.get(MODULE_ID, SETTING)) return;
+    const faller = token?.actor ?? token?.object?.actor ?? null;
+    const fallerToken = token?.object ?? token ?? null;
+    if (!faller) return;
+    if (faller.type === "character") {
+        const due = [...faller.itemTypes.feat, ...faller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-falling" && feetOf(feet) >= read.feet);
+        if (due.length) await whisper(faller, `<strong>${escape(faller.name)}</strong> is falling ${feetOf(feet)} feet (before its damage).`, due);
+    }
+    for (const other of canvas?.tokens?.placeables ?? []) {
+        const actor = other.actor;
+        if (actor?.type !== "character" || actor === faller) continue;
+        const distance = distanceBetween(other, fallerToken);
+        const ally = fallerToken?.document && other.document.disposition === fallerToken.document.disposition;
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "creature-falling" && (!read.ally || ally) && (!read.within || (distance !== null && distance <= read.within)));
+        if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(faller.name)} is falling ${feetOf(feet)} feet.`, due);
+    }
+}
+
+export async function onFell({ token, feet, applied } = {}) {
+    if (!game.settings.get(MODULE_ID, SETTING)) return;
+    const faller = token?.actor ?? token?.object?.actor ?? null;
+    if (faller?.type !== "character") return;
+    const due = [...faller.itemTypes.feat, ...faller.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "self-fell" && feetOf(feet) >= read.feet && (!read.noDamage || !feetOf(applied)));
+    if (due.length) await whisper(faller, `<strong>${escape(faller.name)}</strong> fell ${feetOf(feet)} feet.`, due);
+}

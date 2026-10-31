@@ -21,6 +21,15 @@ export function eventTrigger(given) {
     const trigger = plainOf(found[1]).replace(/([^.])$/, "$1.");
     const kind = passive ? "passive" : type === "reaction" ? "reaction" : "free action";
     const within = Number(/\bwithin (\d+) feet\b/i.exec(trigger)?.[1]) || (/\badjacent\b/i.test(trigger) ? 5 : null);
+    // (A fall, the environment module's: "You fall from a height of 15 feet or higher" as it starts, before its damage; "You fall at least 10
+    // feet and take no damage from the fall" once it's done; "A creature within 60 feet is falling" by its distance; round 47.)
+    const fall = /^You fall\b(?:(?! and take no damage| and land)[^.])*|^You fall at least (\d+) feet and (?:take no damage|land)\b|^An? (?:creature|ally)(?: within (\d+) feet)? (?:is falling|falls)\b/i.exec(trigger);
+    if (fall && !passive && !/\bto 0 Hit Points\b/i.test(trigger)) {
+        const feet = Number(/\b(?:height of|at least) (\d+) feet\b/i.exec(trigger)?.[1]) || 0;
+        if (/^An? (?:creature|ally)/i.test(trigger)) return { event: "creature-falling", trigger, kind, ...(within ? { within } : {}), ...(/^An? ally/i.test(trigger) ? { ally: true } : {}) };
+        if (/\band (?:take no damage|land)\b/i.test(trigger)) return { event: "self-fell", trigger, kind, feet, ...(/take no damage/i.test(trigger) ? { noDamage: true } : {}) };
+        return { event: "self-falling", trigger, kind, feet };
+    }
     // (2026-10-30 Foundry test, Hunter's Defense: "A creature with the animal, beast, elemental, fey, fungus, or plant trait attacks you" —
     // only a creature with one of those traits: by.)
     const traits = /\bcreature with the ((?:[a-z-]+,? (?:or |and )?)*[a-z-]+) traits?\b/i.exec(trigger)?.[1];

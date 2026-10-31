@@ -707,3 +707,11 @@ test("before another's roll: who and which checks", async () => {
     const muzzle = preRollTrigger(reaction("Plug Muzzle", "A creature within your reach would make a Strike with a ranged weapon or ranged unarmed attack."));
     assert.equal(fitsOthersCheck(muzzle, { type: "attack-roll", ranged: false }), false);
 });
+
+test("a fall's reactions: as it starts, by height; another's in range; after it", async () => {
+    const { eventTrigger } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ type: "feat", name: "T", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Text.</p>` } } });
+    assert.deepEqual([eventTrigger(reaction("You fall from a height of 15 feet or higher.")).event, eventTrigger(reaction("You fall from a height of 15 feet or higher.")).feet], ["self-falling", 15]);
+    assert.equal(eventTrigger(reaction("A creature within 60 feet is falling.")).within, 60);
+    assert.equal(eventTrigger(reaction("You fall at least 10 feet and land on a solid surface.")).event, "self-fell");
+});
