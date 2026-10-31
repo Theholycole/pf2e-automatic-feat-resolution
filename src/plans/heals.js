@@ -72,5 +72,31 @@ export default [
         uuid: "Compendium.pf2e.ancestryfeatures.Item.BgHrucbZ9TH92RDv", name: "Sunlight Healing",
         text: "<p>You regain @Damage[(max(1,ceil(@actor.level/2)))d8[healing]] Hit Points.</p>",
         activity: true, notes: ["After 10 minutes meditating in direct sunlight. Then you're immune to it for 1 day."]
+    },
+    {
+        uuid: pf2e("velPTcpjLXPnaYrm"), name: "Solar Rejuvenation",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes outdoors during the day."]
+    },
+    {
+        uuid: pf2e("MsieJK35tAP6gFGv"), name: "Coffin Bound",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes in your coffin, unconscious meanwhile. If you'd be destroyed you stay near death instead: back in the coffin within the hour, and an hour's rest there gives 1 HP and ends dying and wounded."]
+    },
+    // (Round 69: heals in a moment, posted then.)
+    {
+        uuid: pf2e("E1QLW9gFsK0jVysV"), name: "Coral Lifeline",
+        text: "<p>You regain @Damage[4d8[healing]] Hit Points.</p>",
+        activity: true, notes: ["When you would die: you don't. Then the coral gives no benefits until your next daily preparations."]
+    },
+    {
+        uuid: pf2e("faIuxgeMG60cEa9J"), name: "Deathless Servant",
+        text: "<p>You regain @Damage[(2*@actor.level)[healing]] Hit Points.</p>",
+        activity: true, notes: ["The first time each day you'd drop to 0 Hit Points without dying: you don't take the damage or fall unconscious. Raise your wounded condition by 1. While wounded, you gain a status bonus to AC equal to its value and to Strike damage of twice it."]
+    },
+    {
+        uuid: pf2e("IyWtJ1KSd6TTvfYQ"), name: "Momentary Respite",
+        text: "<p>You regain @Damage[8d8[healing]] Hit Points.</p>",
+        activity: true, notes: ["Spend a Mythic Point. Remove your persistent damage conditions; you're immune to persistent damage until the end of your next turn."]
     }
 ];
