@@ -196,5 +196,10 @@ export default [
         uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.cswrattGCvaXsjez", name: "Flirting With Danger",
         regain: { resource: "focus", value: 1 },
         notes: ["Only while flanked or within reach of at least 3 enemies. The point is only for Energizing a qi-shape action, and lasts until the end of your turn: spend it or take it back off then."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.Oef5B7jxmu5nFxLa", name: "Mythic Refocus",
+        regain: { resource: "focus", value: 99 },
+        notes: ["Spend the Mythic Point by hand."]
     }
 ];

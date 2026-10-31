@@ -284,5 +284,16 @@ export default [
         uuid: "Compendium.pf2e-team-plus-tian-xia.misc.Item.EdnmU1XpzwAobsQU", name: "Bestow Favor",
         toggle: { rules: [{ key: "RollTwice", selector: "nature", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN },
         notes: ["For the Nature check to Hide: it rolls twice and keeps the better."]
+    },
+    // (Round 82.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.VqGjR43bBd36k0XI", name: "Liberate Self",
+        toggle: { rules: [{ key: "RollTwice", selector: ["skill-check", "attack-roll"], keep: "higher", predicate: ["action:escape"], removeAfterRoll: true }], duration: THIS_TURN },
+        notes: ["Now Escape: the check rolls twice and keeps the better."]
+    },
+    {
+        uuid: pf2e("NZgjqVV2HYzLCvvA"), name: "Aldori Parry",
+        toggle: { rules: [bonus("ac", 1)], duration: ROUND },
+        notes: ["Wielding only an Aldori dueling sword. +2 instead if your other hand or hands are free: raise it by hand."]
     }
 ];
