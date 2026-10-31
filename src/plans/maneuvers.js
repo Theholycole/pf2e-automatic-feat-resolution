@@ -39,6 +39,8 @@ export default [
     demoralize(pf2e("oFcn7SDOH6W2QhJl"), "Too Angry to Die", null, ["As you stand up after waking from unconscious."]),
     demoralize(action("W4M8L9WepGLamlHs"), "Threatening Approach", null, ["Stride to be adjacent first. On a success the foe is frightened 2 instead of 1."]),
     // Feint
+    // (Round 79: the Feint before a Spellstrike, as the feat says; the Spellstrike is then the player's.)
+    { uuid: pf2e("tIeVe9jOmxW7NgCK"), name: "Distracting Spellstrike", act: "feint", notes: ["The Feint has the arcane and visual traits and only its basic effects. Then make your Spellstrike against the same target. In Arcane Cascade stance, add your Arcane Cascade extra damage as a status bonus to the Deception check by hand."] },
     { uuid: pf2e("gS9FYlD0Vt8yyZkP"), name: "Grovel", act: "feint", target: "1 creature within 30 feet", notes: ["Against its Will DC instead of its Perception DC, and from up to 30 feet away."] },
     { uuid: pf2e("hPfqQpiq6W8RPCxz"), name: "It Was Me All Along!", act: "feint", target: "1 creature within 30 feet", notes: ["Once per day: drop your disguise, Stride up to your Speed, then Feint a target within 30 feet."] },
     { uuid: pf2e("A2EBy2L4acrehiAA"), name: "Pistol Twirl", act: "feint", notes: ["Within the weapon's first range increment; on a success the foe is off-guard to your melee and ranged attacks."] },
