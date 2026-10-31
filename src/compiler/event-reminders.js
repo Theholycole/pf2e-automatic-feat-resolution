@@ -265,15 +265,19 @@ export function preRollTrigger(given) {
     // (Another's roll about to be made, "An enemy is about to use an action that requires a skill check or attack roll", "A creature within
     // 60 feet is about to attempt an attack roll or skill check": asked of the roller, before its dice; round 46. Not Aid, which needs your
     // preparing to first.)
+    // ("You are attacked by a foe, but they haven't rolled yet": a foe's attack roll against you; round 48.)
+    if (/^You are attacked by (?:a|an) (?:foe|enemy|creature)\b[^.]*\bhaven['’]t (?:yet )?rolled\b/i.test(trigger)) return { event: "pre-check-other", who: /creature/i.test(trigger) ? "creature" : "enemy", checks: ["attack"], againstYou: true, trigger, kind };
     const other = othersRoll(trigger, item);
     if (other) return { ...other, trigger, kind };
     if (!/^You(?:'re| are| would| attempt| have)\b/i.test(trigger) && !/^You and\b/i.test(trigger)) return null;
     // ("You attempt a basic Reflex save", "You attempt a saving throw against a disease or poison effect that affects an area": Feline Dance's,
     // Absorb Toxin's, used as the save is rolled; round 37.)
-    const before = /\babout to (?:roll|attempt)\b|\bwould (?:roll|attempt)\b|\bhaven['’]t (?:yet )?rolled\b|^You attempt an? (?:basic )?(?:(?:Fortitude|Reflex|Will) )?(?:save|saving throw)\b/i.test(trigger);
+    const before = /\babout to (?:roll|attempt|make)\b|\bwould (?:roll|attempt)\b|\bhaven['’]t (?:yet )?rolled\b|^You attempt an? (?:basic )?(?:(?:Fortitude|Reflex|Will) )?(?:save|saving throw)\b/i.test(trigger);
     if (!before) return null;
     if (/\binitiative\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
     if (/\brecovery check\b/i.test(trigger)) return { event: "pre-recovery", trigger, kind };
+    // ("You are about to make an attack roll, skill check, or saving throw": any of them, a pre-check; round 48.)
+    if (/\b(?:saving throws?|saves?)\b/i.test(trigger) && /\battack rolls?\b|\bskill checks?\b/i.test(trigger)) return { event: "pre-check", check: "any", trigger, kind };
     if (/\b(?:saving throws?|saves?)\b/i.test(trigger)) {
         // (Only the save it names, and only a basic one when it says so: Feline Dance's "a basic Reflex save"; round 37.)
         const save = /\b(Fortitude|Reflex|Will)\b/i.exec(trigger)?.[1]?.toLowerCase() ?? null;
