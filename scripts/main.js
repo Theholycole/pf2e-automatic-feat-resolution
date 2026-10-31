@@ -90,7 +90,10 @@ async function cardForFeat(message) {
         item = actingItem(posted, world, { companion: true });
         if (item !== posted) plan = compileItem(item);
     }
-    if (npc && !(plan?.builtin === "feat-effect" && plan.who === "target")) return;
+    // (An NPC's action plays only for an ally's Effect: a toggle on its targets, or an Effect it links for its allies, Teams+ underlings'
+    // Battle Caller and Team Spirit; round 65 Foundry test.)
+    const linksAnEffect = plan?.resolution?.kind === "effect" && (plan.resolution.applications ?? []).some((application) => application.kind === "native-spell-effect");
+    if (npc && !(plan?.builtin === "feat-effect" && plan.who === "target") && !linksAnEffect) return;
     // (On the player's targets, who "target": as a passive's PF2e Effect is.)
     const targetActors = () => (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
     const untargeted = () => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });

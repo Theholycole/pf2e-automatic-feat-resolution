@@ -122,5 +122,21 @@ export default [
         uuid: pf2e("AYVf9MU8oo1QWbGv"), name: "Wave the Flag",
         affect: { target: "each ally within 30 feet", effects: [{ kind: "condition", slug: "frightened", value: 0, duration: null, stack: { by: -1 } }] },
         notes: ["Only allies benefiting from your Cavalier's Banner. Each can retry a save against one mental effect now, and is then immune to Wave the Flag for 10 minutes."]
+    },
+    // (Round 67: reactions.)
+    {
+        uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.uT8LUuReXwe2MuJs", name: "Embrace the Eldritch",
+        affect: { target: "you", effects: [{ kind: "condition", slug: "frightened", value: 2, duration: null }] },
+        notes: ["Only if you weren't frightened. Your degree of success on the triggering save is one step better, and it counts as willingly accepting the spell for your instinct."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-magic.items.Item.1BDYt6q2NfX7xwdL", name: "Accelerated Dynamism",
+        affect: { target: "you", effects: [{ slug: "quickened", duration: { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" } }] },
+        notes: ["Only for the actions to cast the three-action version of a spell you have dynamic mastery with (or for Triplicate Casting or Variable Preparation, with those feats)."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.lT6yLoMfalzxGL8y", name: "Retributive Focus",
+        regain: { resource: "focus", value: 1 },
+        notes: ["Only when an enemy triggers your champion's reaction and your focus pool is empty."]
     }
 ];

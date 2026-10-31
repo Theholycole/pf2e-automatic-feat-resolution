@@ -23,5 +23,11 @@ export default [
         uuid: "Compendium.pf2e.actionspf2e.Item.r0qPSxLoa1xRSWYL", name: "Forced Pact", target: "1 creature within 60 feet",
         text: `<p>The target attempts a @Check[will|against:class-spell] save.</p><hr /><p><strong>Failure</strong> The pact holds: if you or the target uses an action with the chosen trait within the next minute, that creature takes 10d6 mental damage and the pact ends.</p><p><strong>Critical Failure</strong> As failure, but the target takes the damage whichever of you uses the action.</p>`,
         notes: ["Choose attack, move, manipulate or concentrate.", "Failure: if you or the target uses an action with the chosen trait within the next minute, that creature takes @Damage[10d6[mental]] damage and the pact ends.", "Critical Failure: as failure, except the target takes the damage if either of you uses an action with the chosen trait."]
+    },
+    // (Round 67: reactions.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.hi56uHG1aAb84Zzu", name: "Fight with Fear", target: "the creature using a mental effect against you",
+        text: `<p>The triggering creature attempts a @Check[will|against:spell] save against your spell DC.</p><hr /><p><strong>Success</strong> The creature is unaffected.</p><p><strong>Failure</strong> The creature is @UUID[Compendium.pf2e.conditionitems.Item.Frightened]{Frightened 2}.</p><p><strong>Critical Failure</strong> The creature is @UUID[Compendium.pf2e.conditionitems.Item.Frightened]{Frightened 2}.</p>`,
+        notes: ["Failure: you also gain a +2 status bonus to your save or defense against the triggering mental effect. Critical Failure: the triggering effect doesn't affect you."]
     }
 ];
