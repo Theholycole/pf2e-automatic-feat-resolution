@@ -179,5 +179,16 @@ export default [
         uuid: pf2e("E7PFg8xua1nGIqHQ"), name: "Competitive Eater",
         affect: { target: "you", effects: [{ kind: "temp-hp", formula: "10 + @actor.level", duration: null }] },
         notes: ["When you become fully satiated."]
+    },
+    // (Round 76: feats that add to a card the suite plays.)
+    {
+        uuid: pf2e("nuBY8Ek4JBFQJzoh"), name: "Mastermind's Eye",
+        affect: { target: "the creature you identified", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
+        notes: ["After a successful Recall Knowledge identifies it: off-guard only to your attacks. On a critical success it lasts 1 minute (extend it by hand)."]
+    },
+    {
+        uuid: pf2e("O1C6pMTOxIrWBO3G"), name: "Daring Flourish",
+        affect: { target: "the target of your Daring Act", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" } }] },
+        notes: ["After a successful Daring Act: against the melee Strike or Disarm you make then and your next melee attack on it this turn; remove it after that attack."]
     }
 ];
