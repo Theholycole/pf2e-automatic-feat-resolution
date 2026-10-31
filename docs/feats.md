@@ -571,3 +571,6 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   (Rolling White Bottle Form), a linked or designated ally taking damage (Share Life, Wounded Party), "would damage you or your ally"
   (Transcendent Deflection), and an ally casting a spell (new event ally-casts: Accompany, Spell Relay). `preRollTrigger`: "You attempt a
   basic Reflex save", "You attempt a saving throw against …" (Feline Dance, Absorb Toxin, Consume Magic). Count: 2,445 of 4,826 left.
+- Round 37: all nine remind. Fixed after it: "hits, but does not critically hit you" isn't reminded on a critical hit (notCritical);
+  a pre-save feat naming a save (and "basic") is reminded only when the card asks for that save (savesAsked, the inline links);
+  "would succeed" counts a critical success.

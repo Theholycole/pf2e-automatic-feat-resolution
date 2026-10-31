@@ -628,7 +628,7 @@ test("round 37: more reaction triggers read", async () => {
     const reaction = (trigger) => ({ name: "X", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` } } });
     const read = (trigger) => eventTrigger(reaction(trigger));
     const black = read("A creature within 30 feet you can see would succeed at a save.");
-    assert.deepEqual([black.event, black.who, black.outcomes, black.rolls, black.within], ["others-roll", "creature", ["success"], ["saving-throw"], 30]);
+    assert.deepEqual([black.event, black.who, black.outcomes, black.rolls, black.within], ["others-roll", "creature", ["criticalSuccess", "success"], ["saving-throw"], 30]);
     assert.equal(read("An enemy critically misses a Strike or spell attack roll against your AC.").event, "critical-miss");
     assert.equal(read("An opponent hits, but does not critically hit you, with a melee Strike.").event, "hit");
     assert.equal(read("An attack from a creature that isn't adjacent to you damaged you.").event, "damaged");
@@ -640,4 +640,19 @@ test("round 37: more reaction triggers read", async () => {
     assert.deepEqual([read("An ally within 30 feet Casts a Spell.").event, read("An ally within 30 feet Casts a Spell.").within], ["ally-casts", 30]);
     assert.equal(preRollTrigger(reaction("You attempt a basic Reflex save.")).event, "pre-save");
     assert.equal(preRollTrigger(reaction("You attempt a saving throw against a disease or poison effect that affects an area.")).event, "pre-save");
+});
+
+test("round 37 fixes: not on a critical hit, the save a pre-save feat names, a critical success counts as succeeding", async () => {
+    const { eventTrigger, preRollTrigger, savesAsked, fitsSave } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ name: "X", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` } } });
+    assert.equal(eventTrigger(reaction("An opponent hits, but does not critically hit you, with a melee Strike.")).notCritical, true);
+    assert.equal(eventTrigger(reaction("An enemy hits you with a melee Strike.")).notCritical, undefined);
+    assert.deepEqual(eventTrigger(reaction("A creature within 30 feet you can see would succeed at a save.")).outcomes.sort(), ["criticalSuccess", "success"]);
+    const feline = preRollTrigger(reaction("You attempt a basic Reflex save."));
+    const basicReflex = savesAsked('<a class="inline-check" data-pf2-check="reflex" data-pf2-dc="24" data-pf2-basic="">basic Reflex</a>');
+    const will = savesAsked('<a class="inline-check" data-pf2-check="will" data-pf2-dc="24">Will</a>');
+    assert.ok(fitsSave(feline, basicReflex));
+    assert.ok(!fitsSave(feline, will));
+    assert.ok(!fitsSave(feline, savesAsked('<a data-pf2-check="reflex">Reflex</a>')));
+    assert.ok(fitsSave(preRollTrigger(reaction("You attempt a saving throw against a magical effect, but you haven't rolled yet.")), will));
 });

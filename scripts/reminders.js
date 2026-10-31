@@ -2,7 +2,7 @@
 // starting or ending, whispered to its owners and the GM as that turn comes. Nothing is used for them; the player decides.
 
 import { turnReminders } from "../src/compiler/turn-reminders.js";
-import { asksForSave, eventTrigger, eventsOf, ownStrikeEvents, ownUseTrigger, preRollTrigger, usesTrigger, weaponFits } from "../src/compiler/event-reminders.js";
+import { asksForSave, eventTrigger, fitsSave, savesAsked, eventsOf, ownStrikeEvents, ownUseTrigger, preRollTrigger, usesTrigger, weaponFits } from "../src/compiler/event-reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const SETTING = "turnReminders";
@@ -118,7 +118,7 @@ export async function onRollMessage(message) {
     const ofItems = (actor) => [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read);
     // (A trigger only for some attackers, "A creature with the animal … trait": by the attacker's traits.)
     const attackerTraits = message.actor?.system?.traits?.value ?? [];
-    const byFits = ({ read }) => !read.by || read.by.some((trait) => attackerTraits.includes(trait));
+    const byFits = ({ read }) => (!read.by || read.by.some((trait) => attackerTraits.includes(trait))) && !(read.notCritical && events.includes("critical-hit"));
     if (target.type === "character") {
         const due = ofItems(target).filter(({ read }) => events.includes(read.event)).filter(byFits);
         if (due.length) await whisper(target, `<strong>${escape(target.name)}</strong>: ${escape(source)}'s ${context.type === "damage-roll" ? "damage" : "attack"} is aimed at you.`, due);
@@ -192,10 +192,11 @@ export async function onSaveAsked(message) {
     if (!game.settings.get(MODULE_ID, SETTING) || !message.author?.isSelf || !isUse(message) || !asksForSave(message.content)) return;
     const source = message.actor ?? message.token?.actor ?? null;
     if (!source || source.type === "character") return;
+    const asked = savesAsked(message.content);
     for (const token of game.user.targets) {
         const actor = token.actor;
         if (actor?.type !== "character") continue;
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-save");
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: preRollTrigger(item) })).filter(({ read }) => read?.event === "pre-save" && fitsSave(read, asked));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(source.name)} calls for your save (before you roll it).`, due);
     }
 }

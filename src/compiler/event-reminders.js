@@ -60,7 +60,8 @@ export function eventTrigger(given) {
     // throw", "You or an ally within 30 feet fails an attack roll or skill check", "An ally misses … with their attack": others-roll, by who
     // rolled, its degrees and kinds of roll; the loop, 2026-10-30.)
     // ("A creature within 30 feet you can see would succeed at a save": Black Cat Curse's, read as "succeeds"; round 37.)
-    const othersTrigger = trigger.replace(/\bwould (critically )?(succeed|fail)\b/gi, (_whole, critically = "", verb) => `${critically ?? ""}${verb}s`);
+    // ("Would succeed" counts a critical success too; round 37.)
+    const othersTrigger = trigger.replace(/\bwould succeed\b/gi, "succeeds or critically succeeds").replace(/\bwould (critically )?(succeed|fail)\b/gi, (_whole, critically = "", verb) => `${critically ?? ""}${verb}s`);
     const others = /^(You or an ally|An? (?:adjacent )?(?:ally|enemy|foe|creature(?: other than you)?))\b[^.]*?\b((?:(?:critically )?(?:succeeds|fails|misses)(?:,? \(?but (?:doesn't|does not) critically fail\)?,?)?(?:,? or |, | ))+)(?:at |on |with )?(?:a |an |their |its )?((?:(?:attack rolls?|Strikes?|spell attack rolls?|skill checks?|saving throws?|saves?|attack)(?:,? or |, )?)+)/i.exec(othersTrigger);
     if (others && !/\bagainst (?:you|your)\b|\b(?:Strike|attack) you\b/i.test(trigger)) {
         const words = others[2].toLowerCase();
@@ -122,7 +123,9 @@ export function eventTrigger(given) {
     // ("A creature missed you with a melee attack", "A creature misses you with a ranged attack", "An adjacent creature you can see fails an
     // attack roll against you": Elude Trouble's, Coursing Weave's; the loop, 2026-10-30.)
     if (/\bmiss(?:es|ed)? you\b|\bfails an attack roll against you\b/i.test(trigger)) return read("miss");
-    if (/\bhits you\b|\bhits, but (?:does not|doesn't) critically hit you\b|^You(?:'re| are| would be) hit\b/i.test(trigger)) return read("hit");
+    // ("Hits, but does not critically hit you": not on a critical hit, notCritical; round 37.)
+    if (/\bhits, but (?:does not|doesn't) critically hit you\b|\bhits you\b[^.]*\bbut (?:does not|doesn't) critically\b/i.test(trigger)) return { ...read("hit"), notCritical: true };
+    if (/\bhits you\b|^You(?:'re| are| would be) hit\b/i.test(trigger)) return read("hit");
     if (/\btargets you\b|^You are (?:the )?target(?:ed)? (?:of|by)\b|\battempts? (?:a (?:melee |ranged )?Strike|an attack(?: roll)?) against you\b|\battacks you\b|\bmakes an attack(?: roll)? against you\b|^You(?:'re| are) targeted (?:with|by) (?:a|an) (?:melee |ranged |physical )*(?:Strike|attack)\b|^You(?:'re| are) the target of (?:a|an) (?:melee |ranged |physical )*(?:Strike|attack)\b|^You or an? (?:adjacent )?(?:willing )?ally\b[^.]*\b(?:is|are) the target of (?:a|an) (?:melee |ranged |physical )*(?:Strike|attack)\b/i.test(trigger)) return read("targeted");
     if (/(?:^|,\s*)You (?:or your [\w ]+? )?(?:would )?take (?:(?:[a-z]+(?:,| or| and)?|or|and) )*?damage\b|^You(?:'re| are) dealt\b[^.]*\bdamage\b|\bwould deal damage to you\b|\bdamages you\b|\bdamaged you\b|\bdeals damage to you\b/i.test(trigger) && !/\bfall(?:ing)? damage\b/i.test(trigger)) return read("damaged");
     return null;
@@ -240,9 +243,21 @@ export function preRollTrigger(given) {
     if (!before) return null;
     if (/\binitiative\b/i.test(trigger)) return { event: "pre-initiative", trigger, kind };
     if (/\brecovery check\b/i.test(trigger)) return { event: "pre-recovery", trigger, kind };
-    if (/\b(?:saving throws?|saves?)\b/i.test(trigger)) return { event: "pre-save", trigger, kind };
+    if (/\b(?:saving throws?|saves?)\b/i.test(trigger)) {
+        // (Only the save it names, and only a basic one when it says so: Feline Dance's "a basic Reflex save"; round 37.)
+        const save = /\b(Fortitude|Reflex|Will)\b/i.exec(trigger)?.[1]?.toLowerCase() ?? null;
+        return { event: "pre-save", trigger, kind, ...(save ? { save } : {}), ...(/\bbasic\b/i.test(trigger) ? { basic: true } : {}) };
+    }
     return null;
 }
 
 // Whether a posted message's text asks for a save: PF2e's inline save links.
 export const asksForSave = (content) => /data-pf2-check="(?:fortitude|reflex|will)"/.test(String(content ?? ""));
+
+// The saves a posted message's inline links ask for: [{ save, basic }], basic when the link's markup says so.
+export function savesAsked(content) {
+    return [...String(content ?? "").matchAll(/<a\b[^>]*data-pf2-check="(fortitude|reflex|will)"[^>]*>[\s\S]*?<\/a>/g)].map((match) => ({ save: match[1], basic: /basic/i.test(match[0]) }));
+}
+
+// Whether a pre-save read fits the saves asked: any save when it names none; its save, and a basic one when it says basic.
+export const fitsSave = (read, asked) => !read.save || asked.some((each) => each.save === read.save && (!read.basic || each.basic));
