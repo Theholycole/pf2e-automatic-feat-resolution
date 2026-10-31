@@ -489,3 +489,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Round 26: Fated Not to Die passes (dying gone, unconscious kept, 0 HP).
 - Then: Quicken Heartbeat (quickened through your next turn; slowed by hand), Raise Neck (reach 10 on the nagaji fangs, AdjustStrike).
 - Round 27: Quicken Heartbeat passes. Raise Neck's "reach-10" was ignored (a character weapon trait is only "reach"): now "reach".
+- Round 28: Raise Neck passes (reach 5 → 10). Forest's Heart's "reach-30" has no label of its own, but PF2e reads it: reach 30.
