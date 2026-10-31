@@ -5,7 +5,8 @@
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 
 export const CONDITION_FEATS = [
-    { uuid: pf2e("FK9BiN067ornWyLR"), name: "Friend of Fear", slugs: ["frightened"], gained: -1 },
+    // (Not Friend of Fear: the ability module's Bravery reading lowers a gained frightened already, scripts/bravery.js; twice was 2 too
+    // low, 2026-10-31 Foundry test. The shape is kept for a feat it doesn't read.)
     { uuid: pf2e("MSyU208twPGKU16W"), name: "Calm and Centered", slugs: ["frightened", "stupefied"], lowered: -1 }
 ];
 const BY_UUID = new Map(CONDITION_FEATS.map((entry) => [entry.uuid, entry]));

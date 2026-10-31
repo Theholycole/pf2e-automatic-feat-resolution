@@ -610,7 +610,9 @@ test("checks against the target's level's DC: Guiding Words, each ally's own", a
 
 test("condition feats: Friend of Fear lowers a gain, Calm and Centered a decrease", async () => {
     const { CONDITION_FEATS, conditionAfter } = await import("../src/plans/condition-feats.js");
-    const [fear, calm] = CONDITION_FEATS;
+    const [calm] = CONDITION_FEATS;
+    const fear = { name: "Friend of Fear", slugs: ["frightened"], gained: -1 };
+    assert.ok(!CONDITION_FEATS.some((entry) => entry.name === "Friend of Fear"), "the ability module's Bravery reading has it");
     assert.deepEqual(conditionAfter([fear], "frightened", 0, 2), { value: 1, by: ["Friend of Fear"] });
     assert.deepEqual(conditionAfter([fear], "frightened", 0, 1), { value: 0, by: ["Friend of Fear"] });
     assert.deepEqual(conditionAfter([fear], "frightened", 1, 3), { value: 2, by: ["Friend of Fear"] });

@@ -530,3 +530,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - src/plans/condition-feats.js, scripts/conditions.js: Friend of Fear (a frightened gained is 1 lower, never below what it was) and Calm and
   Centered (a frightened or stupefied lowered goes 1 further), played by the active GM as PF2e changes the condition, with a GM line. The
   value before rides in the update's options, so a player's change counts too. And Fearsense's scent (rule batch 8).
+- Round 32: Calm and Centered and Fearsense pass. Friend of Fear went 2 too low: the ability module's Bravery reading (scripts/bravery.js) already lowers a gained frightened for it, so it's dropped here (its whisper says "Bravery"). PF2e's end-of-turn frightened decrease didn't fire in the test world, so Calm and Centered there is untested.
