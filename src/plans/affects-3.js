@@ -190,5 +190,11 @@ export default [
         uuid: pf2e("O1C6pMTOxIrWBO3G"), name: "Daring Flourish",
         affect: { target: "the target of your Daring Act", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" } }] },
         notes: ["After a successful Daring Act: against the melee Strike or Disarm you make then and your next melee attack on it this turn; remove it after that attack."]
+    },
+    // (Round 78: a Focus Point that lasts only this turn, for Energize.)
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.cswrattGCvaXsjez", name: "Flirting With Danger",
+        regain: { resource: "focus", value: 1 },
+        notes: ["Only while flanked or within reach of at least 3 enemies. The point is only for Energizing a qi-shape action, and lasts until the end of your turn: spend it or take it back off then."]
     }
 ];

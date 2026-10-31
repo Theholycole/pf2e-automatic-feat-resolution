@@ -273,5 +273,16 @@ export default [
         uuid: pf2e("C5CweUNPP7HlRfBM"), name: "Muscle Mimicry",
         toggle: { rules: [bonus("athletics", 1)], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
         notes: ["Only on your next use of the same maneuver the enemy succeeded at (+2 if it critically succeeded; raise it by hand). Remove it after that check."]
+    },
+    // (Round 78: a fortune for the one check it's used on: PF2e's RollTwice, gone after that roll.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.BrCbXsCUIFYfu26E", name: "Entreat Pact",
+        toggle: { rules: [{ key: "RollTwice", selector: "skill-check", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN },
+        notes: ["Use it as you attempt a skill check directly related to the pact's conditions; that check rolls twice and keeps the better."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.misc.Item.EdnmU1XpzwAobsQU", name: "Bestow Favor",
+        toggle: { rules: [{ key: "RollTwice", selector: "nature", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN },
+        notes: ["For the Nature check to Hide: it rolls twice and keeps the better."]
     }
 ];
