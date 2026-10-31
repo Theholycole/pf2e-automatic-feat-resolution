@@ -473,3 +473,11 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 
 - Duck and Weave, Stoic as Hell, Alien Brain, Focus Anger: the module's Effect to the start of your next turn or the end of this one, what
   it's only against a note (delete it after the triggering save). Defend Summoner: on the summoner, targeted.
+
+### Rounds 21-23 (2026-10-31)
+
+- Little Buddy passes from an NPC (Wolf +1 attack, +2 damage, off again); other NPC actions get nothing from this module.
+- The four stances pass (the Haft and Roots and Vines Strikes, Jester's Gambol's resistance against the Wolf but not the Ogre, Flair Rider
+  only while mounted). Switching stances took no stance (the old one counted as the toggle's own): fixed, the line says which ended.
+- Duck and Weave, Stoic as Hell, Alien Brain, Focus Anger, Defend Summoner (from an eidolon, on its target) pass. PF2e's "saving-throw"
+  selector also raises the Will DC shown; the bonus ends with the turn, so that's left.
