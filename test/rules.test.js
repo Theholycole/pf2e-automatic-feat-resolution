@@ -16,7 +16,9 @@ test("every batch entry: a compendium item, rules PF2e builds from data alone", 
         const rules = typeof entry.rules === "function" ? entry.rules({ actor: { items: [] } }) : entry.rules;
         assert.ok(rules.length, entry.name);
         for (const rule of rules) {
-            assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
+            // (A GrantItem only as an in-memory condition, PF2e's own way to be always quickened: nothing is written to the actor.)
+            const memoryCondition = rule.key === "GrantItem" && rule.inMemoryOnly === true && /^Compendium\.pf2e\.conditionitems\.Item\./.test(rule.uuid);
+            assert.ok(SAFE_KEYS.has(rule.key) || memoryCondition, `${entry.name}: ${rule.key}`);
             assert.ok(!(rule.key === "RollOption" && rule.toggleable), `${entry.name}: a toggle writes back to its source`);
         }
     }
