@@ -12,6 +12,8 @@ export const COMPANION_RULES = [
     { uuid: pf2e("TgYs2m9scSyEJwdr"), name: "Vibration Sense", rules: [{ ...sense("tremorsense", "imprecise", 30), predicate: [{ not: "self:trait:aquatic" }] }, { ...sense("wavesense", "imprecise", 30), predicate: [{ or: ["self:trait:aquatic", "self:trait:amphibious"] }] }] },
     { uuid: pf2e("IeiTuTZExH5DQOqH"), name: "Burrowing Form", rules: [{ key: "BaseSpeed", selector: "burrow", value: 15 }] },
     { uuid: pf2e("a6xUSibsRaclbSz3"), name: "Ever-Vigilant Senses", rules: [{ key: "FlatModifier", selector: "perception", type: "circumstance", value: 2 }] },
+    // (Its horse's: only an animal companion that's a horse has it, and only a horse's master takes the feat.)
+    { uuid: pf2e("g64AWb9hj46ZmhlR"), name: "Chiardmar Steed", rules: [{ key: "FlatModifier", selector: "land-speed", type: "status", value: 5 }] },
     { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
 ];
 

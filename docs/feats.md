@@ -523,3 +523,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   tremorsense or wavesense, Burrowing Form's burrow Speed, Ever-Vigilant Senses' +2 Perception, Faydhaan's saves against water). scripts/
   rules.js puts them on the companion's ancestry as it prepares, when findMaster finds the master with the feat; companions prepare again
   once the world is ready and when the master gains or loses an item.
+- Round 31: Expanded Senses, Vibration Sense, Burrowing Form, Ever-Vigilant Senses on the eidolon from the summoner's sheet: all pass, at once and after a reload, gone with the feat; the summoner gets none. Then Chiardmar Steed (+5 status Speed on the horse; its first 10 feet of difficult terrain each turn by hand).
