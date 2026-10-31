@@ -4,6 +4,7 @@
 import { compileFeat } from "../src/compiler/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
+import { registerConditionFeats } from "./conditions.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
@@ -196,6 +197,8 @@ Hooks.once("init", () => {
     registerSenses();
     registerTruesight();
     registerSenseZones();
+    // (Friend of Fear, Calm and Centered: a condition's value as it changes, src/plans/condition-feats.js.)
+    registerConditionFeats();
 });
 
 // (In init, after PF2e's own: by setup the world's tokens had prepared without them; 2026-10-30 Foundry test. PF2e's hearing and tremorsense,

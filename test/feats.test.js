@@ -607,3 +607,16 @@ test("checks against the target's level's DC: Guiding Words, each ally's own", a
     assert.deepEqual(words.resolution.check.against, { dc: "level", adjustment: 2 });
     assert.equal(words.targeting.target, "1 ally");
 });
+
+test("condition feats: Friend of Fear lowers a gain, Calm and Centered a decrease", async () => {
+    const { CONDITION_FEATS, conditionAfter } = await import("../src/plans/condition-feats.js");
+    const [fear, calm] = CONDITION_FEATS;
+    assert.deepEqual(conditionAfter([fear], "frightened", 0, 2), { value: 1, by: ["Friend of Fear"] });
+    assert.deepEqual(conditionAfter([fear], "frightened", 0, 1), { value: 0, by: ["Friend of Fear"] });
+    assert.deepEqual(conditionAfter([fear], "frightened", 1, 3), { value: 2, by: ["Friend of Fear"] });
+    assert.equal(conditionAfter([fear], "frightened", 2, 1), null, "a decrease isn't a gain");
+    assert.equal(conditionAfter([fear], "stupefied", 0, 2), null);
+    assert.deepEqual(conditionAfter([calm], "stupefied", 2, 1), { value: 0, by: ["Calm and Centered"] });
+    assert.deepEqual(conditionAfter([calm], "frightened", 3, 2), { value: 1, by: ["Calm and Centered"] });
+    assert.equal(conditionAfter([calm], "frightened", 1, 2), null);
+});
