@@ -289,7 +289,7 @@ export default [
     {
         uuid: "Compendium.pf2e.actionspf2e.Item.VqGjR43bBd36k0XI", name: "Liberate Self",
         toggle: { rules: [{ key: "RollTwice", selector: ["skill-check", "attack-roll"], keep: "higher", predicate: ["action:escape"], removeAfterRoll: true }], duration: THIS_TURN },
-        notes: ["Now Escape: the check rolls twice and keeps the better."]
+        notes: ["Now Escape. PF2e's Escape action ignores fortune effects (8.6): roll it twice and keep the higher by hand. The Effect ends with your turn."]
     },
     {
         uuid: pf2e("NZgjqVV2HYzLCvvA"), name: "Aldori Parry",
