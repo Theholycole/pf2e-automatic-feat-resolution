@@ -226,7 +226,6 @@ async function castSpellLike(item, plan, sourceToken, message) {
 // (True Gaze, round 83 Foundry test: PF2e rolls the item-cast entry's counteract from its own counteraction statistic, not the spell
 // module's item statistic. A modifier on the spell module's "its spells' numbers" Effect for this cast brings it to the character's
 // Perception: on counteract checks with the spell's traits, as the roll carries no item or entry option.)
-const SPELL_MODULE = "pf2e-automatic-resolution";
 async function counteractWithPerception(item, plan) {
     const actor = item.actor;
     const perception = Number(actor.perception?.mod ?? actor.system?.perception?.mod);
@@ -236,14 +235,14 @@ async function counteractWithPerception(item, plan) {
     if (!stat || !Number.isFinite(perception) || !Number.isFinite(current)) return;
     const spell = await fromUuid(byName(plan.spell.uuid));
     const traits = (spell?.system?.traits?.value ?? []).filter((trait) => !["concentrate", "manipulate"].includes(trait));
-    const rules = foundry.utils.deepClone(stat.system.rules ?? []);
-    let own = rules.find((rule) => rule.key === "FlatModifier" && rule.selector === "counteract-check" && rule.slug === "feat-perception");
-    const before = own ? Number(own.value) || 0 : 0;
+    // (Exactly one of ours, whatever the Effect held: round 83 recheck, a second cast added a second copy.)
+    const ours = (rule) => rule.key === "FlatModifier" && [rule.selector].flat().includes("counteract-check") && rule.slug === "feat-perception";
+    const all = foundry.utils.deepClone(stat.system.rules ?? []);
+    const before = Number(all.find(ours)?.value) || 0;
     const value = perception - (current - before);
-    if (own && before === value) return;
-    if (!own) rules.push(own = { key: "FlatModifier", selector: "counteract-check", slug: "feat-perception", label: `${item.name} (Perception)`, value: 0, ...(traits.length ? { predicate: traits } : {}) });
-    own.value = value;
-    await stat.update({ "system.rules": rules });
+    const kept = all.filter((rule) => !ours(rule));
+    if (all.length - kept.length === 1 && before === value) return;
+    await stat.update({ "system.rules": [...kept, { key: "FlatModifier", selector: "counteract-check", slug: "feat-perception", label: `${item.name} (Perception)`, value, ...(traits.length ? { predicate: traits } : {}) }] });
 }
 
 let warned = false;
