@@ -75,6 +75,8 @@ export function compileFeat(item, options = {}) {
     if (hand?.linked) return handLinked(item, hand);
     // (A point regained in a moment the reader leaves, by hand: as the reader's regain-point; src/compiler/regain-point.js.)
     if (hand?.regain) return { builtin: "regain-point", resource: hand.regain.resource, value: hand.regain.value ?? 1, notes: hand.notes ?? [] };
+    // (A short teleport, Dart Between's: the item module's teleport card, src/plans/teleports.js; round 99.)
+    if (hand?.teleport) return { source: { name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type }, builtin: "teleport", automation: { level: hand.notes?.length ? "guided" : "automatic" }, targeting: { target: "self", range: null, area: null }, trigger: { event: "use" }, teleport: { ...hand.teleport, from: "self" }, notes: hand.notes ?? [] };
     // (who "target": on the player's targets, an action's bonus to an ally with no PF2e Effect, Protect Ally's; 2026-10-31, the loop.)
     if (hand?.toggle) return { builtin: "feat-effect", toggle: true, ...(hand.toggle.who === "target" ? { who: "target" } : {}), effect: { name: item.name, rules: hand.toggle.rules, duration: hand.toggle.duration ?? { value: -1, unit: "unlimited", expiry: null, sustained: false }, stance: Boolean(hand.toggle.stance) }, notes: hand.notes ?? [] };
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;

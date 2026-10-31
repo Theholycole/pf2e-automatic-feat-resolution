@@ -765,3 +765,9 @@ test("a move said as an order, \"Stride twice.\": the move card too (round 97)",
     assert.equal(dash?.builtin, "teleport");
     assert.equal(dash.teleport.speedTimes, 2);
 });
+
+test("a short teleport by hand: the teleport plan (round 99, Dart Between)", () => {
+    const dart = compileFeat({ ...feat("Dart Between", "<p>…</p>"), sourceId: "Compendium.pf2e.feats-srd.Item.KwbteWlCzFT5veZO" }, { dcs: DCS });
+    assert.equal(dart?.builtin, "teleport");
+    assert.deepEqual(dart.teleport, { within: 60, from: "self" });
+});
