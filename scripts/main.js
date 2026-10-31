@@ -238,8 +238,9 @@ async function counteractWithPerception(item, plan) {
     // (Exactly one of ours, whatever the Effect held: round 83 recheck, a second cast added a second copy.)
     const ours = (rule) => rule.key === "FlatModifier" && [rule.selector].flat().includes("counteract-check") && rule.slug === "feat-perception";
     const all = foundry.utils.deepClone(stat.system.rules ?? []);
+    // (The statistic's own modifier never holds ours: it's predicated on the spell's traits, which the statistic alone doesn't carry.)
     const before = Number(all.find(ours)?.value) || 0;
-    const value = perception - (current - before);
+    const value = perception - current;
     const kept = all.filter((rule) => !ours(rule));
     if (all.length - kept.length === 1 && before === value) return;
     await stat.update({ "system.rules": [...kept, { key: "FlatModifier", selector: "counteract-check", slug: "feat-perception", label: `${item.name} (Perception)`, value, ...(traits.length ? { predicate: traits } : {}) }] });
