@@ -462,3 +462,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Protect Ally, Transfusion, Bloom of Health (fast healing 4 at 8th level, a number), Snap Falling Fruit, Redirecting Draft: all pass, on
   the target only, on and off; with nothing targeted, the GM is told to target first. Little Buddy did nothing: an NPC's action, and the
   module played only characters' and familiars'. An NPC's is now played only when it's an ally's Effect (the ability module plays the rest).
+
+### Stances by hand (2026-10-31)
+
+- A toggle can be a stance (`stance: true`): the module's Stance Effect, which another of the module's stances ends. Haft Striker Stance and
+  Forest's Heart add their Strikes (Strike rules; the haft's runes by hand), Jester's Gambol its resistance against animals, beasts, fey,
+  fungi and plants (by the damage's origin traits), Flair Rider Stance its lesser cover and Reflex while mounted.

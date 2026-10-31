@@ -127,5 +127,27 @@ export default [
         uuid: pf2e("G3NBWaItq6oLEJxx"), name: "Redirecting Draft",
         toggle: { who: "target", rules: [bonus("ac", 2, "circumstance", undefined, "redirecting-draft")], duration: THIS_TURN },
         notes: ["Only against the triggering ranged physical Strike (target yourself if it's you): delete the Effect after it."]
+    },
+    // Stances with no rules of PF2e's for them (2026-10-31, the loop): the module's own Stance Effect, as a stance the reader finds is; posting
+    // another stance from the module ends it, posting it again ends it too.
+    {
+        uuid: pf2e("pKNnFOuHBkJEvmS1"), name: "Haft Striker Stance",
+        toggle: { stance: true, rules: [{ key: "Strike", slug: "haft-striker-haft", label: "Haft", category: "simple", group: "club", traits: ["agile", "finesse"], damage: { base: { damageType: "bludgeoning", dice: 1, die: "d4" } } }] },
+        notes: ["While you wield a two-handed hammer, spear or polearm. The haft shares the weapon's fundamental runes, which this Strike doesn't show: add them by hand."]
+    },
+    {
+        uuid: pf2e("2LjTxYTlRL7RwhOS"), name: "Forest's Heart",
+        toggle: { stance: true, rules: [{ key: "Strike", slug: "forests-heart-roots", label: "Roots and Vines", category: "unarmed", group: "brawling", traits: ["finesse", "grapple", "reach-30"], damage: { base: { damageType: "bludgeoning", dice: 4, die: "d8" } } }] },
+        notes: ["No extra dice from striking runes; your handwraps' item bonus to attack and property runes do apply."]
+    },
+    {
+        uuid: pf2e("dzPwwXHW5NzYGG5h"), name: "Jester's Gambol",
+        toggle: { stance: true, rules: [{ key: "Resistance", type: "all-damage", value: "floor(@actor.level / 2)", predicate: [{ or: ["origin:trait:animal", "origin:trait:beast", "origin:trait:fey", "origin:trait:fungus", "origin:trait:plant"] }], label: "Jester's Gambol" }] },
+        notes: ["You ignore difficult terrain (by hand)."]
+    },
+    {
+        uuid: pf2e("dyjYNaE6Nc6zpsUM"), name: "Flair Rider Stance",
+        toggle: { stance: true, rules: [bonus("ac", 1, "circumstance", ["self:effect:mounted"], "flair-rider-cover-ac"), bonus("reflex", 3, "circumstance", ["self:effect:mounted"], "flair-rider-reflex")] },
+        notes: ["While mounted (PF2e's Effect: Mounted): lesser cover from your mount (+1 AC and Reflex), and the +3 to Reflex also cancels Mounted's -2."]
     }
 ];

@@ -40,7 +40,7 @@ export function compileFeat(item, options = {}) {
     // (An action's linked Effect the reader leaves, by hand: as the reader's; src/plans/linked-effects.js.)
     if (hand?.linked) return handLinked(item, hand);
     // (who "target": on the player's targets, an action's bonus to an ally with no PF2e Effect, Protect Ally's; 2026-10-31, the loop.)
-    if (hand?.toggle) return { builtin: "feat-effect", toggle: true, ...(hand.toggle.who === "target" ? { who: "target" } : {}), effect: { name: item.name, rules: hand.toggle.rules, duration: hand.toggle.duration ?? { value: -1, unit: "unlimited", expiry: null, sustained: false }, stance: false }, notes: hand.notes ?? [] };
+    if (hand?.toggle) return { builtin: "feat-effect", toggle: true, ...(hand.toggle.who === "target" ? { who: "target" } : {}), effect: { name: item.name, rules: hand.toggle.rules, duration: hand.toggle.duration ?? { value: -1, unit: "unlimited", expiry: null, sustained: false }, stance: Boolean(hand.toggle.stance) }, notes: hand.notes ?? [] };
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
