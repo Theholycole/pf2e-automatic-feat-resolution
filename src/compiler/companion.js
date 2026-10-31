@@ -14,7 +14,12 @@ const traitsOf = (actor) => {
     return new Set(traits instanceof Set ? traits : [...traits]);
 };
 export const isEidolon = (actor) => traitsOf(actor).has("eidolon") || actor?.class?.slug === "eidolon" || actor?.class?.name === "Eidolon";
-export const isCompanion = (actor) => actor?.type === "familiar" || isEidolon(actor) || traitsOf(actor).has("minion");
+// (While it prepares, an animal companion's "minion" from its class's ActorTraits rule isn't on it yet: its Animal Companion class item,
+// or the module's own master flag, says so then; round 33.)
+const ANIMAL_CLASS = /^animal[- ]companion/i;
+const hasCompanionClass = (actor) => [...(actor?.items ?? [])].some((item) => item?.type === "class" && (ANIMAL_CLASS.test(item.slug ?? item.system?.slug ?? "") || ANIMAL_CLASS.test(item.name ?? "")));
+export const isCompanion = (actor) => actor?.type === "familiar" || isEidolon(actor) || traitsOf(actor).has("minion")
+    || (actor?.type === "character" && (Boolean(actor.flags?.[MODULE_ID]?.master) || hasCompanionClass(actor)));
 
 const playersOf = (actor, users) => users.filter((user) => !user.isGM && (actor?.ownership?.[user.id] ?? actor?.ownership?.default ?? 0) >= OWNER).map((user) => user.id);
 

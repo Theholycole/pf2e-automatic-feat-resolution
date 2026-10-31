@@ -42,8 +42,9 @@ const entriesOf = (actor) => [...(actor?.items ?? [])].filter((item) => FEATS.ha
 const countsOf = (entry, actor) => (typeof entry.temperature === "function" ? entry.temperature(actor) : entry.temperature);
 
 // (Its own, and an aura's from an ally near enough: nearby(actor) gives [{ actor, distance }] of the creatures on its side, the world's
-// tokens by default.)
-export function temperatureProtections(actor, nearby = alliesNear) {
+// tokens by default. The environment module asks (actor, { temperature }): nearby as options.nearby, or a function; round 33.)
+export function temperatureProtections(actor, options = {}) {
+    const nearby = typeof options === "function" ? options : typeof options?.nearby === "function" ? options.nearby : alliesNear;
     const own = entriesOf(actor).filter(([, entry]) => entry.temperature).map(([item, entry]) => ({ counts: countsOf(entry, actor), source: item.name }));
     const auras = [];
     for (const { actor: ally, distance } of nearby(actor) ?? []) {

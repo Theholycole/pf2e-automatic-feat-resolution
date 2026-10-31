@@ -15,7 +15,9 @@ export function terrainDifficulty(tokenDocument) {
         for (const behavior of region.behaviors ?? []) {
             if (behavior.disabled || behavior.type !== "modifyMovementCost") continue;
             const difficulties = behavior.system?.difficulties ?? {};
-            const value = Number(difficulties[action] ?? difficulties.walk ?? 1);
+            // (A token's "travel" or any action with no cost of its own above 1: its walking cost; round 33.)
+            const own = Number(difficulties[action]);
+            const value = Number.isFinite(own) && own > 1 ? own : Number(difficulties.walk ?? 1);
             if (Number.isFinite(value) && value > worst) worst = value;
         }
     }

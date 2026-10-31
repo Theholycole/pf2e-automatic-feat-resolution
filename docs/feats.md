@@ -543,3 +543,6 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Through the environment module: Leaf Leshy, Stuffed Poppet, Wings (Dragonet) fall without damage, Land on Your Feet halves it and lands
   standing; Wandering Oasis protects its own and allies within 60 feet from severe heat and cold (extreme too when legendary in Survival).
 - On companions: Wing Rider's fly 25, Gigantic Megafauna Companion's Huge, Climbing Limbs+'s climb Speed as the land Speed.
+- Round 33: proficiency raises, senses, off-guard in difficult terrain and falls pass. Fixed after it: a token on "travel" reads its
+  walking cost; temperatureProtections takes the environment module's (actor, { temperature }); an animal companion counts as one while
+  it prepares (its Animal Companion class or the module's master flag, before its class's minion trait is on it).

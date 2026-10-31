@@ -107,6 +107,15 @@ test("Wandering Oasis: its own and an ally's within 60 feet; Land on Your Feet h
     assert.equal(temperatureProtections(ally, () => [{ actor: druid, distance: 60 }])[0].source, "Wandering Oasis (Druid)");
     assert.deepEqual(temperatureProtections(ally, () => [{ actor: druid, distance: 65 }]), []);
     assert.equal(Object.keys(temperatureProtections(ally, () => [{ actor: { ...druid, skills: { survival: { rank: 4 } } }, distance: 30 }])[0].counts).length, 4);
+    assert.deepEqual(temperatureProtections(druid, { temperature: "severe-cold", nearby: () => [] })[0].source, "Wandering Oasis", "the environment module's options");
+    assert.doesNotThrow(() => temperatureProtections(ally, { temperature: "severe-cold" }), "no canvas: no allies");
     const feet = { type: "feat", name: "Land on Your Feet", sourceId: "Compendium.pf2e.ancestryfeatures.Item.sL1hHxrHdMNIZVAd" };
     assert.deepEqual(fallEases({ items: [feet] }), [{ halved: true, landsOnFeet: true, source: "Land on Your Feet" }]);
+});
+
+test("an animal companion while it prepares: its class, before its minion trait", async () => {
+    const { isCompanion } = await import("../src/compiler/companion.js");
+    assert.ok(isCompanion({ type: "character", traits: new Set(["animal"]), items: [{ type: "class", slug: "animal-companion", name: "Animal Companion" }] }));
+    assert.ok(isCompanion({ type: "character", traits: new Set(["animal"]), items: [], flags: { "pf2e-automatic-feat-resolution": { master: "abc" } } }));
+    assert.ok(!isCompanion({ type: "character", traits: new Set(["human"]), items: [{ type: "class", slug: "fighter", name: "Fighter" }] }));
 });
