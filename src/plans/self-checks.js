@@ -184,5 +184,10 @@ export default [
         uuid: pf2e("LyqXT4XYYlgf8KYK"), name: "Propelled Leap",
         selfCheck: { statistic: "athletics", dc: 30, outcomes: { criticalFailure: { effects: [{ kind: "condition", slug: "off-guard", value: null, duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] } } },
         notes: ["Swim toward the surface at up to twice your swim Speed first (less than 10 feet: an automatic failure). You Leap 15 feet up on a critical success, 10 on a success, 5 on a failure, and 5 feet across. Near something to hold with a free hand: Grab an Edge; otherwise you fall back into the water unharmed."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.aVhhPuhF87ACfFFd", name: "Assess Terrain",
+        selfCheck: { statistic: "survival", dc: 15, target: "a 5-foot burst of natural difficult terrain within 30 feet" },
+        notes: ["DC 15 for a 5-foot burst; an expert can take DC 20 for a 10-foot burst, a master DC 30 for a 20-foot burst (judge those against the roll by hand; legendary: 10 higher to include cold, earth, plant, water or wood terrain).", "Critical success: the difficult terrain is normal for you for up to 1 minute, and greater difficult terrain is difficult until the end of your next turn. Success: normal until the end of your next turn. Critical failure: the whole area is difficult (or greater difficult) terrain for you until the end of your next turn."]
     }
 ];
