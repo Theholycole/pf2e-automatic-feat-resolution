@@ -247,5 +247,21 @@ export default [
         uuid: pf2e("pp04AVdROQXSeaA8"), name: "Blazing Mutagen",
         toggle: { rules: [{ key: "DamageDice", selector: "strike-damage", diceNumber: 1, dieSize: "d4", damageType: "fire", category: "persistent", predicate: ["item:melee"] }] },
         notes: ["On while your mutagen lasts and your persistent fire burns: drinking it, take @Damage[2d4[persistent,fire]] damage that ignores fire resistance and immunity. Post it again when the persistent fire ends."]
+    },
+    // (Round 70: bonuses and penalties a passive gives others in a moment, on its targets.)
+    {
+        uuid: pf2e("n0693gmx3k9wvb1N"), name: "Demanding Challenge",
+        toggle: { who: "target", rules: [bonus("attack-roll", -1)], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
+        notes: ["Target the foe your challenge check succeeded against: –2 on a critical success (raise it by hand). Until the end of your next turn."]
+    },
+    {
+        uuid: pf2e("eSoMkHGw38ld4gj2"), name: "Shared Warding",
+        toggle: { who: "target", rules: [bonus("ac", 1, "status"), bonus("saving-throw", 1, "status")] },
+        notes: ["Target your allies within 30 feet when Esoteric Warden wards you: only against that creature's next attack and their next save against it (+2 on your critical success). Post it again to take it off."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-alchemists.pf2e-misc.Item.E6QgnzfIIEHC6dJ6", name: "Greater Field Discovery (Gastronome)",
+        toggle: { who: "target", rules: [bonus("attack-roll", 1, "status"), bonus("damage", 1, "status"), bonus("saving-throw", 1, "status", ["item:trait:mental"])] },
+        notes: ["Target the creatures with temporary Hit Points from your alchemical food: post it again when those run out."]
     }
 ];
