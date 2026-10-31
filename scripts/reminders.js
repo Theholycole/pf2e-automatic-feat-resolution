@@ -177,9 +177,11 @@ export async function onForeignSpell(message) {
     if (!caster) return;
     for (const token of canvas?.tokens?.placeables ?? []) {
         const actor = token.actor;
-        if (actor?.type !== "character" || actor === caster || (casterToken && token.document.disposition === casterToken.document.disposition)) continue;
+        if (actor?.type !== "character" || actor === caster) continue;
+        // (An ally's spell, "An ally within 30 feet Casts a Spell": Accompany's, Spell Relay's; round 37.)
+        const event = casterToken && token.document.disposition === casterToken.document.disposition ? "ally-casts" : "foe-casts";
         const distance = casterToken ? distanceBetween(token, casterToken) : null;
-        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "foe-casts" && (!read.within || (distance !== null && distance <= read.within)));
+        const due = [...actor.itemTypes.feat, ...actor.itemTypes.action].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === event && (!read.within || (distance !== null && distance <= read.within)));
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(caster.name)} casts a spell.`, due);
     }
 }

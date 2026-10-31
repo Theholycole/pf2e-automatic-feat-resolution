@@ -562,3 +562,12 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 
 - On the eidolon or companion: Airborne Form's fly Speed as its land Speed, Resilient Shell's physical resistance 5 (6 at 17th level),
   Amphibious Form's amphibious trait, Demon-Hunting Companion's scent (imprecise, 30 feet).
+
+### Round 37: more reaction triggers (2026-10-31)
+
+- `eventTrigger` reads more wordings: "would succeed at a save" by a creature (Black Cat Curse), "critically misses … against your AC"
+  (Clang!), "hits, but does not critically hit you" (Deceptive Sidestep), "damaged you" (Rushing Boar), "would reduce you to 0 Hit Points"
+  (Defensive Roll, Divert Destiny), "You witness an ally being reduced to 0 Hit Points" (Awakening Shock), "otherwise become Prone"
+  (Rolling White Bottle Form), a linked or designated ally taking damage (Share Life, Wounded Party), "would damage you or your ally"
+  (Transcendent Deflection), and an ally casting a spell (new event ally-casts: Accompany, Spell Relay). `preRollTrigger`: "You attempt a
+  basic Reflex save", "You attempt a saving throw against …" (Feline Dance, Absorb Toxin, Consume Magic). Count: 2,445 of 4,826 left.

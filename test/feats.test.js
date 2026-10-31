@@ -622,3 +622,22 @@ test("condition feats: Friend of Fear lowers a gain, Calm and Centered a decreas
     assert.deepEqual(conditionAfter([calm], "frightened", 3, 2), { value: 1, by: ["Calm and Centered"] });
     assert.equal(conditionAfter([calm], "frightened", 1, 2), null);
 });
+
+test("round 37: more reaction triggers read", async () => {
+    const { eventTrigger, preRollTrigger } = await import("../src/compiler/event-reminders.js");
+    const reaction = (trigger) => ({ name: "X", system: { actionType: { value: "reaction" }, description: { value: `<p><strong>Trigger</strong> ${trigger}</p><hr /><p>Effect.</p>` } } });
+    const read = (trigger) => eventTrigger(reaction(trigger));
+    const black = read("A creature within 30 feet you can see would succeed at a save.");
+    assert.deepEqual([black.event, black.who, black.outcomes, black.rolls, black.within], ["others-roll", "creature", ["success"], ["saving-throw"], 30]);
+    assert.equal(read("An enemy critically misses a Strike or spell attack roll against your AC.").event, "critical-miss");
+    assert.equal(read("An opponent hits, but does not critically hit you, with a melee Strike.").event, "hit");
+    assert.equal(read("An attack from a creature that isn't adjacent to you damaged you.").event, "damaged");
+    assert.deepEqual([read("A physical attack would reduce you to 0 Hit Points.").event, read("A physical attack would reduce you to 0 Hit Points.").conditions], ["self-condition", ["0-hp"]]);
+    assert.equal(read("You witness an ally being reduced to 0 Hit Points by an enemy you can see.").event, "ally-condition");
+    assert.deepEqual([read("You Drop Prone or otherwise become Prone.").event, read("You Drop Prone or otherwise become Prone.").conditions], ["self-condition", ["prone"]]);
+    assert.equal(read("Your linked ally takes damage and is within 60 feet.").event, "ally-damaged");
+    assert.equal(read("An enemy within your reach would damage you or your ally with an attack.").event, "ally-damaged");
+    assert.deepEqual([read("An ally within 30 feet Casts a Spell.").event, read("An ally within 30 feet Casts a Spell.").within], ["ally-casts", 30]);
+    assert.equal(preRollTrigger(reaction("You attempt a basic Reflex save.")).event, "pre-save");
+    assert.equal(preRollTrigger(reaction("You attempt a saving throw against a disease or poison effect that affects an area.")).event, "pre-save");
+});
