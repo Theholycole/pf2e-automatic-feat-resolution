@@ -12,7 +12,7 @@ export default [
     { uuid: pf2e("ZBm542xaWmneueq4"), name: "Fishblooded", rules: [ignore("aquatic", "all")] },
     { uuid: pf2e("chM3Pya6H8QGnEGo"), name: "Water Dancer", rules: [ignore("aquatic", "all"), ignore("swamp", "all")] },
     { uuid: pf2e("PfEx4s0TRFgAaITi"), name: "Aquatic Passage", rules: [ignore("aquatic", "all"), ignore("swamp", "all")] },
-    { uuid: pf2e("NHlCta7B1Lmt3S7w"), name: "Jungle Runner", rules: [ignore("forest", "undergrowth")] },
+    { uuid: pf2e("NHlCta7B1Lmt3S7w"), name: "Jungle Runner", rules: [ignore("all", "undergrowth")] },
     { uuid: pf2e("lKgpe2JKaeLjgnYF"), name: "Forest Passage", rules: [ignore("all", "undergrowth")] },
     { uuid: pf2e("6Qd7AA3Hp0KlALnF"), name: "Bamboo and Silt Repose", rules: [ignore("all", "undergrowth"), ignore("swamp", "all")] },
     { uuid: pf2e("FZuQPFnQ5UkBWLU9"), name: "Steady on Stone", rules: [ignore("all", "rubble")] },

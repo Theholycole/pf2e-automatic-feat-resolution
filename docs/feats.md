@@ -514,3 +514,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   Gazer, Murksight, Murksight+, Storm Born (weather), Skyborn Tengu, Windweb Tripkee and Cat Fall by Acrobatics rank (falls). The
   environment module asks both (its branch claude/project-thread-7muc17, foundry.js fromSuite). Left: the ones on a choice (Environmental
   Adaptability, Favored Terrain) or for allies (Environmental Guide, Angel Eidolon's aura).
+- Round 29: the entries land (Crushing Step only in medium or heavy armor) and snow, deep snow pass. Jungle Runner's forest/undergrowth matched nothing: the core's undergrowth names no environment. Now all/undergrowth (undergrowth is a forest's anyway).
