@@ -24,5 +24,16 @@ export default [
                 criticalSuccess: { nativeEffects: [{ uuid: "Compendium.pf2e.feat-effects.Item.Effect: Hot Foot (Critical Success)", label: "Effect: Hot Foot (Critical Success)" }] },
                 success: {} } },
         notes: ["On a success it can't use reactions until the start of its next turn; on a critical success it's also off-guard and takes a –2 circumstance penalty to Reflex saves (the Effect)."]
+    },
+    // (Reactions that disrupt a reaction: the roll only against a creature of a higher level.)
+    {
+        uuid: pf2e("xBqDeQFzvuDfqhZC"), name: "Reactive Interference",
+        attack: { roll: "strike", against: "ac", target: "the adjacent enemy using a reaction" },
+        notes: ["Roll only if its level is higher than yours; otherwise you disrupt the reaction without a roll. On a success you disrupt it."]
+    },
+    {
+        uuid: pf2e("APfPNpUQlKlCAJkS"), name: "Miraculous Intervention",
+        attack: { roll: "strike", against: "ac", target: "the adjacent fiend or undead using a reaction" },
+        notes: ["Roll only if its level is higher than yours; otherwise you disrupt the reaction without a roll. You can use a spell attack roll instead. On a success you disrupt it."]
     }
 ];
