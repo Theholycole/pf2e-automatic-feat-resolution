@@ -24,17 +24,29 @@ import { eidolonWords, isEidolonItem } from "./companion.js";
 
 // (A portal, Fabricate Rift's "Stride through this portal as part of the activity to create it": not its user's move card.)
 const NOT_MOVES = /^Fabricate Rift$/;
-// An action's move, read by the item module's movePlan → its "teleport" plan, or null (a passive's, or with no item module).
-function moveFor(item, movePlan) {
-    if (typeof movePlan !== "function" || (item.system?.actionType?.value ?? "passive") === "passive" || NOT_MOVES.test(item.name)) return null;
+// (Another creature's roll the reader takes for its user's own, Focus Ally's "Your ally rerolls", Correct the Story's "The enemy must reroll", or
+// an attack sent elsewhere, Sidestep's and Redirect Elements': not its user's reroll card.)
+const NOT_REROLLS = /^(?:Redirect Elements|Sidestep|Impossible Technique|Focus Ally|Correct the Story|Companion's Reprise|Shadows Within Shadows)$/;
+// An action's own item-module card (round 94, Cole's pick "Item cards first"), read by that module's readers when it's on (options.itemReaders:
+// its src/compiler/rerolls.js rerollPlan, its src/compiler/move.js movePlan) → its "reroll" or "teleport" plan, or null. A passive's: none.
+function itemCardFor(item, readers) {
+    if (!readers || (item.system?.actionType?.value ?? "passive") === "passive") return null;
     const base = { source: { name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type }, rank: 1, traits: [...(item.system?.traits?.value ?? [])], activation: { time: null, traits: [] } };
     // (Its inline checks as their words, "a DC 30 [[/act high-jump]]{Athletics} check": the card's lines are plain text.)
     const html = String(item.system?.description?.value ?? "").replace(/\[\[[^\]]*\]\]\{([^}]*)\}/g, "$1").replace(/@Check\[(\w+)[^\]]*\](?:\{([^}]*)\})?/g, (_, skill, label) => label ?? `${skill.charAt(0).toUpperCase()}${skill.slice(1)}`);
-    return movePlan(html, base);
+    const reroll = typeof readers.rerollPlan === "function" && !NOT_REROLLS.test(item.name) ? readers.rerollPlan(html, base) : null;
+    const card = reroll ?? (typeof readers.movePlan === "function" && !NOT_MOVES.test(item.name) ? readers.movePlan(html, base) : null);
+    // (Its cost, Rewrite Fate's "Spend a Mythic Point": the item module's card spends it, or refuses — its src/compiler/spend.js.)
+    const plain = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const spent = card && typeof readers.withSpend === "function" ? readers.withSpend(card, plain) : card;
+    // (Rewrite Fate's "reroll the check or save": either roll, not a save alone.)
+    if (spent?.reroll && /\breroll the (?:check or save|save or check)\b/i.test(plain)) spent.reroll = { ...spent.reroll, what: "roll", statistic: undefined };
+    // (Rewrite Fate's "You expend a Mythic Point and reroll": the same cost.)
+    return spent && !spent.spend && /\bYou expend (?:a|1|one) Mythic Point\b/.test(plain) ? { ...spent, spend: { mythicPoints: 1 } } : spent;
 }
 
 export function compileFeat(item, options = {}) {
-    const { dcs, movePlan, ...abilityOptions } = options;
+    const { dcs, itemReaders, ...abilityOptions } = options;
     if (!dcs) return null;
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
@@ -77,11 +89,11 @@ export function compileFeat(item, options = {}) {
     const used = asUsed(filled);
     const usedPlan = used ? read(used.item, abilityOptions) ?? selfHeal(used.item, dcs) ?? selfEffect(used.item, dcs) : null;
     // (Round 43: a timed effect nothing above plays, its Effect with no rules: src/compiler/timer-effect.js.)
-    // (Round 94, Cole's pick "Item cards first": a Stride, Step or Leap the feat is, Tactical Entry's "You Stride. This movement doesn't trigger
-    // reactions": the item module's move card (its src/compiler/move.js, passed in as options.movePlan when that module is on).)
+    // (Round 94: a reroll or a Stride, Step or Leap the feat is, Tactical Entry's "You Stride. This movement doesn't trigger reactions": the item
+    // module's card, itemCardFor.)
     // (With a timer too, Chemical Spill's 3 rounds of its trail: the timer, its move card beside it, plan.move.)
     if (!usedPlan) {
-        const moved = moveFor(filled, movePlan);
+        const moved = itemCardFor(filled, itemReaders);
         const timer = timerEffect(filled);
         return timer && moved ? { ...timer, move: moved } : moved ?? timer;
     }
