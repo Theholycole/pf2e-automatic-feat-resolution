@@ -90,5 +90,156 @@ export default [
         uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.E9CLWaNP0QjvV8fe", name: "Fever Shiver",
         affect: { target: "you", effects: [{ kind: "condition", slug: "sickened", value: 0, duration: null, stack: { by: -1 } }] },
         notes: ["Then raise your frustrated condition by 1. Or instead, attempt a new save against an affliction (and see the feat for what that costs): remove the card's change then."]
+    },
+    // (Round 65: the sweep.)
+    {
+        uuid: pf2e("CjafX7d1XktxeyTa"), name: "Deific Font",
+        affect: { target: "you", effects: [{ kind: "condition", slug: "drained", value: 1, duration: null, stack: { by: 1 } }] },
+        notes: ["Before the end of your next turn, a spell of 4th rank or lower you cast spends no slot, or a focus spell no Focus Point; it loses its tradition trait and gains divine."]
+    },
+    {
+        uuid: pf2e("XyQpqznuO5LGFvhz"), name: "Coordinated Distraction",
+        affect: { target: "1 enemy within 30 feet", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-end", anchor: "effect-start" } }] },
+        notes: ["Only against the first Strike your chosen ally (within 30 feet) makes on their next turn: remove it after that Strike, or if they don't Strike the target. Auditory or visual, as you describe it."]
+    },
+    {
+        uuid: pf2e("9SdFlVQW4vM8ggh8"), name: "Fane's Escape",
+        affect: { target: "you", effects: [{ slug: "hidden", duration: { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" } }] },
+        notes: ["Hidden only to creatures that see you; then Sneak, with cover enough until the end of your turn. Gathering the cards again takes several minutes."]
+    },
+    // (Round 66.)
+    {
+        uuid: pf2e("vzKvihYNModB7sJ7"), name: "Play Dead",
+        affect: { target: "you", effects: [{ slug: "prone", duration: null }] },
+        notes: ["While you don't move or act beyond your mind, you seem a plain skeleton: seeing through it takes a Seek or Recall Knowledge against your Deception DC. No use against those who know you're undead."]
+    },
+    {
+        uuid: pf2e("OJLGFnmbT418dC18"), name: "Stand Firm",
+        affect: { target: "1 ally within 30 feet", effects: [{ kind: "condition", slug: "frightened", value: 0, duration: null, stack: { by: -2 } }] },
+        notes: ["If they're fleeing, they can retry the save at once: on a failure (not a critical failure) they spend one fewer action fleeing. Immune to it until your next turn starts."]
+    },
+    {
+        uuid: pf2e("AYVf9MU8oo1QWbGv"), name: "Wave the Flag",
+        affect: { target: "each ally within 30 feet", effects: [{ kind: "condition", slug: "frightened", value: 0, duration: null, stack: { by: -1 } }] },
+        notes: ["Only allies benefiting from your Cavalier's Banner. Each can retry a save against one mental effect now, and is then immune to Wave the Flag for 10 minutes."]
+    },
+    // (Round 67: reactions.)
+    {
+        uuid: "Compendium.pf2e-team-plus-barbarians.items.Item.uT8LUuReXwe2MuJs", name: "Embrace the Eldritch",
+        affect: { target: "you", effects: [{ kind: "condition", slug: "frightened", value: 2, duration: null }] },
+        notes: ["Only if you weren't frightened. Your degree of success on the triggering save is one step better, and it counts as willingly accepting the spell for your instinct."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-magic.items.Item.1BDYt6q2NfX7xwdL", name: "Accelerated Dynamism",
+        affect: { target: "you", effects: [{ slug: "quickened", duration: { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" } }] },
+        notes: ["Only for the actions to cast the three-action version of a spell you have dynamic mastery with (or for Triplicate Casting or Variable Preparation, with those feats)."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.lT6yLoMfalzxGL8y", name: "Retributive Focus",
+        regain: { resource: "focus", value: 1 },
+        notes: ["Only when an enemy triggers your champion's reaction and your focus pool is empty."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.GdqIBsraQK2FIofQ", name: "Fog of the Imperial",
+        affect: { target: "you and each ally within 5 feet", effects: [{ slug: "concealed", duration: null }] },
+        notes: ["Every creature in the fog is concealed, enemies too, and those outside are concealed to those in it. It lasts while you channel your dragon (remove it then); each Sustain can widen it by 5 feet."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.QuRhGFEhvF7z0Pz9", name: "Immortal Techniques",
+        affect: { target: "you", effects: [{ kind: "temp-hp", formula: "20", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
+        notes: ["Post it the first time each round you use an action with both the monk and stance traits."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.gYrJJcG5PDe5aMep", name: "Dominance of Nature",
+        affect: { target: "1 animal, beast, elemental or plant within 30 feet", effects: [{ kind: "condition", slug: "slowed", value: 1, duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
+        notes: ["If its level is at most yours − 3, it's controlled by you for 1 round instead (swap the condition by hand). Sustain it up to 1 minute. At the end of each of its turns it attempts a @Check[will|against:class-spell] save to end it. Immune for 1 day after."]
+    },
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.lgpJoFrkzfkjAzeV", name: "Inscribe Shadow Pamor",
+        affect: { target: "the creature your next Strike hits", effects: [{ slug: "dazzled", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
+        notes: ["Post it after your next action, a Strike, hits: apply then. It can Interact to tear away the shadows (remove it), unless your Strike was a critical hit."]
+    },
+    // (Round 75: triggered combat feats.)
+    {
+        uuid: pf2e("xdv75qkv5TOFlHmM"), name: "Keep up the Good Fight",
+        affect: { target: "you", effects: [{ kind: "temp-hp", formula: "@actor.level", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }, wounded] },
+        notes: ["When a foe's Strike drops you to 0 Hit Points (from more than 1, and it wouldn't kill you): you're at 1 Hit Point instead of knocked out; set it by hand."]
+    },
+    {
+        uuid: pf2e("LT5rw7JfemZSXUKB"), name: "Tenacious Endurance",
+        affect: { target: "your animal companion", effects: [{ kind: "condition", slug: "wounded", value: 1, duration: null }] },
+        notes: ["Target your companion when it drops to 0 Hit Points and isn't wounded: it stays standing at 1 Hit Point (set it by hand)."]
+    },
+    {
+        uuid: pf2e("it5yM6sbwJJysm9U"), name: "Quick Root",
+        affect: { target: "you", effects: [{ kind: "end-condition", slugs: ["prone"], recipient: "self" }] },
+        notes: ["A force that moves you moves you half as far (at least 5 feet). Knocked prone: let it resolve, then post this to Stand."]
+    },
+    {
+        uuid: pf2e("E7PFg8xua1nGIqHQ"), name: "Competitive Eater",
+        affect: { target: "you", effects: [{ kind: "temp-hp", formula: "10 + @actor.level", duration: null }] },
+        notes: ["When you become fully satiated."]
+    },
+    // (Round 76: feats that add to a card the suite plays.)
+    {
+        uuid: pf2e("nuBY8Ek4JBFQJzoh"), name: "Mastermind's Eye",
+        affect: { target: "the creature you identified", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] },
+        notes: ["After a successful Recall Knowledge identifies it: off-guard only to your attacks. On a critical success it lasts 1 minute (extend it by hand)."]
+    },
+    {
+        uuid: pf2e("O1C6pMTOxIrWBO3G"), name: "Daring Flourish",
+        affect: { target: "the target of your Daring Act", effects: [{ slug: "off-guard", duration: { mode: "fixed", value: 0, unit: "rounds", expiry: "turn-end", anchor: "source-turn" } }] },
+        notes: ["After a successful Daring Act: against the melee Strike or Disarm you make then and your next melee attack on it this turn; remove it after that attack."]
+    },
+    // (Round 78: a Focus Point that lasts only this turn, for Energize.)
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.cswrattGCvaXsjez", name: "Flirting With Danger",
+        regain: { resource: "focus", value: 1 },
+        notes: ["Only while flanked or within reach of at least 3 enemies. The point is only for Energizing a qi-shape action, and lasts until the end of your turn: spend it or take it back off then."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.Oef5B7jxmu5nFxLa", name: "Mythic Refocus",
+        regain: { resource: "focus", value: 99 },
+        notes: ["Spend the Mythic Point by hand."]
+    },
+    // (Round 83: "you can produce the effects of Invisibility on yourself": cast through the spell module, as a spell-like feat is.)
+    {
+        uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.auMlFNuu48YRtkeS", name: "Phase Frame",
+        text: `<p>You cast @UUID[Compendium.pf2e.spells-srd.Item.XXqE1eY3w3z6xJCB]{Invisibility} on yourself.</p>`,
+        notes: ["Once per day (once per hour if you're legendary in Crafting, heightened to half your level rounded up: set the rank by hand)."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.kr537ZL3f8tCSgDK", name: "True Gaze",
+        text: `<p>You cast a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.uqlxMQQeSGWEVjki]{Truesight} on yourself.</p>`,
+        castWith: "perception",
+        notes: ["Once per hour. Its counteract checks use your Perception modifier."]
+    },
+    // (Round 85: "as a 5th-rank Translocate spell" isn't a sentence the spell reader takes.)
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.fPTwCnKYesk1PvuI", name: "Burn Identity",
+        text: `<p>You cast a 5th-rank @UUID[Compendium.pf2e.spells-srd.Item.VlNcjmYyu95vOUe8]{Translocate} on yourself.</p>`,
+        notes: ["Once per week. Everyone who has seen you in the last 24 hours (exempt any you choose) attempts a Will save against your class DC or spell DC, whichever is higher, or forgets your appearance as a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.FhOaQDTSnsY7tiam]{Rewrite Memory}: the GM rolls those.", "As a 10-minute activity instead: teleport yourself and up to four targets touched to the nearest border of Andoran, by hand."]
+    },
+    // (Round 87: "you can briefly awaken items around you to cast" isn't read as what the feat does.)
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.ZcyotWOE1ZHEECn3", name: "Eyes Everywhere",
+        text: `<p>You cast a 4th-rank @UUID[Compendium.pf2e.spells-srd.Item.ykyKclKTCMp2SFXa]{Countless Eyes}.</p>`,
+        notes: ["Once per day, an innate spell of the tradition you chose for Inquisitive Eye's read aura."]
+    },
+    // (Round 87: "You grant … the effects of", "with the effects of the gaseous form spell" (no link), "cast … three times".)
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.iVwsLYjOJbfvL0Pe", name: "Heroic Presence",
+        text: `<p>You cast a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.GYD0XZ4t3tQq6shc]{Zealous Conviction} on up to 10 willing creatures within 30 feet.</p>`,
+        notes: ["Once per day. Target the creatures first. It ends on a target you give a command it would find repugnant."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.phFRWFgeHdBzio2V", name: "Terrain Form",
+        text: `<p>You cast @UUID[Compendium.pf2e.spells-srd.Item.V8wXOsoejQhe6CyG]{Vapor Form} on yourself.</p>`,
+        notes: ["Once per day. You're made of your bound terrain: snow (arctic), sand (desert), cloud (mountain) or mud (swamp). Using it again reconstitutes your normal form: end the spell's Effect by hand."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.OYrcbyaV3v8ycksj", name: "Head of the Night Parade",
+        text: `<p>You cast an 8th-rank @UUID[Compendium.pf2e.spells-srd.Item.tFKJCPvOQZxKq6ON]{Mad Monkeys}.</p>`,
+        notes: ["You Perform and cast it three times: use the card's cast three times, each with its own kind of mischief. One Perform action Sustains all three each round."]
     }
 ];

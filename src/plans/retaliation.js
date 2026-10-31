@@ -16,9 +16,18 @@ export const RETALIATIONS = [
     { uuid: pf2e("U5FcfRvveTKtgebq"), name: "Torch Goblin", on: ["maneuver"], actions: ["grapple", "shove", "trip"], requires: ["self:condition:persistent-damage:fire"], formula: "1d6", type: "fire", note: "If it used a weapon for the maneuver, the weapon takes the damage instead." },
     // (A save instead of damage: the card posts the attacker's save against your DC, its outcomes to apply from the card's own buttons.)
     { uuid: "Compendium.pf2e-team-plus-alchemists.pf2e-items.Item.aAXpWDhNyjc0MvFm", name: "Poisonous Blood", on: ["hit"], melee: true, unarmed: true, save: { statistic: "fortitude", dc: "class", traits: ["poison"], harder: { option: "self:condition:persistent-damage:bleed", by: 2 }, text: "Failure: @UUID[Compendium.pf2e.conditionitems.Item.fesd1n5eVhpCSS18]{Sickened 1}. Critical Failure: @UUID[Compendium.pf2e.conditionitems.Item.fesd1n5eVhpCSS18]{Sickened 2}." } },
+    // (effect: an Effect on the attacker instead of damage, its penalty on attack rolls with the weapon or unarmed attack it hit with.)
+    { uuid: pf2e("4fK5Ydicz76coNkj"), name: "Ambersoul", on: ["hit"], melee: true, damageTypes: ["piercing", "slashing"], effect: { attackPenalty: -1, duration: { value: 0, unit: "rounds", expiry: "turn-end", sustained: false } } },
+    { uuid: pf2e("BuaOQzmRNgIhGsfN"), name: "Blessed Blood (Nephilim)", on: ["hit"], melee: true, damageTypes: ["piercing", "slashing"], attackerAny: ["self:trait:fiend", "self:trait:undead"], formula: "1d6", type: "spirit", note: "The damage has the holy trait. Only from jaws, fangs or a similar attack; a creature with weakness to holy that isn't a fiend or undead, or one that drinks your blood, by hand." },
     { uuid: pf2e("hPanopG3TbXKr52O"), name: "Pesh Skin", on: ["hit"], melee: true, adjacent: true, requires: ["self:trait:plant"], formula: "1d6", type: "piercing", note: "2d6 if your polymorph spell is 8th rank or higher, 3d6 at 10th: roll the rest by hand." }
 ];
 const BY_UUID = new Map(RETALIATIONS.map((entry) => [entry.uuid, entry]));
+
+// An effect entry's rules for this hit: the penalty on that weapon's or unarmed attack's attack rolls (its slug, from the roll's options).
+export function effectRules(entry, options = []) {
+    const slug = options.find((option) => option.startsWith("item:slug:"));
+    return [{ key: "FlatModifier", selector: "attack-roll", type: "circumstance", value: entry.effect.attackPenalty, ...(slug ? { predicate: [slug] } : {}) }];
+}
 
 // What the roll is to the character it's aimed at: "hit" for an attack roll that hits, "maneuver:<slug>" for a successful maneuver.
 export function eventOf(context) {
@@ -41,6 +50,10 @@ export function retaliationsFor(items, sourceOf, selfOptions, event, distance) {
         if (event.kind === "maneuver" && !(entry.actions ?? []).includes(event.action)) return false;
         if (event.kind === "hit" && entry.unarmed && !unarmed) return false;
         if (event.kind === "hit" && entry.melee && !melee) return false;
+        // (Round 81: only damage of these types, "deals piercing or slashing damage to you"; only an attacker with one of these roll
+        // options, "a fiend or undead".)
+        if (event.kind === "hit" && entry.damageTypes && !entry.damageTypes.some((type) => event.options.includes(`item:damage:type:${type}`))) return false;
+        if (entry.attackerAny && !entry.attackerAny.some((option) => event.options.includes(option))) return false;
         if (entry.adjacent && distance !== null && distance > 5) return false;
         return (entry.requires ?? []).every((option) => has.has(option));
     });

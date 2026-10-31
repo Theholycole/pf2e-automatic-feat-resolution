@@ -22,12 +22,43 @@ export { characterStrike } from "./strikes.js";
 // (basicActions, actor).
 import { eidolonWords, isEidolonItem } from "./companion.js";
 
+// (A portal, Fabricate Rift's "Stride through this portal as part of the activity to create it": not its user's move card.)
+const NOT_MOVES = /^Fabricate Rift$/;
+// (Another creature's roll the reader takes for its user's own, Focus Ally's "Your ally rerolls", Correct the Story's "The enemy must reroll", or
+// an attack sent elsewhere, Sidestep's and Redirect Elements': not its user's reroll card.)
+const NOT_REROLLS = /^(?:Redirect Elements|Sidestep|Impossible Technique|Focus Ally|Correct the Story|Companion's Reprise|Shadows Within Shadows)$/;
+// An action's own item-module card (round 94, Cole's pick "Item cards first"), read by that module's readers when it's on (options.itemReaders:
+// its src/compiler/rerolls.js rerollPlan, fortune.js rollTwicePlan, move.js movePlan) → its "reroll", "roll-twice" or "teleport" plan, or null. A passive's: none.
+function itemCardFor(item, readers) {
+    if (!readers || (item.system?.actionType?.value ?? "passive") === "passive") return null;
+    const base = { source: { name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type }, rank: 1, traits: [...(item.system?.traits?.value ?? [])], activation: { time: null, traits: [] } };
+    // (Its inline checks as their words, "a DC 30 [[/act high-jump]]{Athletics} check": the card's lines are plain text.)
+    const html = String(item.system?.description?.value ?? "").replace(/\[\[[^\]]*\]\]\{([^}]*)\}/g, "$1").replace(/@Check\[(\w+)[^\]]*\](?:\{([^}]*)\})?/g, (_, skill, label) => label ?? `${skill.charAt(0).toUpperCase()}${skill.slice(1)}`);
+    const reroll = typeof readers.rerollPlan === "function" && !NOT_REROLLS.test(item.name) ? readers.rerollPlan(html, base) : null;
+    const plain = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    // (Its user's next roll rolled twice, the better kept: the item module's fortune card, PF2e's RollTwice — its src/compiler/fortune.js.)
+    // (Vision of Foresight's "a saving throw or skill check" the reader takes for a save alone: not its card. Liberate Self is a toggle,
+    // src/plans/toggles.js: PF2e's Escape ignores fortune effects.)
+    const twice = !reroll && typeof readers.rollTwicePlan === "function" && item.name !== "Vision of Foresight" ? readers.rollTwicePlan(plain, base) : null;
+    // (An eidolon's move, Beast's Charge's "Your eidolon Strides twice": not its summoner's token; the card moves its user's.)
+    // (A feat's move said as an order, Determined Dash's "Stride twice.": the reader's "You Stride twice."; its links as their names.)
+    const asMove = html.replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*\.([^.\]]+)\]/g, "$1").replace(/((?:^|[.!?>])\s*)(Stride|Step|Leap|Fly|Swim|Climb|Burrow)\b/g, "$1You $2");
+    const card = reroll ?? twice ?? (typeof readers.movePlan === "function" && !NOT_MOVES.test(item.name) && !isEidolonItem(item) ? readers.movePlan(html, base) ?? readers.movePlan(asMove, base) : null);
+    // (Its cost, Rewrite Fate's "Spend a Mythic Point": the item module's card spends it, or refuses — its src/compiler/spend.js.)
+    const spent = card && typeof readers.withSpend === "function" ? readers.withSpend(card, plain) : card;
+    // (Rewrite Fate's "reroll the check or save": either roll, not a save alone.)
+    if (spent?.reroll && /\breroll the (?:check or save|save or check)\b/i.test(plain)) spent.reroll = { ...spent.reroll, what: "roll", statistic: undefined };
+    // (Rewrite Fate's "You expend a Mythic Point and reroll": the same cost.)
+    return spent && !spent.spend && /\bYou expend (?:a|1|one) Mythic Point\b/.test(plain) ? { ...spent, spend: { mythicPoints: 1 } } : spent;
+}
+
 export function compileFeat(item, options = {}) {
-    const { dcs, ...abilityOptions } = options;
+    const { dcs, itemReaders, ...abilityOptions } = options;
     if (!dcs) return null;
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
-    const written = hand?.text ? withText(item, hand.text) : item;
+    // (hand.activity: a passive's activity, "If you rest for 10 minutes, you regain …", played as an action when it's posted.)
+    const written = hand?.text ? withText(item, hand.text, hand.activity ? { actionType: { value: "action" }, actions: { value: typeof hand.activity === "number" ? hand.activity : null } } : {}) : item;
     // (An eidolon's action, "Your eidolon Strikes": the readers' "You Strike"; 2026-10-30, "Companions".)
     const own = !hand?.text && isEidolonItem(item) ? withText(item, eidolonWords(item.system?.description?.value ?? "")) : written;
     const filled = withCharacterDCs(own, dcs);
@@ -42,6 +73,10 @@ export function compileFeat(item, options = {}) {
     if (hand?.passiveEffect) return { builtin: "passive-effect", effect: hand.passiveEffect.effect, who: hand.passiveEffect.who, notes: hand.notes ?? [] };
     // (An action's linked Effect the reader leaves, by hand: as the reader's; src/plans/linked-effects.js.)
     if (hand?.linked) return handLinked(item, hand);
+    // (A point regained in a moment the reader leaves, by hand: as the reader's regain-point; src/compiler/regain-point.js.)
+    if (hand?.regain) return { builtin: "regain-point", resource: hand.regain.resource, value: hand.regain.value ?? 1, notes: hand.notes ?? [] };
+    // (A short teleport, Dart Between's: the item module's teleport card, src/plans/teleports.js; round 99.)
+    if (hand?.teleport) return { source: { name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type }, builtin: "teleport", automation: { level: hand.notes?.length ? "guided" : "automatic" }, targeting: { target: "self", range: null, area: null }, trigger: { event: "use" }, teleport: { ...hand.teleport, from: "self" }, notes: hand.notes ?? [] };
     // (who "target": on the player's targets, an action's bonus to an ally with no PF2e Effect, Protect Ally's; 2026-10-31, the loop.)
     if (hand?.toggle) return { builtin: "feat-effect", toggle: true, ...(hand.toggle.who === "target" ? { who: "target" } : {}), effect: { name: item.name, rules: hand.toggle.rules, duration: hand.toggle.duration ?? { value: -1, unit: "unlimited", expiry: null, sustained: false }, stance: Boolean(hand.toggle.stance) }, notes: hand.notes ?? [] };
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
@@ -54,7 +89,7 @@ export function compileFeat(item, options = {}) {
         ?? regainPoint(filled);
     // (A text entry's notes: what its rewritten text leaves out.)
     // (A text entry's notes: what its rewritten text leaves out; its target, who the card is for when the rewrite can't say it.)
-    if (plan && hand?.text) return { ...plan, ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };
+    if (plan && hand?.text) return { ...plan, ...(hand.by ? { by: hand.by } : {}), ...(hand.castWith ? { castWith: hand.castWith } : {}), ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };
     // (The ability module's "cast-spell" for a spell the feat only lets you pay for, Soul-Form's "you can spend 1 Mythic Point to also gain
     // the effects of Enlarge": not cast every time; as spellLike.)
     if (plan?.builtin === "cast-spell" && /\byou can (?:spend|choose)\b[^.]*@UUID\[[^\]]*spells/i.test(filled.system?.description?.value ?? "")) return null;
@@ -63,7 +98,14 @@ export function compileFeat(item, options = {}) {
     const used = asUsed(filled);
     const usedPlan = used ? read(used.item, abilityOptions) ?? selfHeal(used.item, dcs) ?? selfEffect(used.item, dcs) : null;
     // (Round 43: a timed effect nothing above plays, its Effect with no rules: src/compiler/timer-effect.js.)
-    if (!usedPlan) return timerEffect(filled);
+    // (Round 94: a reroll or a Stride, Step or Leap the feat is, Tactical Entry's "You Stride. This movement doesn't trigger reactions": the item
+    // module's card, itemCardFor.)
+    // (With a timer too, Chemical Spill's 3 rounds of its trail: the timer, its move card beside it, plan.move.)
+    if (!usedPlan) {
+        const moved = itemCardFor(filled, itemReaders);
+        const timer = timerEffect(filled);
+        return timer && moved ? { ...timer, move: moved } : moved ?? timer;
+    }
     return { ...usedPlan, ...(usedPlan.activation ? { activation: { ...usedPlan.activation, time: used.time } } : {}), usedOn: used.trigger };
 }
 

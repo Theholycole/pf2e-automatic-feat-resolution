@@ -51,5 +51,69 @@ export default [
         uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.We9abqydQAV3UOes", name: "Natural Remedy",
         affect: { target: "the creature you healed", effects: [{ kind: "heal", formula: "floor(@actor.level/2)" }] },
         notes: ["Use it as you restore Hit Points to a creature: it regains half your level more."]
+    },
+    // (Round 69: heals from a 10-minute rest, posted when the rest ends.)
+    {
+        uuid: pf2e("zpQEOqMDoujexNfA"), name: "Replenishing Hydration",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes submerged in water."]
+    },
+    {
+        uuid: pf2e("7vUOlVqjheZV0Nmc"), name: "Vivacious Conduit",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes."]
+    },
+    {
+        uuid: pf2e("LrPfGV6snjCrZ4h2"), name: "Nodal Healing",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes."]
+    },
+    {
+        uuid: "Compendium.pf2e.ancestryfeatures.Item.BgHrucbZ9TH92RDv", name: "Sunlight Healing",
+        text: "<p>You regain @Damage[(max(1,ceil(@actor.level/2)))d8[healing]] Hit Points.</p>",
+        activity: true, notes: ["After 10 minutes meditating in direct sunlight. Then you're immune to it for 1 day."]
+    },
+    {
+        uuid: pf2e("velPTcpjLXPnaYrm"), name: "Solar Rejuvenation",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes outdoors during the day."]
+    },
+    {
+        uuid: pf2e("MsieJK35tAP6gFGv"), name: "Coffin Bound",
+        text: "<p>You regain @Damage[(max(1,floor(@actor.level/2)*@actor.abilities.con.mod))[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes in your coffin, unconscious meanwhile. If you'd be destroyed you stay near death instead: back in the coffin within the hour, and an hour's rest there gives 1 HP and ends dying and wounded."]
+    },
+    // (Round 69: heals in a moment, posted then.)
+    {
+        uuid: pf2e("E1QLW9gFsK0jVysV"), name: "Coral Lifeline",
+        text: "<p>You regain @Damage[4d8[healing]] Hit Points.</p>",
+        activity: true, notes: ["When you would die: you don't. Then the coral gives no benefits until your next daily preparations."]
+    },
+    {
+        uuid: pf2e("faIuxgeMG60cEa9J"), name: "Deathless Servant",
+        text: "<p>You regain @Damage[(2*@actor.level)[healing]] Hit Points.</p>",
+        activity: true, notes: ["The first time each day you'd drop to 0 Hit Points without dying: you don't take the damage or fall unconscious. Raise your wounded condition by 1. While wounded, you gain a status bonus to AC equal to its value and to Strike damage of twice it."]
+    },
+    {
+        uuid: pf2e("IyWtJ1KSd6TTvfYQ"), name: "Momentary Respite",
+        text: "<p>You regain @Damage[8d8[healing]] Hit Points.</p>",
+        activity: true, notes: ["Spend a Mythic Point. Remove your persistent damage conditions; you're immune to persistent damage until the end of your next turn."]
+    },
+    {
+        uuid: pf2e("hSHteYr1g1gKHcwM"), name: "Fey Skin",
+        text: "<p>You regain @Damage[(@actor.level)[healing]] Hit Points.</p>",
+        activity: true, notes: ["After resting 10 minutes; on top of any Treat Wounds healing. (Its extra Hit Points and cold iron weakness are PF2e's own rules.)"]
+    },
+    // (Round 92: rest heals.)
+    {
+        uuid: pf2e("AAYN41WtyMZaLV1N"), name: "Native Waters",
+        text: "<p>You regain @Damage[(@actor.level)[healing]] Hit Points.</p>",
+        activity: true, notes: ["After your full rest in a natural body of your water (fresh or salt), on top of the rest's own healing. Doomed and fatigued go down by 2 instead of 1 then: by hand."]
+    },
+    {
+        uuid: pf2e("pXoDLlV18D0eGhdj"), name: "Nourishing Symbiosis",
+        text: "<p>You regain @Damage[24[healing]] Hit Points.</p>",
+        activity: true, notes: ["After the first 24 hours of a Long-Term Rest, on top of its own healing."]
     }
+    // (Not Fruit Leshy: a heritage can't be posted in PF2e 8.6, no chat card and no button, so its fruit's healing is the GM's; round 93 test.)
 ];

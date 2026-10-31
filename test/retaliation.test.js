@@ -16,3 +16,18 @@ test("damage back on a hit or a maneuver (round 57)", () => {
     assert.deepEqual(retaliationsFor(items, source, ["self:condition:persistent-damage:fire"], trip, 5).map((each) => each.name), ["Torch Goblin"]);
     assert.deepEqual(retaliationsFor(items, source, [], hit, 30).map((each) => each.name), ["Inviolable", "Poisonous Blood"]);
 });
+
+test("Blessed Blood: a fiend or undead's piercing or slashing melee hit", () => {
+    const items = [{ uuid: "Compendium.pf2e.feats-srd.Item.BuaOQzmRNgIhGsfN" }];
+    const source = (item) => item.uuid;
+    const event = (options) => ({ kind: "hit", options: ["item:melee", ...options] });
+    assert.deepEqual(retaliationsFor(items, source, [], event(["item:damage:type:piercing", "self:trait:undead"]), 5).map((each) => each.name), ["Blessed Blood (Nephilim)"]);
+    assert.deepEqual(retaliationsFor(items, source, [], event(["item:damage:type:bludgeoning", "self:trait:undead"]), 5), []);
+    assert.deepEqual(retaliationsFor(items, source, [], event(["item:damage:type:slashing", "self:trait:humanoid"]), 5), []);
+});
+
+test("Ambersoul: a penalty Effect for the weapon that hit", async () => {
+    const { effectRules } = await import("../src/plans/retaliation.js");
+    const entry = RETALIATIONS.find((each) => each.name === "Ambersoul");
+    assert.deepEqual(effectRules(entry, ["item:melee", "item:slug:jaws"]), [{ key: "FlatModifier", selector: "attack-roll", type: "circumstance", value: -1, predicate: ["item:slug:jaws"] }]);
+});

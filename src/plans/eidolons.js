@@ -63,5 +63,16 @@ export default [
     // The summoner's or rider's feats the companion acts in (by: "companion"): played as its one companion's Strike, from its token
     { uuid: pf2e("exVjUkpAdbzJsxxg"), name: "Tandem Strike", by: "companion", strike: { melee: true, notes: ["Then you make a melee Strike against the same creature. If both hit, combine their damage for resistances and weaknesses; the multiple attack penalty rises only after both."] } },
     { uuid: pf2e("pfos1p4SurbUgpjQ"), name: "Magical Onslaught", by: "companion", strike: { melee: true, notes: ["Then you cast a 1- or 2-action cantrip at the same creature. If this Strike hit, it's off-guard against your spell attack, or takes a –2 circumstance penalty to its save."] } },
+    // (Round 77: the beastmaster's and rider's companion activities, "Your companions … learn the X activity": the companion's Strike.)
+    { uuid: pf2e("1VLIJgnTUxNlf7T8"), name: "Ferocious Charge", by: "companion", strike: { actions: 2, melee: true, strides: 2, notes: ["In a straight line, then an antlers, head or horn Strike. If it moved at least 20 feet, add @Damage[1d8[untyped]] damage (2d8 if your companion is specialized). It can Burrow, Climb, Fly or Swim instead of Striding."] } },
+    { uuid: pf2e("NfNCSLCNmLZZyGqU"), name: "Running Kick", by: "companion", strike: { actions: 2, melee: true, strides: 2, notes: ["A hoof, foot or talon Strike at any point of the movement; the movement doesn't provoke reactions from a creature the Strike damaged."] } },
+    { uuid: pf2e("RBvmQJ661GpT5lkt"), name: "Sweeping Tail", by: "companion", strike: { actions: 2, melee: true, onHit: { push: 5, criticalPush: 10 }, notes: ["A tail Strike. Then a second tail Strike against a different creature within reach (post it again), the multiple attack penalty as normal."] } },
+    { uuid: pf2e("NtWM5UgKBYvrTLQ4"), name: "Vicious Rend", by: "companion", strike: { actions: 2, melee: true, notes: ["A claw, fist, pincer or talon Strike, then a second against the same target, the multiple attack penalty as normal. If both hit, the target takes @Damage[1d6[persistent,bleed]] damage (2d6 if your companion is specialized)."] } },
+    {
+        uuid: pf2e("obqFjbH0fciMH5F9"), name: "Sinking Jaws", by: "companion", activity: 1,
+        text: `<p>The target takes @Damage[(@actor.level+@actor.abilities.str.mod)[piercing]] damage.</p>`,
+        notes: ["Only a creature it has grabbed or restrained with its jaws or fangs."],
+        target: "the creature you have grabbed or restrained"
+    },
     { uuid: pf2e("BKdKyftmphU9n3Wq"), name: "Death Dive", by: "companion", strike: { melee: true, onHit: { conditions: [{ slug: "prone", value: null, duration: null }] }, notes: ["Your mount Flies twice first, ending lower than it began its turn; you both get +4 circumstance to AC against reactions to it. Prone only if the target is smaller than your mount (on a critical hit, the same size or smaller)."] } }
 ];

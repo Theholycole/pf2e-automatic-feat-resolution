@@ -51,7 +51,13 @@ export const COMPANION_RULES = [
     { uuid: pf2e("UANazM5XMYdMkVtX"), name: "Nimble Form", rules: [{ key: "MultipleAttackPenalty", selector: "attack", predicate: ["item:trait:agile"], value: -3 }] },
     // (Clerics+ sacred animal: bright light 20 feet, dim 20 more; it can suppress it, by turning the light off on its token.)
     { uuid: "Compendium.clerics-remaster.clerics-features.Item.yNMcUM88PbPkko2t", name: "Sheathed in Light", rules: [{ key: "TokenLight", value: { bright: 20, dim: 40 } }] },
-    { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] }
+    { uuid: "Compendium.pf2e-summoners-plus.misc.Item.nyiF0IeEkmEYEAMZ", name: "Faydhaan", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1, predicate: ["item:trait:water"] }] },
+    // (Round 77: a winged companion's gust; its master takes the feat for it.)
+    { uuid: pf2e("um6NtNmEpWxGelom"), name: "Billowing Wings", rules: [
+        { key: "Strike", category: "unarmed", group: "brawling", slug: "gust", label: "Gust", img: "systems/pf2e/icons/unarmed-attacks/wing.webp", damage: { base: { damageType: "bludgeoning", dice: 1, die: "d4" } }, range: { increment: 30 }, traits: ["air", "propulsive", "unarmed"] },
+        { key: "Note", selector: "strike-attack-roll", predicate: ["item:slug:gust"], outcome: ["criticalSuccess"], title: "Billowing Wings", text: "The target is pushed back 5 feet (forced movement)." }] },
+    // (Round 71: 2d4 for a specialized companion is the player's to add.)
+    { uuid: pf2e("6B7ksTtpbfp114sA"), name: "Nature's Precision", rules: [{ key: "DamageDice", selector: "strike-damage", diceNumber: 1, dieSize: "d4", category: "precision", predicate: ["target:condition:off-guard", "item:category:unarmed", { or: ["item:trait:agile", "item:trait:finesse"] }] }] }
 ];
 
 const BY_UUID = new Map(COMPANION_RULES.map((entry) => [entry.uuid, entry]));

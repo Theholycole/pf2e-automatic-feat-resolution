@@ -2,6 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { characterStrike, compileFeat, dcFor, fillCharacterDCs, fillCharacterNumbers } from "../src/compiler/index.js";
+import { spellLike } from "../src/compiler/spell-like.js";
+import { movePlan } from "../../pf2e-automatic-item-resolution/src/compiler/move.js";
+import { rerollPlan } from "../../pf2e-automatic-item-resolution/src/compiler/rerolls.js";
+import { withSpend } from "../../pf2e-automatic-item-resolution/src/compiler/spend.js";
+import { rollTwicePlan } from "../../pf2e-automatic-item-resolution/src/compiler/fortune.js";
 import { activityRider, strikeMatches } from "../../pf2e-automatic-ability-resolution/src/live/activity.js";
 
 // A 8th-level character: class DC 25, spell DC 27 (occult), Strength +4.
@@ -714,4 +719,55 @@ test("a fall's reactions: as it starts, by height; another's in range; after it"
     assert.deepEqual([eventTrigger(reaction("You fall from a height of 15 feet or higher.")).event, eventTrigger(reaction("You fall from a height of 15 feet or higher.")).feet], ["self-falling", 15]);
     assert.equal(eventTrigger(reaction("A creature within 60 feet is falling.")).within, 60);
     assert.equal(eventTrigger(reaction("You fall at least 10 feet and land on a solid surface.")).event, "self-fell");
+});
+
+test("a 3‐action version (a typographic hyphen) at a rank one lower than half the level, rounded up (Blessing of the Five)", () => {
+    const item = { name: "Blessing of the Five", type: "feat", system: { actionType: { value: "action" }, actions: { value: 3 }, traits: { value: [] },
+        description: { value: "<p>You cast the 3‐action version of @UUID[Compendium.pf2e.spells-srd.Item.rfZpqmj0AIIdkVIs]{Heal}, heightened to a rank one lower than half your level rounded up.</p>" } } };
+    const plan = spellLike(item, { level: 9, class: 27, spell: 28 });
+    assert.equal(plan.rank, 4);
+    assert.equal(plan.actions, 3);
+});
+
+test("a Stride feat: the item module's move card, only with that module's reader (round 94)", () => {
+    const entry = feat("Tactical Entry", "<p>You Stride. This movement doesn't trigger reactions.</p>", 1);
+    const plan = compileFeat(entry, { dcs: DCS, itemReaders: { movePlan, rerollPlan, withSpend, rollTwicePlan } });
+    assert.equal(plan?.builtin, "teleport");
+    assert.deepEqual({ speedTimes: plan.teleport.speedTimes, verb: plan.teleport.move.verb }, { speedTimes: 1, verb: "Stride" });
+    assert.notEqual(compileFeat(entry, { dcs: DCS })?.builtin, "teleport", "no move card without the item module");
+    const jump = compileFeat(feat("Long Jump", "<p>You Stride, then attempt a DC 15 [[/act long-jump]]{Athletics} check to make a long jump in the direction you were Striding.</p>"), { dcs: DCS, itemReaders: { movePlan, rerollPlan, withSpend, rollTwicePlan } });
+    assert.ok(!JSON.stringify(jump.teleport).includes("[["), "inline checks as their words");
+    const passive = { ...entry, system: { ...entry.system, actionType: { value: "passive" } } };
+    assert.notEqual(compileFeat(passive, { dcs: DCS, itemReaders: { movePlan, rerollPlan, withSpend, rollTwicePlan } })?.builtin, "teleport", "a passive's isn't a move");
+});
+
+test("a reroll feat: the item module's reroll card, its Mythic Point cost with it; another's reroll stays (round 94)", () => {
+    const readers = { movePlan, rerollPlan, withSpend, rollTwicePlan };
+    const reaction = (name, html) => ({ ...feat(name, html), system: { ...feat(name, html).system, actionType: { value: "reaction" }, actions: { value: null } } });
+    const cats = compileFeat(reaction("Cat's Luck", "<p><strong>Trigger</strong> You fail a Reflex saving throw.</p><hr /><p>You can reroll the triggering saving throw and use the better result.</p>"), { dcs: DCS, itemReaders: readers });
+    assert.equal(cats?.builtin, "reroll");
+    assert.deepEqual({ what: cats.reroll.what, keep: cats.reroll.keep }, { what: "save", keep: "higher" });
+    const paid = compileFeat(reaction("Rewrite Fate", "<p><strong>Trigger</strong> You fail a saving throw.</p><hr /><p>Spend a Mythic Point. Reroll the triggering saving throw and use the new result.</p>"), { dcs: DCS, itemReaders: readers });
+    assert.ok(paid?.spend, "its Mythic Point");
+    const ally = compileFeat(reaction("Focus Ally", "<p><strong>Trigger</strong> An adjacent ally fails a saving throw.</p><hr /><p>Your ally rerolls the triggering saving throw.</p>"), { dcs: DCS, itemReaders: readers });
+    assert.notEqual(ally?.builtin, "reroll");
+});
+
+test("a roll-twice feat: the item module's fortune card (round 96)", () => {
+    const readers = { movePlan, rerollPlan, withSpend, rollTwicePlan };
+    const fey = compileFeat({ ...feat("Fey's Fortune", "<p><strong>Trigger</strong> You attempt a skill check and haven't yet rolled</p><p><strong>Effect</strong> Roll the skill check twice and use the better result.</p>"), system: { ...feat("x", "").system, description: { value: "<p><strong>Trigger</strong> You attempt a skill check and haven't yet rolled</p><p><strong>Effect</strong> Roll the skill check twice and use the better result.</p>" }, actionType: { value: "free" } } }, { dcs: DCS, itemReaders: readers });
+    assert.equal(fey?.builtin, "roll-twice");
+    assert.equal(fey.rollTwice.selector, "skill-check");
+});
+
+test("a move said as an order, \"Stride twice.\": the move card too (round 97)", () => {
+    const dash = compileFeat(feat("Determined Dash", "<p>Stride twice. During this movement you ignore difficult terrain.</p>"), { dcs: DCS, itemReaders: { movePlan, rerollPlan, withSpend, rollTwicePlan } });
+    assert.equal(dash?.builtin, "teleport");
+    assert.equal(dash.teleport.speedTimes, 2);
+});
+
+test("a short teleport by hand: the teleport plan (round 99, Dart Between)", () => {
+    const dart = compileFeat({ ...feat("Dart Between", "<p>…</p>"), sourceId: "Compendium.pf2e.feats-srd.Item.KwbteWlCzFT5veZO" }, { dcs: DCS });
+    assert.equal(dart?.builtin, "teleport");
+    assert.deepEqual(dart.teleport, { within: 60, from: "self" });
 });

@@ -17,12 +17,16 @@ import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
 import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
-import { actingItem } from "../src/compiler/companion.js";
+import { actingItem, findMaster } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
 import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
+const ITEM_MODULE = "pf2e-automatic-item-resolution";
+const itemApi = () => (game.modules.get(ITEM_MODULE)?.active ? game.modules.get(ITEM_MODULE).api ?? null : null);
+// (The item module's readers, loaded at ready when that module is on: a reroll or a Stride, Step or Leap feat's card; round 94.)
+let itemReaders = null;
 
 const SPELL_MODULE = "pf2e-automatic-resolution";
 const spellApi = () => (game.modules.get(SPELL_MODULE)?.active ? game.modules.get(SPELL_MODULE).api ?? null : null);
@@ -32,12 +36,20 @@ const isActiveGM = () => game.users.activeGM?.isSelf ?? game.user.isGM;
 // PF2e's own roll data for the paths in a feat's damage ("@item.flags.system.rulesSelections.damageType").
 const withRollData = (dcs, item) => (dcs ? { ...dcs, resolve: (formula) => Roll.replaceFormulaData(formula, item?.getRollData?.() ?? {}) } : null);
 
+// The item module's card for a feat's plan it read (plan.builtin "teleport", "reroll"), or nothing without that module.
+function postItemCard(item, plan, sourceToken, message) {
+    const post = itemApi()?.live?.postCard;
+    if (!post) return Promise.resolve(null);
+    const token = sourceToken?.object ?? sourceToken ?? item.actor.getActiveTokens?.(true)?.[0] ?? null;
+    return post({ plan, item, actor: item.actor, token, message });
+}
+
 function compileItem(item) {
     // (An NPC's: no class or spell DC of a character's, only its ally's Effect is played; cardForFeat.)
     const dcs = withRollData(characterDCs(item?.actor) ?? (item?.actor?.type === "npc" ? {} : null), item);
     if (!dcs) return null;
     try {
-        return compileFeat(item, { dcs, basicActions: abilityApi()?.basicActions });
+        return compileFeat(item, { dcs, basicActions: abilityApi()?.basicActions, itemReaders });
     } catch (error) {
         console.warn(`${MODULE_ID} | ${item?.name} didn't compile.`, error);
         return null;
@@ -90,13 +102,18 @@ async function cardForFeat(message) {
         item = actingItem(posted, world, { companion: true });
         if (item !== posted) plan = compileItem(item);
     }
-    if (npc && !(plan?.builtin === "feat-effect" && plan.who === "target")) return;
+    // (An NPC's action plays only for an ally's Effect: a toggle on its targets, or an Effect it links for its allies, Teams+ underlings'
+    // Battle Caller and Team Spirit; round 65 Foundry test.)
+    const linksAnEffect = plan?.resolution?.kind === "effect" && (plan.resolution.applications ?? []).some((application) => application.kind === "native-spell-effect");
+    if (npc && !(plan?.builtin === "feat-effect" && plan.who === "target") && !linksAnEffect) return;
     // (On the player's targets, who "target": as a passive's PF2e Effect is.)
     const targetActors = () => (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
     const untargeted = () => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });
     // (A timer's, with no targets: nothing, its words already in chat; round 43.)
     if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : plan.timer ? null : untargeted();
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
+    // (A timer with a move, Chemical Spill's: its move card too; round 94.)
+    if (plan?.builtin === "feat-effect" && plan.move) await postItemCard(item, plan.move, item === posted ? message.token : null, message).catch((error) => console.error(`${MODULE_ID} | move card`, error));
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     // (A Focus or Mythic Point back: added to the pool, up to its maximum; 2026-10-30, the loop.)
     if (plan?.builtin === "regain-point") return regainPoint(item, plan);
@@ -123,7 +140,19 @@ async function cardForFeat(message) {
     if (plan?.builtin === "cast-spell" && plan.spell?.uuid) {
         const dcs = characterDCs(item.actor) ?? {};
         const best = [dcs.class, dcs.spell].filter((value) => Number.isFinite(value));
-        return castSpellLike(item, { ...plan, dc: plan.dc ?? (best.length ? Math.max(...best) : null) }, sourceToken, message);
+        // (castWith "perception": the spell's numbers are the character's Perception, True Gaze's counteract checks; round 83 Foundry test.)
+        const perception = Number(item.actor.perception?.mod ?? item.actor.system?.perception?.mod);
+        const own = plan.castWith === "perception" && Number.isFinite(perception) ? perception + 10 : null;
+        return castSpellLike(item, { ...plan, dc: own ?? plan.dc ?? (best.length ? Math.max(...best) : null) }, sourceToken, message);
+    }
+    // (A reroll or a Stride, Step or Leap feat, read by the item module's readers: its card — PF2e's reroll of the roll; Pick and click, the
+    // token moved; round 94.)
+    if (["teleport", "reroll", "roll-twice"].includes(plan?.builtin)) return postItemCard(item, plan, sourceToken, message);
+    // (A save at a DC the character hasn't got, Primal Howl's spell DC on a master with no spellcasting: said to the GM, not silent;
+    // round 77 Foundry test.)
+    if (!plan) {
+        const missing = missingDC(item);
+        if (missing) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: no ${missing} was found for ${dcOwner(item.actor).name}, so there's no card. Call for the save by hand, at the DC you set.</p>` });
     }
     if (!plan || plan.builtin === "no-effect" || (plan.trigger?.event ?? "use") !== "use") return;
     if (!(plan.resolution && CARD_KINDS.has(plan.resolution.kind)) && !allCards()) return;
@@ -150,6 +179,24 @@ async function cardForFeat(message) {
     // ("You and your allies", Defiant Banner: the character with the GM's targets.)
     if (/^you and\b/i.test(plan.targeting?.target ?? "") && source) targets.push(source);
     return play(item, plan, sourceToken, new Set(targets));
+}
+
+// Whose DC a companion's save uses: its master's (scripts/character.js); round 78 Foundry test, the whisper named the companion.
+const dcOwner = (actor) => findMaster(actor, { actors: [...(game.actors ?? [])], users: [...(game.users ?? [])] }) ?? actor;
+
+// The DC a feat's save is against that the character lacks ("spell DC", "class DC"), or null.
+function missingDC(item) {
+    const html = String(item?.system?.description?.value ?? "");
+    const against = [...html.matchAll(/@Check\[[^\]]*\bagainst:([\w-]+)/g)].map((match) => match[1]);
+    if (!against.length) return null;
+    const dcs = characterDCs(item.actor) ?? {};
+    const has = (value) => Number.isFinite(value);
+    for (const kind of against) {
+        if (kind === "spell" && !has(dcs.spell)) return "spell DC";
+        if (kind === "class" && !has(dcs.class)) return "class DC";
+        if (kind === "class-spell" && !has(dcs.class) && !has(dcs.spell)) return "class or spell DC";
+    }
+    return null;
 }
 
 // "You regain 1 Focus Point, up to your usual maximum": the pool on the character's sheet, and a line in the chat saying so.
@@ -187,6 +234,34 @@ async function castSpellLike(item, plan, sourceToken, message) {
     const recorded = (message.getFlag?.(MODULE_ID, "targets") ?? []).map((each) => fromUuidSync(each)).filter(Boolean).map((token) => token.object ?? token);
     await cast({ actor: item.actor, token: sourceToken, spell: uuid, rank: plan.rank, dc: plan.dc, targets: recorded.length ? recorded : null,
         item: { name: item.name, uuid: item.uuid, img: item.img }, ...(plan.actions ? { actions: plan.actions } : {}) });
+    if (plan.castWith === "perception") await counteractWithPerception(item, plan);
+    // (The feat's own notes, which the spell module's card doesn't carry: a line of their own; round 83 Foundry test.)
+    // (Not the card's own lines: "You cast …", "Cast as …", "The feat names no DC" (noise on a spell with no save, Heal; round 85 test).)
+    const notes = (plan.notes ?? []).filter((note) => !/^(?:You cast|Cast as|The feat names no DC)\b/.test(note));
+    if (notes.length) await ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), content: `<p><strong>${item.name}</strong>:</p>${notes.map((note) => `<p>${note}</p>`).join("")}` });
+}
+
+// (True Gaze, round 83 Foundry test: PF2e rolls the item-cast entry's counteract from its own counteraction statistic, not the spell
+// module's item statistic. A modifier on the spell module's "its spells' numbers" Effect for this cast brings it to the character's
+// Perception: on counteract checks with the spell's traits, as the roll carries no item or entry option.)
+async function counteractWithPerception(item, plan) {
+    const actor = item.actor;
+    const perception = Number(actor.perception?.mod ?? actor.system?.perception?.mod);
+    const entry = (actor.itemTypes?.spellcastingEntry ?? []).find((each) => each.flags?.[SPELL_MODULE]?.itemCastEntry?.itemUuid === item.uuid);
+    const stat = (actor.itemTypes?.effect ?? []).find((each) => each.flags?.[SPELL_MODULE]?.itemCastStat === item.uuid);
+    const current = Number(entry?.counteraction?.check?.mod ?? entry?.counteraction?.mod);
+    if (!stat || !Number.isFinite(perception) || !Number.isFinite(current)) return;
+    const spell = await fromUuid(byName(plan.spell.uuid));
+    const traits = (spell?.system?.traits?.value ?? []).filter((trait) => !["concentrate", "manipulate"].includes(trait));
+    // (Exactly one of ours, whatever the Effect held: round 83 recheck, a second cast added a second copy.)
+    const ours = (rule) => rule.key === "FlatModifier" && [rule.selector].flat().includes("counteract-check") && rule.slug === "feat-perception";
+    const all = foundry.utils.deepClone(stat.system.rules ?? []);
+    // (The statistic's own modifier never holds ours: it's predicated on the spell's traits, which the statistic alone doesn't carry.)
+    const before = Number(all.find(ours)?.value) || 0;
+    const value = perception - current;
+    const kept = all.filter((rule) => !ours(rule));
+    if (all.length - kept.length === 1 && before === value) return;
+    await stat.update({ "system.rules": [...kept, { key: "FlatModifier", selector: "counteract-check", slug: "feat-perception", label: `${item.name} (Perception)`, value, ...(traits.length ? { predicate: traits } : {}) }] });
 }
 
 let warned = false;
@@ -230,6 +305,8 @@ Hooks.on("canvasReady", () => {
 });
 
 Hooks.once("ready", () => {
+    // (The item module's move reader, by its own path beside this module's; round 94.)
+    if (game.modules.get(ITEM_MODULE)?.active) Promise.all([import("../../pf2e-automatic-item-resolution/src/compiler/move.js"), import("../../pf2e-automatic-item-resolution/src/compiler/rerolls.js"), import("../../pf2e-automatic-item-resolution/src/compiler/spend.js"), import("../../pf2e-automatic-item-resolution/src/compiler/fortune.js")]).then(([move, rerolls, spend, fortune]) => { itemReaders = { movePlan: move.movePlan, rerollPlan: rerolls.rerollPlan, withSpend: spend.withSpend, rollTwicePlan: fortune.rollTwicePlan }; }).catch((error) => console.warn(`${MODULE_ID} | the item module's readers didn't load.`, error));
     // (A fall, the environment module's hooks: scripts/reminders.js; round 47.)
     Hooks.on("pf2e-automatic-environment-resolution.falling", (data) => { if (isActiveGM()) onFalling(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
     Hooks.on("pf2e-automatic-environment-resolution.fell", (data) => { if (isActiveGM()) onFell(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });

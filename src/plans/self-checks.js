@@ -141,5 +141,63 @@ export default [
         uuid: pf2e("cErltcAC7OVnIyO1"), name: "Predictable!",
         selfCheck: { statistic: "perception", defense: "deception", target: "1 enemy" },
         notes: ["Use a hard DC of the foe's level instead if that's higher. Put PF2e's Effect: Predictable! on yourself from the feat: +2 to AC against it and your next save against it on a critical success, +1 on a success, –1 on a critical failure, until the start of your next turn."]
+    },
+    // (Round 84: against the hard DC of the creature's level; the result is the ally's, so PF2e's Effect goes on by hand.)
+    {
+        uuid: pf2e("gCUJYnWPQ9VM8eXk"), name: "Commitment to Protection",
+        selfCheck: { statistic: "warfare-lore", level: "target", adjustment: 2, target: "1 creature or hazard you can see" },
+        notes: ["Target the creature or hazard, not the ally. Then put @UUID[Compendium.pf2e.feat-effects.Item.eu7DEgjicyYyosCl]{Effect: Commitment to Protection} on an ally within 30 feet and pick the degree: +2 AC on a critical success, +1 on a success, −1 on a critical failure, against that creature's next attack. Legendary in Warfare Lore: a failure or critical failure is a success."]
+    },
+    // (Round 85: the hard DC and the standard DC of the target's level.)
+    {
+        uuid: pf2e("YeQn7mJoFO7PR6uO"), name: "Soul Thief",
+        selfCheck: { statistic: "occultism", level: "target", adjustment: 2, target: "1 creature of at least 18th level that died within the last minute" },
+        notes: ["Once per day. On a success you capture its soul in a gem (three gems at most). Swallowing a gem later: @UUID[Compendium.pf2e.feat-effects.Item.evFqVITRiK6AZd6d]{Effect: Soul Thief}."]
+    },
+    {
+        uuid: pf2e("iLFGrBeG2yas8cxm"), name: "By Your Name",
+        selfCheck: { statistic: "crafting", level: "target", adjustment: 0, target: "1 creature whose name you know" },
+        notes: ["Once per hour; not against the same target again for 24 hours.", "Success: for 1 minute you can Trace their name as a diacritic rune; when the base rune is invoked on them, they take a −2 circumstance penalty to saves against it. Critical success: also a status bonus to its damage equal to half your level."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.kcMcqQOa32dVJqvi", name: "Venomous Visionary",
+        selfCheck: { statistic: "survival", defense: "deception", target: "1 creature you can perceive", range: "30 feet" },
+        notes: ["Against the target's Stealth DC instead if it is higher, or the poison's DC for an object: by hand. On a success you learn as detect poison whether it is poisonous or venomous (a 2nd-rank @UUID[Compendium.pf2e.spells-srd.Item.QqxwHeYEVylkYjsO] if you're legendary in Survival). Not on the same target again for 1 day."]
+    },
+    // (Round 89: fixed DCs the feat names.)
+    {
+        uuid: pf2e("lleedxE6fTDSK6og"), name: "Resuscitate",
+        selfCheck: { statistic: "medicine", dc: 40, target: "1 creature dead no more than 3 rounds" },
+        notes: ["On a success it returns to life with the effects of @UUID[Compendium.pf2e.spells-srd.Item.IkGYwHRLhkuoGReG]{Raise Dead}, keeping its wounded condition increased by 1 (wounded 1 if it had none): by hand. Either way it is immune to Resuscitate for 1 day."]
+    },
+    {
+        uuid: pf2e("ZO37MZEQVNNtg46b"), name: "Desperate Resuscitation",
+        selfCheck: { statistic: "medicine", dc: 40, target: "1 creature dead no more than 3 rounds" },
+        notes: ["On a success it returns to life with the effects of @UUID[Compendium.pf2e.spells-srd.Item.IkGYwHRLhkuoGReG]{Raise Dead}, keeping its wounded condition increased by 1 (wounded 1 if it had none): by hand. Either way it is immune to Desperate Resuscitation for 1 day."]
+    },
+    {
+        uuid: pf2e("xYNMWGEmpbtrtWXQ"), name: "Unwind Death",
+        selfCheck: { statistic: "crafting", dc: 40, target: "1 creature dead no more than 3 rounds" },
+        notes: ["On a success it returns to life with the effects of @UUID[Compendium.pf2e.spells-srd.Item.IkGYwHRLhkuoGReG]{Raise Dead}, keeping its wounded condition increased by 1 (wounded 1 if it had none): by hand. Either way it is immune to Unwind Death for 1 day."]
+    },
+    {
+        uuid: pf2e("LyqXT4XYYlgf8KYK"), name: "Propelled Leap",
+        selfCheck: { statistic: "athletics", dc: 30, outcomes: { criticalFailure: { effects: [{ kind: "condition", slug: "off-guard", value: null, duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "effect-start" } }] } } },
+        notes: ["Swim toward the surface at up to twice your swim Speed first (less than 10 feet: an automatic failure). You Leap 15 feet up on a critical success, 10 on a success, 5 on a failure, and 5 feet across. Near something to hold with a free hand: Grab an Edge; otherwise you fall back into the water unharmed."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.aVhhPuhF87ACfFFd", name: "Assess Terrain",
+        selfCheck: { statistic: "survival", dc: 15 },
+        notes: ["Choose a 5-foot burst of natural difficult terrain within 30 feet. DC 15 for a 5-foot burst; an expert can take DC 20 for a 10-foot burst, a master DC 30 for a 20-foot burst (judge those against the roll by hand; legendary: 10 higher to include cold, earth, plant, water or wood terrain).", "Critical success: the difficult terrain is normal for you for up to 1 minute, and greater difficult terrain is difficult until the end of your next turn. Success: normal until the end of your next turn. Critical failure: the whole area is difficult (or greater difficult) terrain for you until the end of your next turn."]
+    },
+    {
+        uuid: pf2e("epzeES7xJxvIXDdj"), name: "Dance of Intercession",
+        selfCheck: { statistic: "performance", dc: 35 },
+        notes: ["You Stride up to half your Speed as you dance. The second use in a day is one degree worse, the third two degrees worse: adjust by hand.", "Critical success: cast the 3-action @UUID[Compendium.pf2e.spells-srd.Item.rfZpqmj0AIIdkVIs]{Heal} or @UUID[Compendium.pf2e.spells-srd.Item.wdA52JJnsuQWeyqz]{Harm} at rank 9 during the Stride, with no spell slot; success: rank 7; failure: rank 5. Critical failure: nothing more, and no more dances until your next daily preparations."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-feats.pf2e-player-options.Item.YWRrxFEnT8n6Ykf1", name: "Beseech Fate",
+        selfCheck: { statistic: "diplomacy", level: "target", adjustment: 2, target: "you or 1 creature", range: "30 feet" },
+        notes: ["Once per day. Against the hard DC of the target's level, or the DC of the effect that caused the condition if that is higher: the GM's call.", "On a success, suppress its clumsy, enfeebled, frightened, sickened or stupefied condition by hand. A condition that lasts longer than 1 minute comes back after 1 minute, and the suppressed time counts toward its duration."]
     }
 ];

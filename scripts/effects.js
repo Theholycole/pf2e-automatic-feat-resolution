@@ -11,7 +11,7 @@ export async function applyFeatEffect(item, plan, recipients = null) {
     const effect = plan?.effect;
     if (!actor || !(effect?.rules?.length || plan.timer)) return null;
     const ours = (each) => each.flags?.[MODULE_ID]?.effect;
-    const say = (line) => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>` });
+    const say = (line, more = "") => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>${more}` });
     // (On another creature, who "target": its numbers the character's, "@actor.level" worked out here, not the target's own; 2026-10-31.)
     const rules = recipients ? effect.rules.map((rule) => withNumbers(rule, actor.getRollData?.() ?? {})) : effect.rules;
     const lines = [];
@@ -43,12 +43,15 @@ export async function applyFeatEffect(item, plan, recipients = null) {
                 traits: { value: effect.stance ? ["stance"] : [], otherTags: [] },
                 tokenIcon: { show: true },
                 level: { value: Number(actor.level) || 1 },
-                ...(recipients ? { context: { origin: { actor: actor.uuid, token: null, item: item.uuid ?? null }, target: null, roll: null } } : {})
+                // (plan.ownTurn: it lasts until the end of the recipient's own turn, Ambersoul's sap; no origin, as PF2e anchors an Effect
+                // to its origin's initiative; round 81 Foundry test.)
+                ...(recipients && !plan.ownTurn ? { context: { origin: { actor: actor.uuid, token: null, item: item.uuid ?? null }, target: null, roll: null } } : {})
             }
         }]);
         if (plan.toggle && created) lines.push(`Effect: ${escape(effect.name)} on ${escape(each.name)}.`);
     }
-    if (lines.length) await say(lines.join(" "));
+    // (A toggle's notes in its chat line as it goes on, Liberate Self's "roll it twice by hand", not only in the Effect; round 96 Foundry test.)
+    if (lines.length) await say(lines.join(" "), plan.toggle && created ? (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("") : "");
     return created ?? null;
 }
 

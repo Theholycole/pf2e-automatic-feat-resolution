@@ -54,7 +54,15 @@ export function registerTerrainOptions() {
         const original = self.getSelfRollOptions;
         self.getSelfRollOptions = function (prefix = "self", ...rest) {
             const options = original.call(this, prefix, ...rest);
-            const more = terrainOptions(this, prefix).filter((option) => !options.includes(option));
+            // (And the kind of terrain it stands in, PF2e's own "terrain:aquatic" from its environment regions, as a Strike's target's
+            // "target:terrain:aquatic": PF2e gives a target none; round 95 Foundry test, Concealing Currents.)
+            let kinds = [];
+            try {
+                kinds = prefix !== "self" ? (this.getRollOptions?.() ?? []).filter((option) => /^terrain:(?!difficult)[\w-]+$/.test(option)).map((option) => `${prefix}:${option}`) : [];
+            } catch (error) {
+                console.warn(`${MODULE_ID} | terrain kinds' roll options`, error);
+            }
+            const more = [...terrainOptions(this, prefix), ...kinds].filter((option) => !options.includes(option));
             return more.length ? [...options, ...more] : options;
         };
     } else console.warn(`${MODULE_ID} | PF2e's actors have no getSelfRollOptions; difficult terrain's roll option is off.`);

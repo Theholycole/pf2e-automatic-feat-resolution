@@ -31,8 +31,9 @@ import linkedEffects from "./linked-effects.js";
 import selfChecks from "./self-checks.js";
 import attacks from "./attacks.js";
 import affects3 from "./affects-3.js";
+import teleports from "./teleports.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks, teleports];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
@@ -99,7 +100,10 @@ export function handAct(item, entry, basicActions) {
     if (entry.successAsCritical && plan.resolution?.outcomes?.criticalSuccess) plan.resolution.outcomes.success = structuredClone(plan.resolution.outcomes.criticalSuccess);
     // (Dazzling Display, 2026-10-30 Foundry test: "immune for 1 minute", not Demoralize's 10 — entry.immunity, the feat's own duration.)
     if (entry.immunity && plan.trigger?.immunity) plan.trigger.immunity = { ...plan.trigger.immunity, raw: entry.immunity.raw ?? plan.trigger.immunity.raw, duration: entry.immunity.duration };
-    plan.notes = [...(entry.notes ?? [])];
+    // (Round 80 Foundry test: the card doesn't show its target line, so a target the feat names is said in the notes too.)
+    plan.notes = [...(entry.target ? [`Target: ${entry.target}.`] : []), ...(entry.notes ?? [])];
+    // (Round 80: a maneuver its companion makes, Abrasive Drag's mount: played as the companion's, as a strike entry's by is.)
+    if (entry.by) plan.by = entry.by;
     return plan;
 }
 
@@ -173,6 +177,12 @@ export function handAttack(item, entry, dcs = null) {
 
 // The character's modifier for the attack: its best spell attack, or its best Strike of that group and reach.
 export function attackModifier(attack, dcs) {
+    // (roll "built": the feat's own modifier, a weapon category's proficiency bonus plus an ability modifier plus a bonus.)
+    if (attack?.roll === "built") {
+        const proficiency = dcs?.attacks?.proficiency?.[attack.proficiency];
+        const ability = dcs?.abilities?.[attack.ability];
+        return Number.isFinite(proficiency) && Number.isFinite(ability) ? proficiency + ability + (attack.bonus ?? 0) : null;
+    }
     if (attack?.roll === "spell") return Number.isFinite(dcs?.attacks?.spell) ? dcs.attacks.spell : Number.isFinite(dcs?.spell) ? dcs.spell - 10 : null;
     const fits = (dcs?.attacks?.strikes ?? []).filter((strike) => Number.isFinite(strike.mod) && (!attack?.group || strike.group === attack.group) && (attack?.ranged === undefined || Boolean(strike.ranged) === attack.ranged));
     return fits.length ? Math.max(...fits.map((strike) => strike.mod)) : null;
@@ -185,7 +195,9 @@ export function handSelfCheck(item, entry, dcs = null) {
     // (check.defense "perception": against each target's Perception DC, a check the text reader doesn't take (a Lore, Perception against
     // Deception; round 52 Foundry test).)
     const byTarget = check.level === "target" || Boolean(check.defense);
-    if (!byTarget && (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length)) return null;
+    // (check.dc: a fixed DC the feat names, "a @Check[medicine|dc:40] check", when the reader leaves the feat; round 89.)
+    const fixed = Number.isFinite(check.dc) ? check.dc : null;
+    if (fixed === null && !byTarget && (!Number.isInteger(level) || level < 0 || level >= LEVEL_DCS.length)) return null;
     const row = (degree) => ({ ...NONE(), effects: withCharacterNumbers(check.outcomes?.[degree]?.effects ?? [], dcs, item), ...(check.outcomes?.[degree]?.nativeEffects ? { nativeEffects: check.outcomes[degree].nativeEffects.map((effect) => ({ ...effect })) } : {}) });
     return {
         modelVersion: 13,
@@ -195,7 +207,7 @@ export function handSelfCheck(item, entry, dcs = null) {
         activation: { time: actionsOf(item), traits: [] },
         targeting: { target: check.target ?? "you", range: check.range ?? null, area: null },
         trigger: { event: "use", immunity: null },
-        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: check.defense ? { dc: "target", statistic: check.defense } : byTarget ? { dc: "level", adjustment: check.adjustment ?? 0 } : { dc: "fixed", value: LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
+        resolution: { kind: "check", check: { roll: "skill", statistic: check.statistic, against: check.defense ? { dc: "target", statistic: check.defense } : byTarget ? { dc: "level", adjustment: check.adjustment ?? 0 } : { dc: "fixed", value: fixed ?? LEVEL_DCS[level] + (check.adjustment ?? 0) } }, sharedDamage: null,
             outcomes: { criticalSuccess: row("criticalSuccess"), success: row("success"), failure: row("failure"), criticalFailure: row("criticalFailure") } },
         automation: { level: "automatic" },
         notes: [...(entry.notes ?? [])]

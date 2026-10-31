@@ -213,5 +213,93 @@ export default [
         uuid: pf2e("V7n3kVSl0G6a29KG"), name: "Flailtongue",
         toggle: { rules: [{ key: "Strike", category: "unarmed", group: "flail", label: "Flailtongue", slug: "flailtongue", img: "systems/pf2e/icons/unarmed-attacks/jaws.webp", damage: { base: { damageType: "bludgeoning", dice: 1, die: "d6" } }, traits: ["unarmed", "disarm", "sweep", "trip"] }] },
         notes: ["While it's out you can't make a jaws Strike. Post Flailtongue again when you Interact to reset your jaw."]
+    },
+    // (Round 66: on the eidolon, posted with it targeted.)
+    {
+        uuid: pf2e("axGS5bBJ9vl5AePc"), name: "Phase Out",
+        toggle: { who: "target", rules: [{ key: "Resistance", type: "all-damage", value: "max(1,floor(@actor.level/2))", exceptions: ["force", "spirit", "vitality"] }] },
+        notes: ["Target your eidolon. It can't Strike or Grapple, Reposition, Shove or Trip while phased out; it Dismisses it to return: post Phase Out again."]
+    },
+    // (Round 68: Teams+ actions.)
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.34APHg5Ezt0yYwJ6", name: "Spirit of the Rushing River",
+        toggle: {
+            rules: [
+                { key: "Immunity", type: "immobilized" }, { key: "Immunity", type: "grabbed" }, { key: "Immunity", type: "restrained" },
+                { key: "Resistance", type: "fire", value: "max(1,floor(@actor.level/2))" }, { key: "Resistance", type: "physical", value: "max(1,floor(@actor.level/2))" },
+                { key: "Weakness", type: "area-damage", value: "max(1,floor(@actor.level/2))" }, { key: "Weakness", type: "splash-damage", value: "max(1,floor(@actor.level/2))" }
+            ],
+            duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false }
+        },
+        notes: ["You gain the swarm and water traits and the Torrential Flow action, and fit through gaps a few inches wide. You can't speak, cast spells, use hand manipulate actions, activate items or Strike with your body. Dismiss it: post it again."]
+    },
+    {
+        uuid: pf2e("zytTsipimVTmPc5U"), name: "Selfless Parry",
+        toggle: { who: "target", rules: [bonus("ac", 1)] },
+        notes: ["Target your allies adjacent to you while you benefit from Dueling Parry; post it again when that ends or they move away. With Dueling Riposte, you can riposte an enemy in reach that critically fails a Strike against one of them."]
+    },
+    {
+        uuid: pf2e("P6cTyDMTXcC8HBDr"), name: "Esoteric Warden",
+        toggle: { rules: [bonus("ac", 1, "status"), bonus("saving-throw", 1, "status")] },
+        notes: ["After you Exploit a Vulnerability successfully: only against that creature's next attack and your next save against it (+2 on a critical success). Once a day per creature; it ends if you Exploit Vulnerability again. Post it again to take it off."]
+    },
+    {
+        uuid: pf2e("pp04AVdROQXSeaA8"), name: "Blazing Mutagen",
+        toggle: { rules: [{ key: "DamageDice", selector: "strike-damage", diceNumber: 1, dieSize: "d4", damageType: "fire", category: "persistent", predicate: ["item:melee"] }] },
+        notes: ["On while your mutagen lasts and your persistent fire burns: drinking it, take @Damage[2d4[persistent,fire]] damage that ignores fire resistance and immunity. Post it again when the persistent fire ends."]
+    },
+    // (Round 70: bonuses and penalties a passive gives others in a moment, on its targets.)
+    {
+        uuid: pf2e("n0693gmx3k9wvb1N"), name: "Demanding Challenge",
+        toggle: { who: "target", rules: [bonus("attack-roll", -1)], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
+        notes: ["Target the foe your challenge check succeeded against: –2 on a critical success (raise it by hand). Until the end of your next turn."]
+    },
+    {
+        uuid: pf2e("eSoMkHGw38ld4gj2"), name: "Shared Warding",
+        toggle: { who: "target", rules: [bonus("ac", 1, "status"), bonus("saving-throw", 1, "status")] },
+        notes: ["Target your allies within 30 feet when Esoteric Warden wards you: only against that creature's next attack and their next save against it (+2 on your critical success). Post it again to take it off."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-alchemists.pf2e-misc.Item.E6QgnzfIIEHC6dJ6", name: "Greater Field Discovery (Gastronome)",
+        toggle: { who: "target", rules: [bonus("attack-roll", 1, "status"), bonus("damage", 1, "status"), bonus("saving-throw", 1, "status", ["item:trait:mental"])] },
+        notes: ["Target the creatures with temporary Hit Points from your alchemical food: post it again when those run out."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-magic.items.Item.zAPlXKTaxdmY6xFL", name: "Eyes of Shadow",
+        toggle: { who: "target", rules: [{ key: "Sense", selector: "darkvision" }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
+        notes: ["Dismiss your shadow weapon. Target one creature within 30 feet; it ends early when you draw the shadow weapon again (post it again). The creature is then immune for 10 minutes."]
+    },
+    {
+        uuid: pf2e("C5CweUNPP7HlRfBM"), name: "Muscle Mimicry",
+        toggle: { rules: [bonus("athletics", 1)], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } },
+        notes: ["Only on your next use of the same maneuver the enemy succeeded at (+2 if it critically succeeded; raise it by hand). Remove it after that check."]
+    },
+    // (Round 78: a fortune for the one check it's used on: PF2e's RollTwice, gone after that roll.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.BrCbXsCUIFYfu26E", name: "Entreat Pact",
+        toggle: { rules: [{ key: "RollTwice", selector: "skill-check", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN },
+        notes: ["Use it as you attempt a skill check directly related to the pact's conditions; that check rolls twice and keeps the better."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.misc.Item.EdnmU1XpzwAobsQU", name: "Bestow Favor",
+        toggle: { rules: [{ key: "RollTwice", selector: "nature", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN },
+        notes: ["For the Nature check to Hide: it rolls twice and keeps the better."]
+    },
+    // (Round 82.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.VqGjR43bBd36k0XI", name: "Liberate Self",
+        toggle: { rules: [{ key: "RollTwice", selector: ["skill-check", "attack-roll"], keep: "higher", predicate: ["action:escape"], removeAfterRoll: true }], duration: THIS_TURN },
+        notes: ["Now Escape. PF2e's Escape action ignores fortune effects (8.6): roll it twice and keep the higher by hand. The Effect ends with your turn."]
+    },
+    {
+        uuid: pf2e("NZgjqVV2HYzLCvvA"), name: "Aldori Parry",
+        toggle: { rules: [bonus("ac", 1)], duration: ROUND },
+        notes: ["Wielding only an Aldori dueling sword. +2 instead if your other hand or hands are free: raise it by hand."]
+    },
+    // (Round 98: PF2e's own "ignore-range-penalty:2", as its Triangulate gives it.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.9sXQf1SyppS5B6O1", name: "Automaton Aim",
+        toggle: { rules: [{ key: "RollOption", domain: "ranged-attack-roll", option: "ignore-range-penalty:2" }], duration: THIS_TURN },
+        notes: ["For your next ranged attack this turn: delete the Effect after it. Used a second time this turn, the third increment's –4 is 0 too: subtract it by hand."]
     }
 ];
