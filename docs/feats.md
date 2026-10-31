@@ -658,3 +658,4 @@ conditions. Cloudleaper Lizardfolk's falls do no damage; Reflection's trait.
 ## Round 51 (2026-10-31): check cards for reactions and actions against a creature
 
 - Check cards (src/plans/checks-2.js): Interrupt Charge, Keep up Appearances, Improvise Strategy, Overawe Crowd, Predictable!. Healer's Halo heals 1d6 (src/plans/heals.js).
+- Round 52: save cards for Gluttonous Feast and Arrange the Board (src/plans/saves-5.js); heals for Life's Blood and Natural Remedy.
