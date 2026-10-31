@@ -219,5 +219,27 @@ export default [
         uuid: "Compendium.pf2e.feats-srd.Item.fPTwCnKYesk1PvuI", name: "Burn Identity",
         text: `<p>You cast a 5th-rank @UUID[Compendium.pf2e.spells-srd.Item.VlNcjmYyu95vOUe8]{Translocate} on yourself.</p>`,
         notes: ["Once per week. Everyone who has seen you in the last 24 hours (exempt any you choose) attempts a Will save against your class DC or spell DC, whichever is higher, or forgets your appearance as a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.FhOaQDTSnsY7tiam]{Rewrite Memory}: the GM rolls those.", "As a 10-minute activity instead: teleport yourself and up to four targets touched to the nearest border of Andoran, by hand."]
+    },
+    // (Round 87: "you can briefly awaken items around you to cast" isn't read as what the feat does.)
+    {
+        uuid: "Compendium.pf2e-team-plus-tian-xia.player-options.Item.ZcyotWOE1ZHEECn3", name: "Eyes Everywhere",
+        text: `<p>You cast a 4th-rank @UUID[Compendium.pf2e.spells-srd.Item.ykyKclKTCMp2SFXa]{Countless Eyes}.</p>`,
+        notes: ["Once per day, an innate spell of the tradition you chose for Inquisitive Eye's read aura."]
+    },
+    // (Round 87: "You grant … the effects of", "with the effects of the gaseous form spell" (no link), "cast … three times".)
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.iVwsLYjOJbfvL0Pe", name: "Heroic Presence",
+        text: `<p>You cast a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.GYD0XZ4t3tQq6shc]{Zealous Conviction} on up to 10 willing creatures within 30 feet.</p>`,
+        notes: ["Once per day. Target the creatures first. It ends on a target you give a command it would find repugnant."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.phFRWFgeHdBzio2V", name: "Terrain Form",
+        text: `<p>You cast @UUID[Compendium.pf2e.spells-srd.Item.V8wXOsoejQhe6CyG]{Vapor Form} on yourself.</p>`,
+        notes: ["Once per day. You're made of your bound terrain: snow (arctic), sand (desert), cloud (mountain) or mud (swamp). Using it again reconstitutes your normal form: end the spell's Effect by hand."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.OYrcbyaV3v8ycksj", name: "Head of the Night Parade",
+        text: `<p>You cast an 8th-rank @UUID[Compendium.pf2e.spells-srd.Item.tFKJCPvOQZxKq6ON]{Mad Monkeys}.</p>`,
+        notes: ["You Perform and cast it three times: use the card's cast three times, each with its own kind of mischief. One Perform action Sustains all three each round."]
     }
 ];
