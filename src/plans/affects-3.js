@@ -207,5 +207,10 @@ export default [
         uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.auMlFNuu48YRtkeS", name: "Phase Frame",
         text: `<p>You cast @UUID[Compendium.pf2e.spells-srd.Item.XXqE1eY3w3z6xJCB]{Invisibility} on yourself.</p>`,
         notes: ["Once per day (once per hour if you're legendary in Crafting, heightened to half your level rounded up: set the rank by hand)."]
+    },
+    {
+        uuid: "Compendium.pf2e.feats-srd.Item.kr537ZL3f8tCSgDK", name: "True Gaze",
+        text: `<p>You cast a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.uqlxMQQeSGWEVjki]{Truesight} on yourself.</p>`,
+        notes: ["Once per hour. Its counteract checks use your Perception modifier."]
     }
 ];
