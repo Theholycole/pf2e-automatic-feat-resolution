@@ -217,9 +217,33 @@ async function castSpellLike(item, plan, sourceToken, message) {
     const recorded = (message.getFlag?.(MODULE_ID, "targets") ?? []).map((each) => fromUuidSync(each)).filter(Boolean).map((token) => token.object ?? token);
     await cast({ actor: item.actor, token: sourceToken, spell: uuid, rank: plan.rank, dc: plan.dc, targets: recorded.length ? recorded : null,
         item: { name: item.name, uuid: item.uuid, img: item.img }, ...(plan.actions ? { actions: plan.actions } : {}) });
+    if (plan.castWith === "perception") await counteractWithPerception(item, plan);
     // (The feat's own notes, which the spell module's card doesn't carry: a line of their own; round 83 Foundry test.)
     const notes = (plan.notes ?? []).filter((note) => !/^(?:You cast|Cast as)\b/.test(note));
     if (notes.length) await ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), content: `<p><strong>${item.name}</strong>:</p>${notes.map((note) => `<p>${note}</p>`).join("")}` });
+}
+
+// (True Gaze, round 83 Foundry test: PF2e rolls the item-cast entry's counteract from its own counteraction statistic, not the spell
+// module's item statistic. A modifier on the spell module's "its spells' numbers" Effect for this cast brings it to the character's
+// Perception: on counteract checks with the spell's traits, as the roll carries no item or entry option.)
+const SPELL_MODULE = "pf2e-automatic-resolution";
+async function counteractWithPerception(item, plan) {
+    const actor = item.actor;
+    const perception = Number(actor.perception?.mod ?? actor.system?.perception?.mod);
+    const entry = (actor.itemTypes?.spellcastingEntry ?? []).find((each) => each.flags?.[SPELL_MODULE]?.itemCastEntry?.itemUuid === item.uuid);
+    const stat = (actor.itemTypes?.effect ?? []).find((each) => each.flags?.[SPELL_MODULE]?.itemCastStat === item.uuid);
+    const current = Number(entry?.counteraction?.check?.mod ?? entry?.counteraction?.mod);
+    if (!stat || !Number.isFinite(perception) || !Number.isFinite(current)) return;
+    const spell = await fromUuid(byName(plan.spell.uuid));
+    const traits = (spell?.system?.traits?.value ?? []).filter((trait) => !["concentrate", "manipulate"].includes(trait));
+    const rules = foundry.utils.deepClone(stat.system.rules ?? []);
+    let own = rules.find((rule) => rule.key === "FlatModifier" && rule.selector === "counteract-check" && rule.slug === "feat-perception");
+    const before = own ? Number(own.value) || 0 : 0;
+    const value = perception - (current - before);
+    if (own && before === value) return;
+    if (!own) rules.push(own = { key: "FlatModifier", selector: "counteract-check", slug: "feat-perception", label: `${item.name} (Perception)`, value: 0, ...(traits.length ? { predicate: traits } : {}) });
+    own.value = value;
+    await stat.update({ "system.rules": rules });
 }
 
 let warned = false;
