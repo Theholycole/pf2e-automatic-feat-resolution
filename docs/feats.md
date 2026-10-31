@@ -490,3 +490,11 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Then: Quicken Heartbeat (quickened through your next turn; slowed by hand), Raise Neck (reach 10 on the nagaji fangs, AdjustStrike).
 - Round 27: Quicken Heartbeat passes. Raise Neck's "reach-10" was ignored (a character weapon trait is only "reach"): now "reach".
 - Round 28: Raise Neck passes (reach 5 → 10). Forest's Heart's "reach-30" has no label of its own, but PF2e reads it: reach 30.
+
+### Cole's answers (2026-10-31)
+
+- D12: yes, Effect cards (an Effect with no roll card, Protect Ally's) are on automatically.
+- One-moment bonuses lasting to the end of the turn, with a note to delete them after the triggering attack or save: good enough.
+- NPC actions played only for an ally's Effect (Little Buddy): yes.
+- What's left: not just reminders. Use the suite's other modules where they model the rule: the environment module's difficult
+  terrain (PF2e's system.movement.terrain entries, read by its terrain costs) and weather first.
