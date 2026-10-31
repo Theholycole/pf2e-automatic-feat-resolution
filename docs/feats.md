@@ -587,3 +587,7 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   Visual Fidelity, Defy the Darkness (greater darkvision), Lifesense, Vestigial Magicsense (vague), Soulsight (spiritsense); Butterfly's
   Kiss suppresses the module's nonlethal penalty with a butterfly sword. The count now includes the companion, environment and
   condition entries: 2,410 of 4,826 left before this batch.
+- Round 40b: Uncanny Awareness (motion sense) and Alacritous Action (eidolon Speed +10) pass. Master Detective's master class DC is
+  PF2e's own: the item's system.subfeatures.proficiencies. A scan found 50 of the module's rule entries (darkvision feats, Fearsense,
+  Earthsense, the proficiency raises of batch 9, most of batch 12, Stargazer's Eyes) that PF2e already gives by subfeatures.senses or
+  .proficiencies; they're dropped, and the count takes subfeatures as PF2e's own. Count: 2,395 of 4,826 left.

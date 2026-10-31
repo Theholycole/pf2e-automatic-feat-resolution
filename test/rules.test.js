@@ -29,10 +29,10 @@ test("PF2e's pack folders as its compendium names", () => {
 });
 
 test("an item's rules by its compendium source, less any it has already", () => {
-    const orcSight = { sourceId: "Compendium.pf2e.feats-srd.Item.SCgqIo8VQZZKZ1Ws", system: { rules: [] } };
-    assert.deepEqual(rulesFor(orcSight), [{ key: "Sense", selector: "darkvision" }]);
+    const orcSight = { sourceId: "Compendium.pf2e-team-plus-magic.items.Item.huTig9LF2n5cCDTn", system: { rules: [] } };
+    assert.deepEqual(rulesFor(orcSight), [{ key: "Sense", selector: "greater-darkvision" }]);
     assert.deepEqual(rulesFor({ _stats: { compendiumSource: orcSight.sourceId }, system: { rules: [] } }).length, 1, "Foundry's own source field");
-    assert.deepEqual(rulesFor({ ...orcSight, system: { rules: [{ key: "Sense", selector: "darkvision" }] } }), [], "PF2e added it since");
+    assert.deepEqual(rulesFor({ ...orcSight, system: { rules: [{ key: "Sense", selector: "greater-darkvision" }] } }), [], "PF2e added it since");
     assert.deepEqual(rulesFor({ sourceId: "Compendium.pf2e.feats-srd.Item.nothingHere00000", system: { rules: [] } }), []);
 });
 
@@ -89,14 +89,6 @@ test("a master's feats' rules for its companion: PF2e's safe keys, labelled with
     assert.deepEqual(companionRulesFrom(null), []);
 });
 
-test("Stargazer's Eyes: low-light vision, darkvision over an ancestry's low-light vision or when taken twice", () => {
-    const uuid = "Compendium.pf2e.feats-srd.Item.5KXJkEs39y1gaPEm";
-    const feat = (actor) => ({ sourceId: uuid, actor, system: { rules: [] } });
-    const selectors = (item) => rulesFor(item).map((rule) => rule.selector);
-    assert.deepEqual(selectors(feat({ items: [{ sourceId: uuid }], ancestry: { system: { vision: "normal" } } })), ["low-light-vision"]);
-    assert.deepEqual(selectors(feat({ items: [{ sourceId: uuid }], ancestry: { system: { vision: "lowLightVision" } } })), ["low-light-vision", "darkvision"]);
-    assert.deepEqual(selectors(feat({ items: [{ sourceId: uuid }, { sourceId: uuid }] })), ["low-light-vision", "darkvision"]);
-});
 
 test("Wandering Oasis: its own and an ally's within 60 feet; Land on Your Feet halves a fall", async () => {
     const { temperatureProtections, fallEases } = await import("../src/plans/environment.js");

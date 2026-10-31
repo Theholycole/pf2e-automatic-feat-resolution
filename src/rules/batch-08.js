@@ -26,6 +26,4 @@ export default [
     { uuid: heritage("lDT5h3f5GXRj42Ir"), name: "Stonestep Shisk", rules: [ignore("all", "rubble")] },
     { uuid: heritage("ClshvrjvBTMm3INX"), name: "Bandaagee Vanara", rules: [ignore("all", "crowd")] }
 ,
-    // (And a sense said outright that the readers missed for its second sentence; 2026-10-31.)
-    { uuid: pf2e("m4m5udXiXFS2pCPG"), name: "Fearsense", rules: [{ key: "Sense", selector: "scent", acuity: "imprecise", range: 30 }] }
 ];
