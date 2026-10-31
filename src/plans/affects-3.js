@@ -57,5 +57,15 @@ export default [
         uuid: pf2e("24giyNqSjqrEnhN9"), name: "Call From Death's Door",
         affect: { target: "1 ally", effects: [{ kind: "end-condition", slug: "dying" }, { kind: "heal", formula: "2*@actor.level" }] },
         notes: ["Spend a Mythic Point. The ally's wounded value doesn't go up for this."]
+    },
+    {
+        uuid: pf2e("IkqhUNVXUmi8ePEJ"), name: "Reclaim Power",
+        affect: { target: "you", effects: [{ kind: "heal", formula: "@actor.level" }] },
+        notes: ["This is one thrall's healing: post Reclaim Power again for each more thrall you destroy (up to three). With all three, also lower one of your clumsy, enfeebled, frightened, sickened or stupefied values by 1."]
+    },
+    {
+        uuid: action("gU93T2UqxLsX9gyF"), name: "Fated Not to Die",
+        affect: { target: "you", effects: [{ kind: "end-condition", slug: "dying" }] },
+        notes: ["You stay unconscious at 0 Hit Points. If the harrow card you draw is from the suit of Shields, you wake and regain 1d6 + your level Hit Points (by hand)."]
     }
 ];

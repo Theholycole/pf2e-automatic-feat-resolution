@@ -484,3 +484,4 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Then: Brains! (Recall Knowledge, 1 hour), Masked Casting (saves while Averting Gaze), Free the Bound (the ally's Escape, as Tip the
   Scales's selectors), Sharpened Senses (Seek).
 - Round 24: all four pass (each only on its action's roll: Recall Knowledge, Escape, Seek).
+- Then: Reclaim Power (your level per thrall, posted once per thrall), Fated Not to Die (ends dying; the Shields heal by hand).
