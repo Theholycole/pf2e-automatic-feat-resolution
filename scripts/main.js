@@ -219,7 +219,8 @@ async function castSpellLike(item, plan, sourceToken, message) {
         item: { name: item.name, uuid: item.uuid, img: item.img }, ...(plan.actions ? { actions: plan.actions } : {}) });
     if (plan.castWith === "perception") await counteractWithPerception(item, plan);
     // (The feat's own notes, which the spell module's card doesn't carry: a line of their own; round 83 Foundry test.)
-    const notes = (plan.notes ?? []).filter((note) => !/^(?:You cast|Cast as)\b/.test(note));
+    // (Not the card's own lines: "You cast …", "Cast as …", "The feat names no DC" (noise on a spell with no save, Heal; round 85 test).)
+    const notes = (plan.notes ?? []).filter((note) => !/^(?:You cast|Cast as|The feat names no DC)\b/.test(note));
     if (notes.length) await ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), content: `<p><strong>${item.name}</strong>:</p>${notes.map((note) => `<p>${note}</p>`).join("")}` });
 }
 
