@@ -79,5 +79,16 @@ export default [
         uuid: pf2e("gBSPbQRXdagZTUwY"), name: "Kip Up",
         affect: { target: "you", effects: [{ kind: "end-condition", slugs: ["prone"], recipient: "self" }] },
         notes: ["Standing this way doesn't trigger reactions."]
+    },
+    // (Round 58: a lowered condition, as the ability compiler writes "reduces its slowed condition by 1".)
+    {
+        uuid: pf2e("OY1Ewg0dbCp52Hl5"), name: "Inner Strength",
+        affect: { target: "you", effects: [{ kind: "condition", slug: "enfeebled", value: 0, duration: null, stack: { by: -1 } }] },
+        notes: ["Only while you're raging."]
+    },
+    {
+        uuid: "Compendium.pf2e-team-plus-adventures.pf2e-misc.Item.E9CLWaNP0QjvV8fe", name: "Fever Shiver",
+        affect: { target: "you", effects: [{ kind: "condition", slug: "sickened", value: 0, duration: null, stack: { by: -1 } }] },
+        notes: ["Then raise your frustrated condition by 1. Or instead, attempt a new save against an affliction (and see the feat for what that costs): remove the card's change then."]
     }
 ];
