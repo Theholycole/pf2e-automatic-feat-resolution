@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { characterStrike, compileFeat, dcFor, fillCharacterDCs, fillCharacterNumbers } from "../src/compiler/index.js";
 import { spellLike } from "../src/compiler/spell-like.js";
+import { movePlan } from "../../pf2e-automatic-item-resolution/src/compiler/move.js";
 import { activityRider, strikeMatches } from "../../pf2e-automatic-ability-resolution/src/live/activity.js";
 
 // A 8th-level character: class DC 25, spell DC 27 (occult), Strength +4.
@@ -723,4 +724,16 @@ test("a 3‐action version (a typographic hyphen) at a rank one lower than half 
     const plan = spellLike(item, { level: 9, class: 27, spell: 28 });
     assert.equal(plan.rank, 4);
     assert.equal(plan.actions, 3);
+});
+
+test("a Stride feat: the item module's move card, only with that module's reader (round 94)", () => {
+    const entry = feat("Tactical Entry", "<p>You Stride. This movement doesn't trigger reactions.</p>", 1);
+    const plan = compileFeat(entry, { dcs: DCS, movePlan });
+    assert.equal(plan?.builtin, "teleport");
+    assert.deepEqual({ speedTimes: plan.teleport.speedTimes, verb: plan.teleport.move.verb }, { speedTimes: 1, verb: "Stride" });
+    assert.notEqual(compileFeat(entry, { dcs: DCS })?.builtin, "teleport", "no move card without the item module");
+    const jump = compileFeat(feat("Long Jump", "<p>You Stride, then attempt a DC 15 [[/act long-jump]]{Athletics} check to make a long jump in the direction you were Striding.</p>"), { dcs: DCS, movePlan });
+    assert.ok(!JSON.stringify(jump.teleport).includes("[["), "inline checks as their words");
+    const passive = { ...entry, system: { ...entry.system, actionType: { value: "passive" } } };
+    assert.notEqual(compileFeat(passive, { dcs: DCS, movePlan })?.builtin, "teleport", "a passive's isn't a move");
 });

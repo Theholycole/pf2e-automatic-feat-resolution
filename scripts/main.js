@@ -23,6 +23,10 @@ import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onF
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const ABILITY_MODULE = "pf2e-automatic-ability-resolution";
+const ITEM_MODULE = "pf2e-automatic-item-resolution";
+const itemApi = () => (game.modules.get(ITEM_MODULE)?.active ? game.modules.get(ITEM_MODULE).api ?? null : null);
+// (The item module's move reader, loaded at ready when that module is on: a Stride, Step or Leap feat's card; round 94.)
+let itemMoves = null;
 
 const SPELL_MODULE = "pf2e-automatic-resolution";
 const spellApi = () => (game.modules.get(SPELL_MODULE)?.active ? game.modules.get(SPELL_MODULE).api ?? null : null);
@@ -32,12 +36,20 @@ const isActiveGM = () => game.users.activeGM?.isSelf ?? game.user.isGM;
 // PF2e's own roll data for the paths in a feat's damage ("@item.flags.system.rulesSelections.damageType").
 const withRollData = (dcs, item) => (dcs ? { ...dcs, resolve: (formula) => Roll.replaceFormulaData(formula, item?.getRollData?.() ?? {}) } : null);
 
+// The item module's move card for a feat's move plan (plan.builtin "teleport"), or nothing without that module.
+function postMove(item, plan, sourceToken, message) {
+    const post = itemApi()?.live?.postTeleport;
+    if (!post) return Promise.resolve(null);
+    const token = sourceToken?.object ?? sourceToken ?? item.actor.getActiveTokens?.(true)?.[0] ?? null;
+    return post({ plan, item: { name: item.name, uuid: item.uuid }, actor: item.actor, token, message });
+}
+
 function compileItem(item) {
     // (An NPC's: no class or spell DC of a character's, only its ally's Effect is played; cardForFeat.)
     const dcs = withRollData(characterDCs(item?.actor) ?? (item?.actor?.type === "npc" ? {} : null), item);
     if (!dcs) return null;
     try {
-        return compileFeat(item, { dcs, basicActions: abilityApi()?.basicActions });
+        return compileFeat(item, { dcs, basicActions: abilityApi()?.basicActions, movePlan: itemMoves?.movePlan });
     } catch (error) {
         console.warn(`${MODULE_ID} | ${item?.name} didn't compile.`, error);
         return null;
@@ -100,6 +112,8 @@ async function cardForFeat(message) {
     // (A timer's, with no targets: nothing, its words already in chat; round 43.)
     if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : plan.timer ? null : untargeted();
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
+    // (A timer with a move, Chemical Spill's: its move card too; round 94.)
+    if (plan?.builtin === "feat-effect" && plan.move) await postMove(item, plan.move, sourceToken, message).catch((error) => console.error(`${MODULE_ID} | move card`, error));
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     // (A Focus or Mythic Point back: added to the pool, up to its maximum; 2026-10-30, the loop.)
     if (plan?.builtin === "regain-point") return regainPoint(item, plan);
@@ -131,6 +145,8 @@ async function cardForFeat(message) {
         const own = plan.castWith === "perception" && Number.isFinite(perception) ? perception + 10 : null;
         return castSpellLike(item, { ...plan, dc: own ?? plan.dc ?? (best.length ? Math.max(...best) : null) }, sourceToken, message);
     }
+    // (A Stride, Step or Leap feat, read by the item module's move reader: its move card, Pick and click, the token moved; round 94.)
+    if (plan?.builtin === "teleport") return postMove(item, plan, sourceToken, message);
     // (A save at a DC the character hasn't got, Primal Howl's spell DC on a master with no spellcasting: said to the GM, not silent;
     // round 77 Foundry test.)
     if (!plan) {
@@ -288,6 +304,8 @@ Hooks.on("canvasReady", () => {
 });
 
 Hooks.once("ready", () => {
+    // (The item module's move reader, by its own path beside this module's; round 94.)
+    if (game.modules.get(ITEM_MODULE)?.active) import("../../pf2e-automatic-item-resolution/src/compiler/move.js").then((reader) => { itemMoves = reader; }).catch((error) => console.warn(`${MODULE_ID} | the item module's move reader didn't load.`, error));
     // (A fall, the environment module's hooks: scripts/reminders.js; round 47.)
     Hooks.on("pf2e-automatic-environment-resolution.falling", (data) => { if (isActiveGM()) onFalling(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });
     Hooks.on("pf2e-automatic-environment-resolution.fell", (data) => { if (isActiveGM()) onFell(data).catch((error) => console.error(`${MODULE_ID} | reaction reminder`, error)); });

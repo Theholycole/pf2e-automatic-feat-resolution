@@ -22,8 +22,19 @@ export { characterStrike } from "./strikes.js";
 // (basicActions, actor).
 import { eidolonWords, isEidolonItem } from "./companion.js";
 
+// (A portal, Fabricate Rift's "Stride through this portal as part of the activity to create it": not its user's move card.)
+const NOT_MOVES = /^Fabricate Rift$/;
+// An action's move, read by the item module's movePlan → its "teleport" plan, or null (a passive's, or with no item module).
+function moveFor(item, movePlan) {
+    if (typeof movePlan !== "function" || (item.system?.actionType?.value ?? "passive") === "passive" || NOT_MOVES.test(item.name)) return null;
+    const base = { source: { name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type }, rank: 1, traits: [...(item.system?.traits?.value ?? [])], activation: { time: null, traits: [] } };
+    // (Its inline checks as their words, "a DC 30 [[/act high-jump]]{Athletics} check": the card's lines are plain text.)
+    const html = String(item.system?.description?.value ?? "").replace(/\[\[[^\]]*\]\]\{([^}]*)\}/g, "$1").replace(/@Check\[(\w+)[^\]]*\](?:\{([^}]*)\})?/g, (_, skill, label) => label ?? `${skill.charAt(0).toUpperCase()}${skill.slice(1)}`);
+    return movePlan(html, base);
+}
+
 export function compileFeat(item, options = {}) {
-    const { dcs, ...abilityOptions } = options;
+    const { dcs, movePlan, ...abilityOptions } = options;
     if (!dcs) return null;
     // (A plan written by hand for this feat, src/plans/: first.)
     const hand = handEntry(item);
@@ -66,7 +77,14 @@ export function compileFeat(item, options = {}) {
     const used = asUsed(filled);
     const usedPlan = used ? read(used.item, abilityOptions) ?? selfHeal(used.item, dcs) ?? selfEffect(used.item, dcs) : null;
     // (Round 43: a timed effect nothing above plays, its Effect with no rules: src/compiler/timer-effect.js.)
-    if (!usedPlan) return timerEffect(filled);
+    // (Round 94, Cole's pick "Item cards first": a Stride, Step or Leap the feat is, Tactical Entry's "You Stride. This movement doesn't trigger
+    // reactions": the item module's move card (its src/compiler/move.js, passed in as options.movePlan when that module is on).)
+    // (With a timer too, Chemical Spill's 3 rounds of its trail: the timer, its move card beside it, plan.move.)
+    if (!usedPlan) {
+        const moved = moveFor(filled, movePlan);
+        const timer = timerEffect(filled);
+        return timer && moved ? { ...timer, move: moved } : moved ?? timer;
+    }
     return { ...usedPlan, ...(usedPlan.activation ? { activation: { ...usedPlan.activation, time: used.time } } : {}), usedOn: used.trigger };
 }
 
