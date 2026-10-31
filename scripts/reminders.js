@@ -114,7 +114,7 @@ export async function onRollMessage(message) {
         const saver = message.actor;
         const domains = context.domains ?? [];
         const kind = ["fortitude", "reflex", "will"].find((each) => domains.includes(each) || context.statistic === each) ?? null;
-        const due = [...saver.itemTypes.feat, ...saver.itemTypes.action, ...(saver.itemTypes.heritage ?? []), ...(saver.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read?.event === "own-save" && read.outcomes.includes(context.outcome) && (!read.saves.length || (kind && read.saves.includes(kind))));
+        const due = [...saver.itemTypes.feat, ...saver.itemTypes.action, ...(saver.itemTypes.heritage ?? []), ...(saver.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => (read?.event === "own-save" && read.outcomes.includes(context.outcome) && (!read.saves.length || (kind && read.saves.includes(kind)))) || (read?.event === "own-check" && read.alsoSaves && read.outcomes.includes(context.outcome)));
         if (due.length) await whisper(saver, `<strong>${escape(saver.name)}</strong>: your ${kind ?? ""} save's result.`.replace("your  save", "your save"), due);
         return;
     }
@@ -268,7 +268,8 @@ export async function onConditionGained(actor, slug) {
         const each = other.actor;
         if (each?.type !== "character" || each === actor) continue;
         const distance = distanceBetween(other, token);
-        const inRange = ({ read }) => !read.within || (distance !== null && distance <= read.within);
+        // (Its kind of creature, "an undead creature is reduced to zero Hit Points": the creature's traits; round 48 test, Read the Dust.)
+        const inRange = ({ read }) => (!read.within || (distance !== null && distance <= read.within)) && (!read.traits?.length || read.traits.some((trait) => actor.traits?.has?.(trait) ?? (actor.system?.traits?.value ?? []).includes(trait)));
         const ally = other.document.disposition === token.document.disposition ? forActor(each, "ally-condition") : [];
         const due = [...ally, ...forActor(each, "creature-condition")].filter(inRange);
         if (due.length) await whisper(each, `<strong>${escape(each.name)}</strong>: ${escape(actor.name)} ${escape(words)}.`, due);

@@ -73,7 +73,7 @@ export function eventTrigger(given) {
         const outcomes = [...(/critically succeed/.test(words) ? ["criticalSuccess"] : []), ...(/(?<!critically )succeed/.test(words) ? ["success"] : []), ...(/(?<!critically )fail/.test(words) ? ["failure", ...(/but (?:don't|do not) critically fail/.test(words) ? [] : ["criticalFailure"])] : []), ...(/critically fail(?!\))/.test(words) && !/but (?:don't|do not) critically fail/.test(words) ? ["criticalFailure"] : [])];
         return { ...read("own-check"), outcomes: [...new Set(outcomes)], skills: [], action: attempt[2].toLowerCase().replace(/\s+(?:a|an|the)\s+/g, " ").replace(/\s+/g, "-") };
     }
-    if (/^You roll a skill check(?: or saving throw)? and don't like the result\b/i.test(trigger)) return { ...read("own-check"), outcomes: ["criticalSuccess", "success", "failure", "criticalFailure"], skills: [] };
+    if (/^You roll a skill check(?: or saving throw)? and don't like the result\b/i.test(trigger)) return { ...read("own-check"), outcomes: ["criticalSuccess", "success", "failure", "criticalFailure"], skills: [], ...(/saving throw/i.test(trigger) ? { alsoSaves: true } : {}) };
     // (Another creature's roll result: "A creature within 30 feet critically fails an attack roll, skill check, or saving throw", "An ally
     // within 30 feet of you critically succeeds at an attack roll or skill check", "An enemy critically succeeds at an attack roll or saving
     // throw", "You or an ally within 30 feet fails an attack roll or skill check", "An ally misses … with their attack": others-roll, by who
@@ -127,7 +127,10 @@ export function eventTrigger(given) {
         // otherwise become Prone"; round 37.)
         const who = /^(?:An?|Another|Your|One of your) (?:adjacent )?all(?:y|ies)\b|^You witness an ally\b/i.test(trigger) ? "ally-condition"
             : /^(?:A|An)\b[^.]*\bwould reduce you to 0 (?:Hit Points|HP)\b|^You\b[^.]*\bbecome (?:the )?[A-Za-z-]+(?: condition)?\.$/i.test(trigger) ? "self-condition" : /^(?:A|An|Another) (?:[\w-]+ ){0,3}?(?:creature|enemy|foe)\b/i.test(trigger) ? "creature-condition" : /^You(?:'re| are)? (?:would )?(?:gain|become|are reduced|reduced|fall|would be reduced)\b|^You are [A-Z][a-z-]+ \d+ or greater and your\b/i.test(trigger) ? "self-condition" : null;
-        if (who) return { ...read(who), conditions };
+        // (Its kind, "an undead creature", "a Small or Medium enemy" not: a creature trait; round 48 test.)
+        const kindWord = /^(?:A|An|Another) ([a-z]+) (?:creature|enemy|foe)\b/i.exec(trigger)?.[1]?.toLowerCase();
+        const traits = kindWord && CREATURE_TRAITS.includes(kindWord) ? [kindWord] : [];
+        if (who) return { ...read(who), conditions, ...(traits.length ? { traits } : {}) };
     }
     const ally = /\b(?:an|your|one of your|a) (?:adjacent |linked |designated )?all(?:y|ies)\b|\bally you can see\b/i.test(trigger);
     // (An ally near the character moving: "An ally ends a move action adjacent to you", "An ally within your reach uses a move action or
@@ -154,6 +157,7 @@ export function eventTrigger(given) {
     return null;
 }
 
+const CREATURE_TRAITS = ["aberration", "animal", "beast", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "fungus", "giant", "humanoid", "monitor", "ooze", "plant", "spirit", "undead", "demon", "devil", "incorporeal", "living"];
 const CONDITION_WORDS = ["blinded", "clumsy", "confused", "controlled", "dazzled", "deafened", "doomed", "drained", "dying", "enfeebled", "fascinated", "fatigued", "fleeing", "frightened", "grabbed", "immobilized", "off-guard", "paralyzed", "petrified", "prone", "restrained", "sickened", "slowed", "stunned", "stupefied", "unconscious", "wounded", "hidden", "concealed", "undetected", "invisible", "quickened", "encumbered"];
 // "gains the Frightened condition", "would become Frightened, Drained, …", "becomes frightened or stupefied", "falls to 0 Hit Points" → the
 // conditions (with "0-hp" for the last), or null.

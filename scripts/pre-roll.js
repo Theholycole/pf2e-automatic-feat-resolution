@@ -24,7 +24,9 @@ const realActor = (context) => {
 };
 // (Ally or enemy by PF2e's alliances, isAllyOf; a token's disposition when there's none; round 45 test, Divine Rebuttal on a foe's save.)
 const sideOf = (roller, actor, rollerToken, token) => {
-    if (typeof actor.isAllyOf === "function") return actor.isAllyOf(roller) ? "ally" : actor.isEnemyOf?.(roller) ?? !actor.isAllyOf(roller) ? "enemy" : null;
+    // (A character with no player owner is PF2e's "opposition", as the foes are: by the tokens then; round 48 test.)
+    const unowned = (each) => each?.type === "character" && !Object.entries(each.ownership ?? {}).some(([id, level]) => id !== "default" && level >= 3 && !game.users.get(id)?.isGM);
+    if (typeof actor.isAllyOf === "function" && !unowned(actor) && !unowned(roller)) return actor.isAllyOf(roller) ? "ally" : actor.isEnemyOf?.(roller) ?? !actor.isAllyOf(roller) ? "enemy" : null;
     return rollerToken && token ? (rollerToken.document.disposition === token.document.disposition ? "ally" : "enemy") : null;
 };
 
