@@ -27,6 +27,7 @@ async function onMessage(message) {
         const key = `${entry.uuid}:${defender.uuid}:${attacker.uuid}:${turnKey()}`;
         if (entry.oncePerTurn && once.has(key)) continue;
         once.add(key);
+        if (entry.save) { await postSave(entry, defender, targetToken, attacker, attackerToken); continue; }
         const formula = Roll.replaceFormulaData(entry.formula, defender.getRollData?.() ?? {});
         const roll = new DamageRoll(`(${formula})[${entry.type}]`);
         await roll.evaluate();
@@ -36,6 +37,22 @@ async function onMessage(message) {
             flags: { [MODULE_ID]: { retaliation: entry.uuid }, pf2e: { context: { type: "damage-roll", actor: defender.uuid, ...(attackerToken ? { target: { actor: attacker.uuid, token: attackerToken.uuid } } : {}) } } }
         });
     }
+}
+
+// The attacker's save, as a chat card with PF2e's own save button and the outcomes as text.
+async function postSave(entry, defender, defenderToken, attacker, attackerToken) {
+    const base = entry.save.dc === "spell" ? defender.spellcasting?.base?.dc?.value ?? defender.attributes?.spellDC?.value : defender.classDC?.dc?.value ?? defender.system?.attributes?.classDC?.value;
+    if (!Number.isFinite(base)) return;
+    const options = defender.getRollOptions?.(["all"]) ?? [];
+    const dc = base + (entry.save.harder && options.includes(entry.save.harder.option) ? entry.save.harder.by : 0);
+    const traits = entry.save.traits?.length ? `|traits:${entry.save.traits.join(",")}` : "";
+    const content = `<p><strong>${escape(entry.name)}</strong>: ${escape(attacker.name)} attempts @Check[${entry.save.statistic}|dc:${dc}${traits}|name:${escape(entry.name)}].</p><p>${entry.save.text}</p>`;
+    const TextEditor = foundry.applications?.ux?.TextEditor?.implementation ?? globalThis.TextEditor;
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: defender, token: defenderToken ?? undefined }),
+        content: await TextEditor.enrichHTML(content, { rollData: defender.getRollData?.() ?? {} }),
+        flags: { [MODULE_ID]: { retaliation: entry.uuid } }
+    });
 }
 
 export function registerRetaliation() {
