@@ -35,7 +35,8 @@ export function sentenceRules(sentence) {
 }
 
 // PF2e writes a BaseSpeed's selector either way ("swim", "swim-speed").
-export const selectorOf = (rule) => String(rule?.selector ?? rule?.type ?? "").replace(/-speed$/, "");
+// (An ActiveEffectLike by its path and value: Water Dancer's two terrain entries aren't the same rule; 2026-10-31.)
+export const selectorOf = (rule) => String(rule?.selector ?? rule?.type ?? (rule?.path ? `${rule.path}:${JSON.stringify(rule.value ?? null)}` : "")).replace(/-speed$/, "");
 
 // A passive's rules from those sentences, none it already has (the same key and selector), or []. Not a passive that's a form or a
 // choice ("You can remain in this form for up to 1 minute", "Choose two of the following options"): its sentences aren't always true.

@@ -498,3 +498,11 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - NPC actions played only for an ally's Effect (Little Buddy): yes.
 - What's left: not just reminders. Use the suite's other modules where they model the rule: the environment module's difficult
   terrain (PF2e's system.movement.terrain entries, read by its terrain costs) and weather first.
+
+### Difficult terrain, through the environment module (2026-10-31)
+
+- Rule batch 8: 17 passives and heritages that ignore difficult terrain get PF2e's own terrain entries (ActiveEffectLike on
+  system.movement.terrain.difficult/greater.ignored, as Unimpeded Journey has), by environment (aquatic, swamp, forest) or feature
+  (undergrowth, rubble, snow, ice, crowd). PF2e applies the "all" ones itself; the environment module's terrain costs apply the rest. Left by
+  hand: ones that hang on a choice (Favored Terrain, One with the Land, Acclimated Mount) or a moment (Lotus Above the Wind, Convergent
+  Tides), and water without a feature (Shore Step).
