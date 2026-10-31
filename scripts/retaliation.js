@@ -1,7 +1,8 @@
 // Damage back on a creature that hits or grabs the character (round 57): src/plans/retaliation.js says which feats and when; this rolls
 // the damage as PF2e posts the attack or maneuver, on the active GM's client, the attacker targeted on the card to apply it.
 
-import { eventOf, retaliationsFor } from "../src/plans/retaliation.js";
+import { effectRules, eventOf, retaliationsFor } from "../src/plans/retaliation.js";
+import { applyFeatEffect } from "./effects.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const sourceOf = (item) => item?._stats?.compendiumSource ?? item?.sourceId ?? item?.flags?.core?.sourceId ?? null;
@@ -27,6 +28,12 @@ async function onMessage(message) {
         const key = `${entry.uuid}:${defender.uuid}:${attacker.uuid}:${turnKey()}`;
         if (entry.oncePerTurn && once.has(key)) continue;
         once.add(key);
+        // (Ambersoul's sap: an Effect on the attacker, as a who "target" feat's; round 81.)
+        if (entry.effect) {
+            const item = defender.items.find((each) => sourceOf(each) === entry.uuid);
+            if (item) await applyFeatEffect(item, { builtin: "feat-effect", who: "target", effect: { name: entry.name, rules: effectRules(entry, event.options), duration: entry.effect.duration, stance: false }, notes: [] }, [attacker]);
+            continue;
+        }
         if (entry.save) { await postSave(entry, defender, targetToken, attacker, attackerToken); continue; }
         const formula = Roll.replaceFormulaData(entry.formula, defender.getRollData?.() ?? {});
         const roll = new DamageRoll(`(${formula})[${entry.type}]`);
