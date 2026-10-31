@@ -59,7 +59,6 @@ export function setUpRules() {
             const placed = token.object;
             if (typeof placed?.initializeSources === "function") placed.initializeSources();
             else placed?.initializeLightSource?.();
-            placed?.renderFlags?.set?.({ refreshLighting: true });
         }
     };
     const again = (master) => {
