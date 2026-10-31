@@ -20,6 +20,8 @@ const linkWords = (html) => html.replace(/@(?:UUID|Compendium)\[([^\]]+)\](?:\{(
 export function timerEffect(item) {
     const type = item?.system?.actionType?.value;
     if (!["action", "reaction", "free"].includes(type) || item.system?.selfEffect) return null;
+    // (A feat that links its own PF2e Effect, To War!'s "Effect: To War!": that one is the real one; round 44.)
+    if (/@UUID\[Compendium\.[\w-]+\.(?:feat-effects|spell-effects|other-effects|equipment-effects|[\w-]*effects?[\w-]*)\.Item\./i.test(String(item.system?.description?.value ?? ""))) return null;
     const html = linkWords(String(item.system?.description?.value ?? "").replace(HEADINGS, " "));
     const text = htmlToPlainText(html).replace(/\s+/g, " ").trim();
     const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text];

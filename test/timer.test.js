@@ -23,3 +23,8 @@ test("timer effect: none for an outcome's", () => {
     assert.equal(timerEffect(act("<p>On a critical failure, the creature also becomes Off-Guard until the end of your next turn.</p>")), null);
     assert.equal(timerEffect(act("<p>If this shot hits its target, the target becomes Off-Guard until the end of your next turn.</p>")), null);
 });
+
+test("timer effect: none when the feat links its own PF2e Effect", () => {
+    const act = { name: "To War!", system: { actionType: { value: "action" }, description: { value: "<p>Allies gain @UUID[Compendium.pf2e.feat-effects.Item.3zNPch2pttYW2n1j]{Effect: To War!}. These benefits last until the end of your next turn.</p>" } } };
+    assert.equal(timerEffect(act), null);
+});
