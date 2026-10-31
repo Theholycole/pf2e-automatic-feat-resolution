@@ -120,14 +120,30 @@ async function use(message) {
     }
 }
 
+// (Used once: marked on the character, which its owner can change, not on the GM's whisper; round 106 Foundry test, the button stayed live.)
+const USED = "offersUsed";
+const usedOn = (actor, message) => Boolean(actor?.getFlag?.(MODULE_ID, USED)?.[message.id]);
+
 function wire(message, html) {
-    if (!message.flags?.[MODULE_ID]?.[FLAG]) return;
+    const data = message.flags?.[MODULE_ID]?.[FLAG];
+    if (!data) return;
     const button = html.querySelector?.(`[data-action="${MODULE_ID}-offer"]`);
     if (!button) return;
+    const actor = fromUuidSync(data.actor);
+    if (usedOn(actor, message)) {
+        button.disabled = true;
+        button.textContent = `${button.textContent} (used)`;
+        return;
+    }
     button.addEventListener("click", async (event) => {
         event.preventDefault();
+        if (button.disabled) return;
         button.disabled = true;
-        try { await use(message); } catch (error) { console.error(`${MODULE_ID} | reaction offer`, error); button.disabled = false; }
+        try {
+            await use(message);
+            if (actor?.isOwner) await actor.setFlag(MODULE_ID, USED, { [message.id]: true });
+            ui.chat?.updateMessage?.(message);
+        } catch (error) { console.error(`${MODULE_ID} | reaction offer`, error); button.disabled = false; }
     });
 }
 
