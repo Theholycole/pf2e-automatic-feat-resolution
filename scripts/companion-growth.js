@@ -42,7 +42,12 @@ async function grow(feat) {
         }
         source._stats = { ...(source._stats ?? {}), compendiumSource: uuid };
         source.flags = { ...(source.flags ?? {}), [MODULE_ID]: { grownBy: { actor: master.id, item: feat.id } } };
-        await companion.createEmbeddedDocuments("Item", [source]);
+        const [created] = await companion.createEmbeddedDocuments("Item", [source]);
+        // (The item's own choice can wait on the GM; the feat may be gone by then: round 41.)
+        if (!master.items.get(feat.id)) {
+            if (created) await companion.deleteEmbeddedDocuments("Item", [created.id]);
+            return;
+        }
         await ChatMessage.create({ content: `<p><strong>${foundry.utils.escapeHTML(feat.name)}</strong>: ${foundry.utils.escapeHTML(companion.name)} gains ${foundry.utils.escapeHTML(source.name)}.</p>`, whisper: game.users.filter((user) => user.isGM || companion.testUserPermission(user, "OWNER")).map((user) => user.id) });
     }
 }
@@ -51,7 +56,11 @@ async function shrink(feat) {
     const master = feat.actor;
     if (!growthOf(sourceOf(feat)) || master?.type !== "character") return;
     for (const companion of game.actors ?? []) {
-        const ids = companion.items.filter((item) => item.flags?.[MODULE_ID]?.grownBy?.item === feat.id && item.flags[MODULE_ID].grownBy.actor === master.id).map((item) => item.id);
+        const ids = companion.items.filter((item) => {
+            const by = item.flags?.[MODULE_ID]?.grownBy;
+            // (Its feat, or one gone from that master already: an orphan from a choice answered late.)
+            return by?.actor === master.id && (by.item === feat.id || !master.items.get(by.item));
+        }).map((item) => item.id);
         if (ids.length) await companion.deleteEmbeddedDocuments("Item", ids);
     }
 }
