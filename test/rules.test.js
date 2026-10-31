@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { BATCHES, compendiumUuid, rulesFor } from "../src/rules/index.js";
-import { readRules, sentenceRules, readNotes, readTriggerNotes } from "../src/rules/read.js";
+import { readRules, sentenceRules, readNotes, readTriggerNotes, readBonusNotes as readBonusNotesOf } from "../src/rules/read.js";
 
 // The rule elements the module adds (docs/rules.md): only ones PF2e builds from data alone, that never write back to their own source.
 const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike", "EphemeralEffect", "CreatureSize", "ActorTraits", "ItemAlteration"]);
@@ -121,4 +121,12 @@ test("eidolon size and combat: Towering Size over Hulking Size; Expert Combat Ei
     assert.equal(plain.length, 1);
     const expert = companionRulesFrom({ system: { proficiencies: { defenses: { unarmored: { rank: 2 } } } }, items: [feat("Expert Combat Eidolon", "pKttKO84dxzRLBIC"), { name: "Weapon Specialization", slug: "weapon-specialization" }] });
     assert.deepEqual(expert.map((rule) => rule.path ?? rule.selector), ["system.proficiencies.attacks.unarmed.rank", "system.proficiencies.defenses.unarmored.rank", "unarmed-damage"]);
+});
+
+test("situational bonus notes: on the roll it names, yours only", () => {
+    const feat = (html) => ({ type: "feat", system: { actionType: { value: "passive" }, description: { value: html }, rules: [] } });
+    assert.deepEqual(readBonusNotesOf(feat("<p>You gain a +2 circumstance bonus to Survival checks made to prepare for this weather event.</p>")).map((rule) => rule.selector), ["survival"]);
+    assert.deepEqual(readBonusNotesOf(feat("<p>You gain a +4 circumstance bonus to Impersonate specific voices.</p>")).map((rule) => rule.selector), ["deception"]);
+    assert.deepEqual(readBonusNotesOf(feat("<p>Allies adjacent to you gain a +1 circumstance bonus to AC.</p>")), []);
+    assert.deepEqual(readBonusNotesOf(feat("<p>You gain a +1 circumstance bonus to AC against traps.</p>")), []);
 });

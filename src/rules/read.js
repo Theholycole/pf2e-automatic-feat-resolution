@@ -182,3 +182,47 @@ export function readTriggerNotes(item) {
     if (!selectors.length || !rolledSelectors(parts[0])) return [];
     return selectors.map(({ selector, predicate }) => note(selector, predicate ?? null, degree[1]));
 }
+
+// A passive's bonus only in a moment PF2e can't see (2026-10-31, Cole's card "Roll notes for situational bonuses"): "You gain a +2
+// circumstance bonus to Survival checks made to prepare for this weather event" → a note on the Survival check, the sentence as its text,
+// for the GM to add the bonus when it fits. Only yours, on a roll (not an AC or DC), on a statistic the sentence names.
+const BONUS_STATISTICS = [
+    [/^(?:your )?(Acrobatics|Arcana|Athletics|Crafting|Deception|Diplomacy|Intimidation|Medicine|Nature|Occultism|Performance|Religion|Society|Stealth|Survival|Thievery) (?:checks?|DCs? and checks?)\b/i, (m) => [m[1].toLowerCase()]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(Impersonate|Lie|Feint|Create a Diversion)\b/i, () => ["deception"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(Demoralize|Coerce)\b/i, () => ["intimidation"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(Seek|Sense Motive)\b|^(?:your )?Perception checks?\b/i, () => ["perception"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(?:Craft|Repair)\b/i, () => ["crafting"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(?:Treat Wounds|Treat Poison|Treat Disease|Administer First Aid)\b/i, () => ["medicine"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(?:Hide|Sneak|Conceal an Object)\b/i, () => ["stealth"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(?:Climb|Swim|Grapple|Shove|Trip|Force Open|High Jump|Long Jump)\b/i, () => ["athletics"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(?:Balance|Tumble Through|Maneuver in Flight|Squeeze)\b/i, () => ["acrobatics"]],
+    [/^(?:your )?(?:checks? to |attempts? to )?(?:Track|Subsist|Sense Direction)\b/i, () => ["survival"]],
+    [/^(?:your )?(?:Fortitude|Reflex|Will) (?:saves?|saving throws?)(?:,? (?:and|or) (?:Fortitude|Reflex|Will) (?:saves?|saving throws?))*\b/i, (m) => [...m[0].matchAll(/Fortitude|Reflex|Will/gi)].map((each) => each[0].toLowerCase())],
+    [/^(?:your |the )?(?:next )?(?:saves?|saving throws?)\b/i, () => ["saving-throw"]],
+    [/^(?:your )?initiative(?: rolls?| checks?)?\b/i, () => ["initiative"]],
+    [/^(?:your |the )?(?:next )?attack rolls?\b/i, () => ["attack-roll"]]
+];
+const BONUS_LEAD = /\b(?:you|You) (?:also )?(?:gain|get|have|receive) an? \+\d+ (?:circumstance|status|item) bonus (?:to|on) (.+)$/;
+
+export function readBonusNotes(item) {
+    if (!["passive", null, undefined].includes(item?.system?.actionType?.value)) return [];
+    if ((item?.system?.rules ?? []).length) return [];
+    const notes = [];
+    const seen = new Set();
+    for (const paragraph of String(item?.system?.description?.value ?? "").split(/<\/p>|<hr\s*\/?>/i)) {
+        const plain = htmlToPlainText(plainLabels(paragraph)).replace(/\s+/g, " ").trim();
+        if (/^(?:Prerequisites?|Requirements?|Access|Special|Frequency|Trigger)\b/i.test(plain)) continue;
+        for (const sentence of plain.split(/(?<=[.!?])\s+(?=[A-Z])/)) {
+            const match = BONUS_LEAD.exec(sentence);
+            if (!match) continue;
+            const found = BONUS_STATISTICS.map(([pattern, selectors]) => [pattern.exec(match[1]), selectors]).find(([hit]) => hit);
+            if (!found) continue;
+            for (const selector of found[1](found[0])) {
+                if (seen.has(selector)) continue;
+                seen.add(selector);
+                notes.push({ key: "Note", selector, title: "{item|name}", text: `<p>${sentence}</p>` });
+            }
+        }
+    }
+    return notes;
+}

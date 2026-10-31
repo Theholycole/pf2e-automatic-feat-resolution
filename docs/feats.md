@@ -616,3 +616,9 @@ gets an Effect with no rules, the feat's sentence and its duration, on whoever i
 sentence's subject is the target, an enemy or allies (src/compiler/timer-effect.js). With no targets, nothing (the words are in chat).
 Not an immunity, a once-a-day, or the time an activity takes ("rest for 10 minutes"). Hulking and Towering Size now set reach 10 and 15
 (round 42).
+
+## Round 44: situational bonus notes (2026-10-31)
+
+Cole's card: a passive's bonus only in a moment PF2e can't see ("+2 circumstance bonus to Survival checks made to prepare for this
+weather event") is a note on that roll, the sentence as its text, for the GM to add when it fits (src/rules/read.js readBonusNotes,
+src/rules/batch-13.js, 22 feats). Only the character's own bonus, only on a roll (not AC or a DC).
