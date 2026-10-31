@@ -23,7 +23,7 @@ export function setUpRules() {
             if (this.actor?.type === "character" && Array.isArray(this.system?.rules)) {
                 // (Prepared again and again: the module's from the last time out first.)
                 const own = this.system.rules.filter((rule) => !ours.has(rule));
-                const added = rulesFor({ ...this, sourceId: this.sourceId, _stats: this._stats, flags: this.flags, system: { ...this.system, rules: own } }).map((rule) => {
+                const added = rulesFor({ ...this, actor: this.actor, sourceId: this.sourceId, _stats: this._stats, flags: this.flags, system: { ...this.system, rules: own } }).map((rule) => {
                     const copy = foundry.utils.deepClone(rule);
                     ours.add(copy);
                     return copy;

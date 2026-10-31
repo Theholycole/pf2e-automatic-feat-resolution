@@ -531,3 +531,15 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
   Centered (a frightened or stupefied lowered goes 1 further), played by the active GM as PF2e changes the condition, with a GM line. The
   value before rides in the update's options, so a player's change counts too. And Fearsense's scent (rule batch 8).
 - Round 32: Calm and Centered and Fearsense pass. Friend of Fear went 2 too low: the ability module's Bravery reading (scripts/bravery.js) already lowers a gained frightened for it, so it's dropped here (its whisper says "Bravery"). PF2e's end-of-turn frightened decrease didn't fire in the test world, so Calm and Centered there is untested.
+
+### Batch 9 (2026-10-31)
+
+- Proficiency raises as PF2e's "upgrade" (never lowering what a class already gives): Knight in Shining Armor, Unbreakable Expertise and
+  Mastery, Master Tricks, Second Doctrine (Warpriest), Fourth Doctrine (Armorclad, Seeker). Earthsense's tremorsense; Stargazer's Eyes'
+  low-light vision, or darkvision over an ancestry's low-light vision or when taken twice (a rule list that's a function of the item).
+- Off-guard in difficult terrain: scripts/terrain.js gives a creature whose token stands in a Modify Movement Cost region harder for its
+  current movement the roll option self:terrain:difficult (:greater at 3×), worked out when asked; a Strike reads it as
+  target:terrain:difficult. Nature's Edge and Terrain Advantage (not lizardfolk) put Off-Guard on that target by EphemeralEffect.
+- Through the environment module: Leaf Leshy, Stuffed Poppet, Wings (Dragonet) fall without damage, Land on Your Feet halves it and lands
+  standing; Wandering Oasis protects its own and allies within 60 feet from severe heat and cold (extreme too when legendary in Survival).
+- On companions: Wing Rider's fly 25, Gigantic Megafauna Companion's Huge, Climbing Limbs+'s climb Speed as the land Speed.

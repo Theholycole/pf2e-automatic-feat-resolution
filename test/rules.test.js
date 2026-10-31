@@ -5,7 +5,7 @@ import { BATCHES, compendiumUuid, rulesFor } from "../src/rules/index.js";
 import { readRules, sentenceRules, readNotes, readTriggerNotes } from "../src/rules/read.js";
 
 // The rule elements the module adds (docs/rules.md): only ones PF2e builds from data alone, that never write back to their own source.
-const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike"]);
+const SAFE_KEYS = new Set(["FlatModifier", "AdjustModifier", "Resistance", "Immunity", "Weakness", "Sense", "BaseSpeed", "Note", "DamageDice", "AdjustDegreeOfSuccess", "RollOption", "ActiveEffectLike", "EphemeralEffect", "CreatureSize"]);
 
 test("every batch entry: a compendium item, rules PF2e builds from data alone", () => {
     const seen = new Set();
@@ -13,8 +13,9 @@ test("every batch entry: a compendium item, rules PF2e builds from data alone", 
         assert.match(entry.uuid, /^Compendium\.[\w-]+\.[\w-]+\.Item\.[A-Za-z0-9]{16}$/, entry.name);
         assert.ok(!seen.has(entry.uuid), `${entry.name} twice`);
         seen.add(entry.uuid);
-        assert.ok(entry.rules.length, entry.name);
-        for (const rule of entry.rules) {
+        const rules = typeof entry.rules === "function" ? entry.rules({ actor: { items: [] } }) : entry.rules;
+        assert.ok(rules.length, entry.name);
+        for (const rule of rules) {
             assert.ok(SAFE_KEYS.has(rule.key), `${entry.name}: ${rule.key}`);
             assert.ok(!(rule.key === "RollOption" && rule.toggleable), `${entry.name}: a toggle writes back to its source`);
         }
@@ -86,4 +87,26 @@ test("a master's feats' rules for its companion: PF2e's safe keys, labelled with
     assert.deepEqual(companionRulesFrom(summoner).map((rule) => rule.selector), ["low-light-vision", "darkvision", "scent"]);
     assert.equal(companionRulesFrom(summoner)[2].range, 30);
     assert.deepEqual(companionRulesFrom(null), []);
+});
+
+test("Stargazer's Eyes: low-light vision, darkvision over an ancestry's low-light vision or when taken twice", () => {
+    const uuid = "Compendium.pf2e.feats-srd.Item.5KXJkEs39y1gaPEm";
+    const feat = (actor) => ({ sourceId: uuid, actor, system: { rules: [] } });
+    const selectors = (item) => rulesFor(item).map((rule) => rule.selector);
+    assert.deepEqual(selectors(feat({ items: [{ sourceId: uuid }], ancestry: { system: { vision: "normal" } } })), ["low-light-vision"]);
+    assert.deepEqual(selectors(feat({ items: [{ sourceId: uuid }], ancestry: { system: { vision: "lowLightVision" } } })), ["low-light-vision", "darkvision"]);
+    assert.deepEqual(selectors(feat({ items: [{ sourceId: uuid }, { sourceId: uuid }] })), ["low-light-vision", "darkvision"]);
+});
+
+test("Wandering Oasis: its own and an ally's within 60 feet; Land on Your Feet halves a fall", async () => {
+    const { temperatureProtections, fallEases } = await import("../src/plans/environment.js");
+    const oasis = { type: "feat", name: "Wandering Oasis", sourceId: "Compendium.pf2e.feats-srd.Item.BlfgmJHjDyTVGdPs" };
+    const druid = { name: "Druid", items: [oasis], skills: { survival: { rank: 3 } } };
+    const ally = { name: "Ally", items: [] };
+    assert.deepEqual(temperatureProtections(druid, () => [])[0].counts, { "severe-cold": "normal", "severe-heat": "normal" });
+    assert.equal(temperatureProtections(ally, () => [{ actor: druid, distance: 60 }])[0].source, "Wandering Oasis (Druid)");
+    assert.deepEqual(temperatureProtections(ally, () => [{ actor: druid, distance: 65 }]), []);
+    assert.equal(Object.keys(temperatureProtections(ally, () => [{ actor: { ...druid, skills: { survival: { rank: 4 } } }, distance: 30 }])[0].counts).length, 4);
+    const feet = { type: "feat", name: "Land on Your Feet", sourceId: "Compendium.pf2e.ancestryfeatures.Item.sL1hHxrHdMNIZVAd" };
+    assert.deepEqual(fallEases({ items: [feet] }), [{ halved: true, landsOnFeet: true, source: "Land on Your Feet" }]);
 });
