@@ -753,11 +753,9 @@ test("a reroll feat: the item module's reroll card, its Mythic Point cost with i
     assert.notEqual(ally?.builtin, "reroll");
 });
 
-test("a roll-twice feat: the item module's fortune card; Liberate Self's Escape by hand (round 96)", () => {
+test("a roll-twice feat: the item module's fortune card (round 96)", () => {
     const readers = { movePlan, rerollPlan, withSpend, rollTwicePlan };
     const fey = compileFeat({ ...feat("Fey's Fortune", "<p><strong>Trigger</strong> You attempt a skill check and haven't yet rolled</p><p><strong>Effect</strong> Roll the skill check twice and use the better result.</p>"), system: { ...feat("x", "").system, description: { value: "<p><strong>Trigger</strong> You attempt a skill check and haven't yet rolled</p><p><strong>Effect</strong> Roll the skill check twice and use the better result.</p>" }, actionType: { value: "free" } } }, { dcs: DCS, itemReaders: readers });
     assert.equal(fey?.builtin, "roll-twice");
     assert.equal(fey.rollTwice.selector, "skill-check");
-    const liberate = compileFeat(feat("Liberate Self", "<p><strong>Effect</strong> Attempt to Escape, rolling the check twice and taking the better result.</p>", 1), { dcs: DCS, itemReaders: readers });
-    assert.deepEqual(liberate?.rollTwice, { selector: "check", keep: "higher", predicate: [{ or: ["action:escape"] }] });
 });

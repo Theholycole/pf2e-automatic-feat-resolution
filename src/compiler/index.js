@@ -37,10 +37,9 @@ function itemCardFor(item, readers) {
     const reroll = typeof readers.rerollPlan === "function" && !NOT_REROLLS.test(item.name) ? readers.rerollPlan(html, base) : null;
     const plain = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
     // (Its user's next roll rolled twice, the better kept: the item module's fortune card, PF2e's RollTwice — its src/compiler/fortune.js.)
-    // (Liberate Self's "Attempt to Escape, rolling the check twice": that Escape's check, by hand. Vision of Foresight's "a saving throw or
-    // skill check" the reader takes for a save alone: not its card.)
-    const escape = item.name === "Liberate Self" ? { ...base, builtin: "roll-twice", automation: { level: "automatic" }, targeting: { target: "the user", range: null, area: null }, trigger: { event: "use" }, rollTwice: { selector: "check", keep: "higher", predicate: [{ or: ["action:escape"] }] }, notes: ["Then Escape: its check is rolled twice, the better kept."] } : null;
-    const twice = escape ?? (!reroll && typeof readers.rollTwicePlan === "function" && item.name !== "Vision of Foresight" ? readers.rollTwicePlan(plain, base) : null);
+    // (Vision of Foresight's "a saving throw or skill check" the reader takes for a save alone: not its card. Liberate Self is a toggle,
+    // src/plans/toggles.js: PF2e's Escape ignores fortune effects.)
+    const twice = !reroll && typeof readers.rollTwicePlan === "function" && item.name !== "Vision of Foresight" ? readers.rollTwicePlan(plain, base) : null;
     const card = reroll ?? twice ?? (typeof readers.movePlan === "function" && !NOT_MOVES.test(item.name) ? readers.movePlan(html, base) : null);
     // (Its cost, Rewrite Fate's "Spend a Mythic Point": the item module's card spends it, or refuses — its src/compiler/spend.js.)
     const spent = card && typeof readers.withSpend === "function" ? readers.withSpend(card, plain) : card;
