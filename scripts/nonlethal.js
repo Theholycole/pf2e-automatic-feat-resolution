@@ -53,19 +53,22 @@ function wrapApplyDamage() {
     const original = proto.applyDamage;
     proto.applyDamage = async function (options = {}, ...rest) {
         const nonlethal = isNonlethal(options);
-        const hp = () => Number(this.hitPoints?.value ?? this.system?.attributes?.hp?.value);
+        // (PF2e's damage button calls it on a contextual clone of the token's actor, which the update leaves at its old HP: the real
+        // actor's, through the token; round 36b.)
+        const doc = options.token?.document ?? options.token ?? this.token ?? null;
+        const actor = doc?.actor ?? (this.id ? game.actors.get(this.id) : null) ?? this;
+        const hp = () => Number(actor.hitPoints?.value ?? actor.system?.attributes?.hp?.value);
         const before = hp();
-        const doc = options.token?.document ?? options.token ?? this.token ?? this.getActiveTokens?.(false, true)?.[0] ?? null;
         const defeated = Boolean(doc?.combatant?.isDefeated);
-        const dead = Boolean(this.statuses?.has?.("dead"));
+        const dead = Boolean(actor.statuses?.has?.("dead"));
         const result = await original.call(this, options, ...rest);
         if (!nonlethal || !(before > 0) || hp() > 0) return result;
         try {
-            for (const condition of (this.itemTypes?.condition ?? []).filter((entry) => entry.slug === "dying")) await condition.delete().catch(() => null);
+            for (const condition of (actor.itemTypes?.condition ?? []).filter((entry) => entry.slug === "dying")) await condition.delete().catch(() => null);
             if (!defeated && doc?.combatant?.isDefeated) await doc.combatant.update({ defeated: false });
-            if (!dead && this.statuses?.has?.("dead")) await this.toggleStatusEffect?.("dead", { active: false, overlay: true }).catch(() => null);
-            if (!this.hasCondition?.("unconscious")) await this.increaseCondition?.("unconscious");
-            await ChatMessage.create({ content: `<p>${foundry.utils.escapeHTML(this.name)} is knocked out by nonlethal damage: unconscious at 0 HP, not dying.</p>`, whisper: game.users.filter((user) => user.isGM).map((user) => user.id) });
+            if (!dead && actor.statuses?.has?.("dead")) await actor.toggleStatusEffect?.("dead", { active: false, overlay: true }).catch(() => null);
+            if (!actor.hasCondition?.("unconscious")) await actor.increaseCondition?.("unconscious");
+            await ChatMessage.create({ content: `<p>${foundry.utils.escapeHTML(actor.name)} is knocked out by nonlethal damage: unconscious at 0 HP, not dying.</p>`, whisper: game.users.filter((user) => user.isGM).map((user) => user.id) });
         } catch (error) {
             console.warn(`${MODULE_ID} | nonlethal knock-out`, error);
         }
