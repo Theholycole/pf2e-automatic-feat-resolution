@@ -57,7 +57,7 @@ export function compileFeat(item, options = {}) {
         ?? regainPoint(filled);
     // (A text entry's notes: what its rewritten text leaves out.)
     // (A text entry's notes: what its rewritten text leaves out; its target, who the card is for when the rewrite can't say it.)
-    if (plan && hand?.text) return { ...plan, ...(hand.by ? { by: hand.by } : {}), ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };
+    if (plan && hand?.text) return { ...plan, ...(hand.by ? { by: hand.by } : {}), ...(hand.castWith ? { castWith: hand.castWith } : {}), ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };
     // (The ability module's "cast-spell" for a spell the feat only lets you pay for, Soul-Form's "you can spend 1 Mythic Point to also gain
     // the effects of Enlarge": not cast every time; as spellLike.)
     if (plan?.builtin === "cast-spell" && /\byou can (?:spend|choose)\b[^.]*@UUID\[[^\]]*spells/i.test(filled.system?.description?.value ?? "")) return null;

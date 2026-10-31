@@ -211,6 +211,7 @@ export default [
     {
         uuid: "Compendium.pf2e.feats-srd.Item.kr537ZL3f8tCSgDK", name: "True Gaze",
         text: `<p>You cast a 6th-rank @UUID[Compendium.pf2e.spells-srd.Item.uqlxMQQeSGWEVjki]{Truesight} on yourself.</p>`,
+        castWith: "perception",
         notes: ["Once per hour. Its counteract checks use your Perception modifier."]
     }
 ];

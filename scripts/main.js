@@ -126,7 +126,10 @@ async function cardForFeat(message) {
     if (plan?.builtin === "cast-spell" && plan.spell?.uuid) {
         const dcs = characterDCs(item.actor) ?? {};
         const best = [dcs.class, dcs.spell].filter((value) => Number.isFinite(value));
-        return castSpellLike(item, { ...plan, dc: plan.dc ?? (best.length ? Math.max(...best) : null) }, sourceToken, message);
+        // (castWith "perception": the spell's numbers are the character's Perception, True Gaze's counteract checks; round 83 Foundry test.)
+        const perception = Number(item.actor.perception?.mod ?? item.actor.system?.perception?.mod);
+        const own = plan.castWith === "perception" && Number.isFinite(perception) ? perception + 10 : null;
+        return castSpellLike(item, { ...plan, dc: own ?? plan.dc ?? (best.length ? Math.max(...best) : null) }, sourceToken, message);
     }
     // (A save at a DC the character hasn't got, Primal Howl's spell DC on a master with no spellcasting: said to the GM, not silent;
     // round 77 Foundry test.)
@@ -214,6 +217,9 @@ async function castSpellLike(item, plan, sourceToken, message) {
     const recorded = (message.getFlag?.(MODULE_ID, "targets") ?? []).map((each) => fromUuidSync(each)).filter(Boolean).map((token) => token.object ?? token);
     await cast({ actor: item.actor, token: sourceToken, spell: uuid, rank: plan.rank, dc: plan.dc, targets: recorded.length ? recorded : null,
         item: { name: item.name, uuid: item.uuid, img: item.img }, ...(plan.actions ? { actions: plan.actions } : {}) });
+    // (The feat's own notes, which the spell module's card doesn't carry: a line of their own; round 83 Foundry test.)
+    const notes = (plan.notes ?? []).filter((note) => !/^(?:You cast|Cast as)\b/.test(note));
+    if (notes.length) await ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), content: `<p><strong>${item.name}</strong>:</p>${notes.map((note) => `<p>${note}</p>`).join("")}` });
 }
 
 let warned = false;
