@@ -546,3 +546,9 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - Round 33: proficiency raises, senses, off-guard in difficult terrain and falls pass. Fixed after it: a token on "travel" reads its
   walking cost; temperatureProtections takes the environment module's (actor, { temperature }); an animal companion counts as one while
   it prepares (its Animal Companion class or the module's master flag, before its class's minion trait is on it).
+
+### Batch 10 (2026-10-31)
+
+- Penalties a feat ignores, as AdjustModifier suppressing PF2e's modifier by its slug: Stage Fighting and Nonlethal Takedown (the -2 for a
+  nonlethal Strike with a lethal weapon), Protector of the Wilds (the same, against animals, beasts, plants and fungi), Improvisational
+  Defender (the improvised weapon's -2), Ankle Biter (prone's attack penalty). Night Terror: the apocalypse mount's fly Speed as its land Speed.
