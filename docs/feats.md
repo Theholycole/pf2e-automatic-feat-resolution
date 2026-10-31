@@ -608,3 +608,11 @@ the feat deletes the item it added. Open question for Cole: whether to do this a
 - Given items (src/plans/grants.js, scripts/grants.js): "You gain the X warden spell / hex / action", "Your familiar gains the X
   activity". PF2e gives 682 such feats by GrantItem; for the rest, the module adds the item as the feat is gained (a spell into the
   actor's focus spellcasting) and removes it as the feat goes. 64 feats.
+
+## Round 43: timed activities (2026-10-31)
+
+Cole's card: an action whose effect lasts a set time ("until the start of your next turn", "for 1 minute") and that nothing else plays
+gets an Effect with no rules, the feat's sentence and its duration, on whoever it affects: the user, or the player's targets when the
+sentence's subject is the target, an enemy or allies (src/compiler/timer-effect.js). With no targets, nothing (the words are in chat).
+Not an immunity, a once-a-day, or the time an activity takes ("rest for 10 minutes"). Hulking and Towering Size now set reach 10 and 15
+(round 42).

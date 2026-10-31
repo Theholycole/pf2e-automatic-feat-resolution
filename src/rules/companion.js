@@ -19,7 +19,7 @@ export const COMPANION_RULES = [
     { uuid: pf2e("g64AWb9hj46ZmhlR"), name: "Chiardmar Steed", rules: [{ key: "FlatModifier", selector: "land-speed", type: "status", value: 5 }] },
     // (Batch 9: a dragon companion's fly Speed, a megafauna companion's size, a construct innovation's climb Speed as its land Speed.)
     { uuid: pf2e("RkaE55TeCvwmQq7E"), name: "Wing Rider", rules: [{ key: "BaseSpeed", selector: "fly", value: 25 }] },
-    { uuid: pf2e("HxTqYtXRqFkkLfDQ"), name: "Gigantic Megafauna Companion", rules: [{ key: "CreatureSize", value: "huge" }] },
+    { uuid: pf2e("HxTqYtXRqFkkLfDQ"), name: "Gigantic Megafauna Companion", rules: [{ key: "CreatureSize", value: "huge", reach: { upgrade: 15 } }] },
     { uuid: "Compendium.pf2e-team-plus-inventors.inventors-features.Item.MYqJqQAi6B5WlZpK", name: "Climbing Limbs+", rules: [{ key: "BaseSpeed", selector: "climb", value: "@actor.system.movement.speeds.land.value" }] },
     // (Batch 11: more evolution feats said outright.)
     { uuid: pf2e("h8OB6zcdIqUPS6PC"), name: "Airborne Form", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.movement.speeds.land.value" }] },
@@ -30,8 +30,8 @@ export const COMPANION_RULES = [
     // (An apocalypse mount's fly Speed as its land Speed.)
     { uuid: pf2e("XHbdG50JIO8pEaQ4"), name: "Night Terror", rules: [{ key: "BaseSpeed", selector: "fly", value: "@actor.system.movement.speeds.land.value" }] },
     // (Round 42, evolution feats and the summoner's eidolon features: size, unarmed specialization, proficiency.)
-    { uuid: pf2e("H6qletvAJUCC1aIa"), name: "Hulking Size", rules: (master) => (hasItem(master, pf2e("ixIKF2LMmbFthI8Z")) ? [] : [{ key: "CreatureSize", value: "large" }]) },
-    { uuid: pf2e("ixIKF2LMmbFthI8Z"), name: "Towering Size", rules: [{ key: "CreatureSize", value: "huge" }] },
+    { uuid: pf2e("H6qletvAJUCC1aIa"), name: "Hulking Size", rules: (master) => (hasItem(master, pf2e("ixIKF2LMmbFthI8Z")) ? [] : [{ key: "CreatureSize", value: "large", reach: { upgrade: 10 } }]) },
+    { uuid: pf2e("ixIKF2LMmbFthI8Z"), name: "Towering Size", rules: [{ key: "CreatureSize", value: "huge", reach: { upgrade: 15 } }] },
     { uuid: classFeature("oCnyGRvkfjTsZXcX"), name: "Eidolon Weapon Specialization", rules: [
         { key: "FlatModifier", selector: "unarmed-damage", slug: "weapon-specialization", label: "PF2E.WeaponSpecialization", value: 2, hideIfDisabled: true, predicate: [{ gte: ["item:proficiency:rank", 2] }] },
         { key: "AdjustModifier", mode: "upgrade", selector: "unarmed-damage", slug: "weapon-specialization", value: 3, priority: 0, predicate: ["item:proficiency:rank:3"] },

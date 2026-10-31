@@ -9,7 +9,7 @@ const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({
 export async function applyFeatEffect(item, plan, recipients = null) {
     const actor = item?.actor;
     const effect = plan?.effect;
-    if (!actor || !effect?.rules?.length) return null;
+    if (!actor || !(effect?.rules?.length || plan.timer)) return null;
     const ours = (each) => each.flags?.[MODULE_ID]?.effect;
     const say = (line) => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>` });
     // (On another creature, who "target": its numbers the character's, "@actor.level" worked out here, not the target's own; 2026-10-31.)

@@ -152,7 +152,10 @@ test("a feat that changes the character's own numbers for a while: the module's 
     assert.deepEqual(climb.effect.rules, [{ key: "FlatModifier", selector: "athletics", type: "circumstance", value: 2, predicate: ["action:climb"] }]);
     assert.equal(climb.effect.duration.unit, "minutes");
     // Not: someone else's bonus, one against the triggering attack, one with no end and no stance.
-    assert.equal(compileFeat(feat("Eddies", "<p>All ranged attacks against you take a –1 circumstance penalty to the attack roll until the end of your next turn.</p>", 1), { dcs: DCS }), null);
+    // (Round 43: its words on a timer Effect, no rules.)
+    const eddies = compileFeat(feat("Eddies", "<p>All ranged attacks against you take a –1 circumstance penalty to the attack roll until the end of your next turn.</p>", 1), { dcs: DCS });
+    assert.equal(eddies.timer, true);
+    assert.deepEqual(eddies.effect.rules, []);
     assert.equal(compileFeat(feat("Dodge", "<p>You gain a +2 circumstance bonus to AC against the triggering attack.</p>", 1), { dcs: DCS }), null);
     assert.equal(compileFeat(feat("Forever", "<p>You gain a +1 status bonus to AC.</p>", 1), { dcs: DCS }), null);
 });

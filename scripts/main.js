@@ -91,7 +91,8 @@ async function cardForFeat(message) {
     // (On the player's targets, who "target": as a passive's PF2e Effect is.)
     const targetActors = () => (message.getFlag?.(MODULE_ID, "targets") ?? []).map((uuid) => fromUuidSync(uuid)?.actor).filter(Boolean);
     const untargeted = () => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: target the creature first, then post it again.</p>` });
-    if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : untargeted();
+    // (A timer's, with no targets: nothing, its words already in chat; round 43.)
+    if (plan?.builtin === "feat-effect" && plan.who === "target") return targetActors().length ? applyFeatEffect(item, plan, targetActors()) : plan.timer ? null : untargeted();
     // (Slice 5: the module's own Effect on the character, not a card; none for a feat PF2e gives its own Effect, D9.)
     if (plan?.builtin === "feat-effect") return item.system?.selfEffect ? null : applyFeatEffect(item, plan);
     // (A Focus or Mythic Point back: added to the pool, up to its maximum; 2026-10-30, the loop.)

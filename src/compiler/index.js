@@ -12,6 +12,7 @@ import { linkedEffect } from "./linked-effect.js";
 import { otherHeal } from "./other-heal.js";
 import { spellLike } from "./spell-like.js";
 import { regainPoint } from "./regain-point.js";
+import { timerEffect } from "./timer-effect.js";
 import { handAct, handAffect, handEntry, handLinked, handSelfCheck, handStrike } from "../plans/index.js";
 
 export { dcFor, fillCharacterDCs, fillCharacterNumbers, withCharacterDCs } from "./character-dcs.js";
@@ -59,7 +60,8 @@ export function compileFeat(item, options = {}) {
     // (Slice 3: a reaction or free action, its effect as the player uses it; its trigger and time kept on the plan.)
     const used = asUsed(filled);
     const usedPlan = used ? read(used.item, abilityOptions) ?? selfHeal(used.item, dcs) ?? selfEffect(used.item, dcs) : null;
-    if (!usedPlan) return null;
+    // (Round 43: a timed effect nothing above plays, its Effect with no rules: src/compiler/timer-effect.js.)
+    if (!usedPlan) return timerEffect(filled);
     return { ...usedPlan, ...(usedPlan.activation ? { activation: { ...usedPlan.activation, time: used.time } } : {}), usedOn: used.trigger };
 }
 
