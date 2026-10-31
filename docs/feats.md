@@ -580,3 +580,10 @@ On PF2e's packs and the Teams+ modules, for a level 8 character, the index has 4
 - More triggers: "You turn begins" (Flash of Omniscience's typo), "You and your mystic duo roll initiative" (Esoteric Coordination),
   "You lose the Dying condition" (Bounce Back: event self-condition-lost, on a condition's deletion), "Whenever an enemy starts its turn
   adjacent to you" (Bonekeeper's Bane: event foe-turn-start, on each change of turn, to characters of another disposition in range).
+
+### Batch 12 (2026-10-31, the loop by largest group: passives in other words)
+
+- Crimson Oath Devotion (spellcasting expert), Master Detective (investigator class DC master); senses: Terra Dragonblood, Vigilant Mask,
+  Visual Fidelity, Defy the Darkness (greater darkvision), Lifesense, Vestigial Magicsense (vague), Soulsight (spiritsense); Butterfly's
+  Kiss suppresses the module's nonlethal penalty with a butterfly sword. The count now includes the companion, environment and
+  condition entries: 2,410 of 4,826 left before this batch.
