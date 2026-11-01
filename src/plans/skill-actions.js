@@ -5,13 +5,16 @@
 const DEGREES = ["criticalFailure", "failure", "success", "criticalSuccess"];
 
 // The skill action a PF2e check is for, from its roll options: { slug, variant } or null.
-export function skillActionOf(options = [], flavor = "") {
+export function skillActionOf(options = [], flavor = "", pointOutTitle = null) {
     const has = (slug) => options.includes(`action:${slug}`);
     if (has("administer-first-aid")) {
         const variant = options.some((option) => /stop-bleeding/.test(option)) || /Stop Bleeding/i.test(flavor) ? "stop-bleeding" : options.some((option) => /stabilize/.test(option)) || /Stabilize/i.test(flavor) ? "stabilize" : null;
         return { slug: "administer-first-aid", variant };
     }
     for (const slug of ["treat-poison", "treat-disease", "hide", "sneak", "seek", "point-out"]) if (has(slug)) return { slug, variant: null };
+    // (PF2e's Point Out posts no context, only its title; pointOutTitle: the localized one; round 110 Foundry test.)
+    const titles = ["Point Out", pointOutTitle].filter(Boolean).map((title) => title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    if (!options.length && new RegExp(`<strong>\\s*(?:${titles.join("|")})\\s*</strong>`).test(flavor)) return { slug: "point-out", variant: null };
     return null;
 }
 

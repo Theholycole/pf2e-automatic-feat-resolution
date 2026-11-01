@@ -17,6 +17,7 @@ const statesOf = (token) => foundry.utils.deepClone(token?.document?.getFlag?.(M
 const sensesOf = (actor) => [...(actor?.perception?.senses ?? actor?.system?.perception?.senses ?? [])].map((sense) => ({ type: sense.type, acuity: sense.acuity, range: sense.range }));
 const foesOf = (source) => (canvas?.tokens?.placeables ?? []).filter((token) => token.actor && token !== source && !token.document.hidden && token.document.disposition !== source.document.disposition && token.document.disposition !== 0 && !(token.actor.hitPoints?.value <= 0));
 
+const pointOutTitle = () => (game.i18n?.has?.("PF2E.Actions.PointOut.Title") ? game.i18n.localize("PF2E.Actions.PointOut.Title") : null);
 const tokenOf = (uuid) => (uuid ? fromUuidSync(uuid) : null);
 const bleeds = (actor) => (actor?.itemTypes?.condition ?? []).filter((condition) => condition.slug === "persistent-damage" && condition.system?.persistent?.damageType === "bleed");
 const perceptionDC = (actor) => Number(actor?.perception?.dc?.value ?? actor?.system?.perception?.dc ?? (Number(actor?.system?.perception?.mod) + 10)) || null;
@@ -31,7 +32,7 @@ const button = (label = "Apply") => `<p><button type="button" data-action="${MOD
 export async function onSkillActionMessage(message) {
     const context = message.flags?.pf2e?.context;
     const options = context?.options ?? message.flags?.pf2e?.origin?.rollOptions ?? [];
-    const found = skillActionOf(options, `${message.flavor ?? ""}`);
+    const found = skillActionOf(options, `${message.flavor ?? ""}`, pointOutTitle());
     if (!found) return;
     const actor = message.actor;
     if (!actor) return;
@@ -53,7 +54,7 @@ export async function onSkillActionMessage(message) {
         if (!degree) return;
         const result = firstAidResult(found.variant, degree);
         if (!result.dying && !result.bleed) return;
-        const words = result.dying === "remove" ? `${escape(target.name)} is no longer dying (it stays unconscious at 0 Hit Points).` : result.dying === "+1" ? `${escape(target.name)}'s dying value rises by 1.` : result.bleed === "remove" ? `${escape(target.name)}'s persistent bleed ends.` : `${escape(target.name)} takes its persistent bleed damage.`;
+        const words = result.dying === "remove" ? `${escape(target.name)} is no longer dying: wounded 1 more, and still unconscious at 0 Hit Points.` : result.dying === "+1" ? `${escape(target.name)}'s dying value rises by 1.` : result.bleed === "remove" ? `${escape(target.name)}'s persistent bleed ends.` : `${escape(target.name)} takes its persistent bleed damage.`;
         return whisper(actor, `<p><strong>Administer First Aid</strong> (${total} against DC ${dc}, ${DEGREE_WORDS[degree]}): ${words}</p>${button()}`, { kind: "first-aid", target: targetUuid, result });
     }
     if (found.slug === "treat-poison" || found.slug === "treat-disease") {
@@ -67,8 +68,18 @@ export async function onSkillActionMessage(message) {
         if (!bonus) return;
         return whisper(actor, `<p><strong>${name}</strong> (${total} against DC ${dc}, ${DEGREE_WORDS[degree]}): ${escape(target.name)} gets a ${bonus.value > 0 ? "+" : ""}${bonus.value} circumstance ${bonus.value > 0 ? "bonus" : "penalty"} to its next saving throw against the ${bonus.trait}.</p>${button()}`, { kind: "treatment", target: targetUuid, slug: found.slug, outcome: degree });
     }
-    if (perObserver() || !source || !Number.isFinite(total)) return;
+    if (perObserver() || !source) return;
     const tokens = canvas?.tokens?.placeables ?? [];
+    // (Point Out has no roll.)
+    if (found.slug === "point-out") {
+        const targetToken = tokenOf(targetUuid);
+        if (!targetToken) return;
+        const states = statesOf(targetToken);
+        const allies = tokens.filter((token) => token.actor && token !== source && token.document.disposition === source.document.disposition && (states[token.id] ?? (target.hasCondition?.("undetected") ? "undetected" : "observed")) === "undetected");
+        if (!allies.length) return;
+        return whisper(actor, `<p><strong>Point Out</strong>: ${escape(target.name)} is hidden instead of undetected to ${allies.map((token) => escape(token.name)).join(", ")}.</p>${button()}`, { kind: "seek", changes: allies.map((token) => ({ token: targetUuid, observer: token.id, becomes: "hidden" })) });
+    }
+    if (!Number.isFinite(total)) return;
     if (found.slug === "hide" || found.slug === "sneak") {
         const before = statesOf(source);
         const observers = foesOf(source).map((token) => ({ id: token.id, name: token.name, dc: perceptionDC(token.actor), state: before[token.id] ?? "observed", cap: senseCap(sensesOf(token.actor), distance(source, token) ?? 0) })).filter((row) => row.dc);
@@ -92,14 +103,6 @@ export async function onSkillActionMessage(message) {
         const lines = rows.map((row) => `<li>${escape(row.name)} (${row.state}, DC ${row.dc}): ${DEGREE_WORDS[row.degree]}${row.becomes !== row.state ? `, now ${row.becomes} to ${escape(source.name)}` : ""}</li>`).join("");
         const changes = rows.filter((row) => row.becomes !== row.state).map((row) => ({ token: row.uuid, observer: source.id, becomes: row.becomes }));
         return whisper(actor, `<p><strong>Seek</strong>: ${total} against the Stealth DC of each creature within 30 feet that's hidden or undetected to ${escape(source.name)}.</p><ul>${lines}</ul><p>The search area is the GM's (a 30-foot cone or a 15-foot burst).</p>${changes.length ? button() : ""}`, { kind: "seek", changes }, { gmOnly: true });
-    }
-    if (found.slug === "point-out") {
-        const targetToken = tokenOf(targetUuid);
-        if (!targetToken) return;
-        const states = statesOf(targetToken);
-        const allies = tokens.filter((token) => token.actor && token !== source && token.document.disposition === source.document.disposition && (states[token.id] ?? (target.hasCondition?.("undetected") ? "undetected" : "observed")) === "undetected");
-        if (!allies.length) return;
-        return whisper(actor, `<p><strong>Point Out</strong>: ${escape(target.name)} is hidden instead of undetected to ${allies.map((token) => escape(token.name)).join(", ")}.</p>${button()}`, { kind: "seek", changes: allies.map((token) => ({ token: targetUuid, observer: token.id, becomes: "hidden" })) });
     }
 }
 
@@ -126,12 +129,18 @@ async function apply(message, degree = null) {
     if (data.kind === "first-aid") {
         const patient = tokenOf(data.target)?.actor;
         if (!patient?.isOwner) return ui.notifications.warn("Only the GM or the patient's owner can apply it.");
-        if (data.result.dying === "remove") await patient.decreaseCondition("dying", { forceRemove: true });
+        // (Losing dying: wounded 1, or 1 more, and still unconscious at 0 Hit Points; PF2e's removal takes the unconscious it gave; round 110
+        // Foundry test.)
+        if (data.result.dying === "remove") {
+            await patient.decreaseCondition("dying", { forceRemove: true });
+            await patient.increaseCondition("wounded");
+            if ((Number(patient.hitPoints?.value ?? patient.system?.attributes?.hp?.value) || 0) <= 0 && !patient.hasCondition("unconscious")) await patient.increaseCondition("unconscious");
+        }
         if (data.result.dying === "+1") await patient.increaseCondition("dying");
         if (data.result.bleed === "remove") await patient.deleteEmbeddedDocuments("Item", bleeds(patient).map((condition) => condition.id));
         if (data.result.bleed === "damage") {
             const DamageRoll = CONFIG.Dice.rolls.find((roll) => roll.name === "DamageRoll");
-            for (const condition of bleeds(patient)) await new DamageRoll(`(${condition.system.persistent.formula})[bleed]`).toMessage({ speaker: ChatMessage.getSpeaker({ actor: patient }), flavor: `<strong>Administer First Aid</strong>: ${escape(patient.name)}'s bleed damage` });
+            for (const condition of bleeds(patient)) await new DamageRoll(`(${condition.system.persistent.formula})[bleed]`, {}, { evaluatePersistent: true }).toMessage({ speaker: ChatMessage.getSpeaker({ actor: patient }), flavor: `<strong>Administer First Aid</strong>: ${escape(patient.name)}'s bleed damage` });
         }
         return say(`<strong>Administer First Aid</strong>: applied to ${escape(patient.name)}.`);
     }
@@ -211,7 +220,7 @@ function hideFromObservers() {
 function recordSkillTargets(message, _data, _options, userId) {
     if (userId !== game.user.id) return;
     const options = message.flags?.pf2e?.context?.options ?? [];
-    if (!skillActionOf(options, message.flavor ?? "")) return;
+    if (!skillActionOf(options, message.flavor ?? "", pointOutTitle())) return;
     const targets = [...game.user.targets].map((token) => token.document?.uuid).filter(Boolean);
     if (targets.length) message.updateSource({ [`flags.${MODULE_ID}.skillTargets`]: targets });
 }
