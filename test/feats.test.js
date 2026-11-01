@@ -813,3 +813,12 @@ test("round 108: actions after the last Strike", async () => {
     assert.deepEqual(afterStrikeOf("Compendium.pf2e.feats-srd.Item.NDbNNMouxnnwBqwm").does.actions, ["grapple", "shove", "trip"]);
     assert.equal(AFTER_STRIKE.length, 2);
 });
+
+test("round 109: a feat's action links with another skill", async () => {
+    const { actLinks } = await import("../src/compiler/act-links.js");
+    assert.deepEqual(actLinks("You can roll Acrobatics instead: [[/act high-jump skill=acrobatics]] or [[/act long-jump skill=acrobatics]]."), [
+        { slug: "high-jump", statistic: "acrobatics", label: "High Jump (Acrobatics)" },
+        { slug: "long-jump", statistic: "acrobatics", label: "Long Jump (Acrobatics)" }
+    ]);
+    assert.deepEqual(actLinks("[[/act shove statistic=deception]] and [[/act trip]]").map((each) => each.label), ["Shove (Deception)"]);
+});
