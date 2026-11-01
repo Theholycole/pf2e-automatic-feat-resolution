@@ -20,6 +20,8 @@ import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem, findMaster } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
 import { afterStrikeCard, onOfferMessage, registerOffers } from "./offers.js";
+import { registerWorkbench } from "./workbench.js";
+import { registerSkillActions } from "./skill-actions.js";
 import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -278,6 +280,10 @@ Hooks.once("init", () => {
     registerSetting();
     registerReminderSetting();
     registerOffers();
+    // (Round 109: PF2e Workbench's Basic Action Macro window and its Treat Wounds and Battle Medicine heals.)
+    registerWorkbench({ compileItem });
+    // (Round 110: Administer First Aid, Treat Poison and Disease, Hide, Sneak, Seek and Point Out applied from a card after the roll.)
+    registerSkillActions();
     // (The module's rule elements, docs/rules.md: before any actor prepares; PF2e's item classes are in CONFIG by the system's own init.)
     setUpRules();
     // (Senses on tokens, docs/feats.md "Senses": their detection modes now, the wrapper once PF2e's token class is in CONFIG.)
