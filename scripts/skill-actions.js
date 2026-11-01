@@ -124,6 +124,8 @@ function stealthCard(actor, data) {
     const open = [...new Set(data.rows.filter((row) => row.cap !== "undetected" && row.state === row.cap && ["success", "criticalSuccess", "failure"].includes(row.degree)).flatMap((row) => (row.senses ?? []).filter((type) => !data.beaten[type])))];
     const senseButtons = open.map((type) => `<span style="white-space:nowrap"><button type="button" data-action="${MODULE_ID}-sense" data-sense="${escape(type)}" style="width:auto">Also against ${escape(type)}</button> <select data-sense-attribute="${escape(type)}">${Object.entries(ATTRIBUTES).map(([key, label]) => `<option value="${key}"${key === senseAttribute(type) ? " selected" : ""}>${label}</option>`).join("")}</select></span>`).join(" ");
     const note = data.slug === "sneak" ? "You need to start hidden or undetected, and end in cover or concealment to stay so: the GM's call." : "You need cover or concealment from each of them: the GM's call.";
+    // Hide only avoids being seen (Player Core sidebar): only Sneak can also count against another sense.
+    if (data.slug === "hide" && open.length) return `<p><strong>${name}</strong>: ${data.total} against each foe's Perception DC.</p><ul>${lines}</ul><p>${note}</p><p>Hide only avoids being seen. To get past ${open.join(", ")} too, Sneak and say how you avoid it.</p>${button()}`;
     const senses = open.length ? `<p>If you say how you avoid a special sense too (stepping lightly against tremorsense, slowing your heart against lifesense), the roll counts against it, with your lowest applicable modifier:</p><p>${senseButtons}</p>` : "";
     return `<p><strong>${name}</strong>: ${data.total} against each foe's Perception DC.</p><ul>${lines}</ul><p>${note}</p>${senses}${button()}`;
 }
