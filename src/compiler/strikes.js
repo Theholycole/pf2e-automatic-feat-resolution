@@ -49,8 +49,15 @@ function stridesOf(plain) {
 
 // A hit's results from one sentence: damage tags, conditions, a push; a save the creature hit attempts, with the degree sections it has.
 function hitResults(sentence, html, item, compileSave) {
-    const out = { conditions: [], damage: [], push: null, save: null, read: false };
-    const conditions = readConditions(sentence).filter((effect) => effect.recipient !== "self" && CONDITIONS.has(effect.slug));
+    const out = { conditions: [], damage: [], push: null, save: null, critical: null, read: false };
+    // (2026-11-01, the feat ratings: "If you hit and deal damage, the target is Frightened 1, or Frightened 2 on a critical hit" — the hit's own
+    // words kept off the conditions' reading, which takes "you" for its user; a critical hit's in the same sentence as the critical's.)
+    const body = sentence.replace(HIT, "");
+    const criticalPart = /,?\s*or (.+?) on a critical hit\.?\s*$/i.exec(body);
+    const conditionsOf = (text) => readConditions(text).filter((effect) => effect.recipient !== "self" && CONDITIONS.has(effect.slug));
+    const conditions = conditionsOf(criticalPart ? body.slice(0, criticalPart.index) : body);
+    const critical = criticalPart ? conditionsOf(criticalPart[1]) : [];
+    if (critical.length && conditions.length) out.critical = critical.map(({ slug, value, duration }) => ({ slug, value: value ?? null, duration: duration ?? null }));
     if (conditions.length) {
         out.conditions = conditions.map(({ slug, value, duration }) => ({ slug, value: value ?? null, duration: duration ?? null }));
         out.read = true;
@@ -86,7 +93,7 @@ function hitResults(sentence, html, item, compileSave) {
 }
 
 // item: the feat (its text with the character's numbers in, src/compiler/pc-dcs.js). compileSave(html): a save plan from a piece of its text.
-export function characterStrike(item, { compileSave = null } = {}) {
+export function characterStrike(item, { compileSave = null, ...options } = {}) {
     const html = String(item?.system?.description?.value ?? "");
     if (!/\bStrikes?\b/.test(html)) return null;
     const { blocks, body } = partsOf(html);
@@ -125,6 +132,20 @@ export function characterStrike(item, { compileSave = null } = {}) {
     if (penalty) plan.attackBonus = -Number(penalty[1]);
     let read = Boolean(counts || bonus || penalty || count > 1 || plan.strides);
     const unread = [];
+    // (2026-11-01, the feat ratings: Vicious Swing's "you deal an extra die of weapon damage", two from 10th level and three from 18th —
+    // extraWeaponDice, as a monster's activity has it; the card's GM keeps the words as a note.)
+    const extraDice = /\b(?:deal|deals|add) an? (?:extra|additional) (?:weapon damage die|die of weapon damage)\b/i.test(plain);
+    if (extraDice) {
+        const level = Number(options.level) || 1;
+        plan.extraWeaponDice = level >= 18 && /\b18th level\b[^.]*\bthree extra dice\b/i.test(plain) ? 3 : level >= 10 && /\b10th level\b[^.]*\btwo extra dice\b/i.test(plain) ? 2 : 1;
+        read = true;
+    }
+    // (Exacting Strike's "Failure This attack doesn't count toward your multiple attack penalty": the engine's exacting.)
+    if (/<strong>\s*Failure\s*<\/strong>[^<]*doesn't count toward your multiple attack penalty/i.test(html)) {
+        plan.exacting = true;
+        plan.notes.push("On a failure, this attack doesn't count toward your multiple attack penalty.");
+        read = true;
+    }
     for (const sentence of sentences) {
         const words = plainOf(sentence);
         if (CRITICAL.test(words)) {
@@ -140,6 +161,7 @@ export function characterStrike(item, { compileSave = null } = {}) {
             const results = hitResults(sentence, html, item, compileSave);
             if (results.read) {
                 plan.onHit.conditions.push(...results.conditions);
+                if (results.critical) plan.onHit.critical = results.critical;
                 plan.onHit.damage.push(...results.damage);
                 if (results.push) plan.onHit.push = results.push;
                 if (results.save) plan.onHit.save = results.save;

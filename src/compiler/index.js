@@ -81,8 +81,8 @@ export function compileFeat(item, options = {}) {
     if (hand?.toggle) return { builtin: "feat-effect", toggle: true, ...(hand.toggle.who === "target" ? { who: "target" } : {}), effect: { name: item.name, rules: hand.toggle.rules, duration: hand.toggle.duration ?? { value: -1, unit: "unlimited", expiry: null, sustained: false }, stance: Boolean(hand.toggle.stance) }, notes: hand.notes ?? [] };
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;
-    if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
-    const plan = read(filled, abilityOptions) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? otherHeal(filled) ?? selfEffect(filled, dcs)
+    if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { level: dcs.level, compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
+    const plan = read(filled, { ...abilityOptions, level: dcs.level }) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? otherHeal(filled) ?? selfEffect(filled, dcs)
         // (A feat that is a spell, "the effects of a 2nd-rank Web": cast through the spell module; 2026-10-30, "Spell-like feats".)
         ?? spellLike(filled, dcs)
         // (A Focus or Mythic Point back, "You regain 1 Focus Point": added to the pool; 2026-10-30, the loop.)
@@ -96,7 +96,7 @@ export function compileFeat(item, options = {}) {
     if (plan) return plan;
     // (Slice 3: a reaction or free action, its effect as the player uses it; its trigger and time kept on the plan.)
     const used = asUsed(filled);
-    const usedPlan = used ? read(used.item, abilityOptions) ?? selfHeal(used.item, dcs) ?? selfEffect(used.item, dcs) : null;
+    const usedPlan = used ? read(used.item, { ...abilityOptions, level: dcs.level }) ?? selfHeal(used.item, dcs) ?? selfEffect(used.item, dcs) : null;
     // (Round 43: a timed effect nothing above plays, its Effect with no rules: src/compiler/timer-effect.js.)
     // (Round 94: a reroll or a Stride, Step or Leap the feat is, Tactical Entry's "You Stride. This movement doesn't trigger reactions": the item
     // module's card, itemCardFor.)
@@ -110,5 +110,6 @@ export function compileFeat(item, options = {}) {
 }
 
 function read(item, options) {
-    return compileAbility(item, options) ?? characterStrike(item, { compileSave: (html) => compileAbility(withText(item, html), options) });
+    const { level, ...rest } = options;
+    return compileAbility(item, rest) ?? characterStrike(item, { level, compileSave: (html) => compileAbility(withText(item, html), rest) });
 }
