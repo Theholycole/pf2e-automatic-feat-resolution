@@ -117,3 +117,22 @@ export function withD20(total, oldDie, newDie, dc) {
     if (newDie === 1) step = Math.max(0, step - 1);
     return { total: value, degree: ["criticalFailure", "failure", "success", "criticalSuccess"][step] };
 }
+
+// Actions that follow the character's last Strike (round 108, Cole's pick "Strike riders"): "Your last action was a successful Strike …".
+// Posting the feat finds that Strike (scripts/offers.js keeps each character's last attack and its damage) and whispers a card whose buttons
+// do the rest: { kind: "heal-half" } regains half its damage; { kind: "choose-action", actions } takes one of those actions against the same
+// foe. needs: the Strike's degrees it needs.
+export const AFTER_STRIKE = [
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.vZwa0PZLQvm3X5ME", name: "Drink of my Foes",
+        needs: ["success", "criticalSuccess"], does: { kind: "heal-half" },
+        notes: ["Your last action must have been that Strike, with the Barrow's Edge."]
+    },
+    {
+        uuid: pf2e("NDbNNMouxnnwBqwm"), name: "Explosive Maneuver",
+        needs: ["success", "criticalSuccess"], does: { kind: "choose-action", actions: ["grapple", "shove", "trip"] },
+        notes: ["With your weapon innovation, which needs the trait of the action you choose. The same multiple attack penalty as that Strike (set it in PF2e's dialog), and it still rises after."]
+    }
+];
+const AFTER_BY_UUID = new Map(AFTER_STRIKE.map((entry) => [entry.uuid, entry]));
+export const afterStrikeOf = (uuid) => AFTER_BY_UUID.get(uuid) ?? null;

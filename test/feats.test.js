@@ -806,3 +806,10 @@ test("round 107: Redirecting Shot and Pinpoint Assault offers", async () => {
     assert.ok(offerFits(byName("Pinpoint Assault"), damage, { who: "self" }));
     assert.ok(!offerFits(byName("Pinpoint Assault"), rollOf({ type: "damage-roll", domains: ["damage"], options: ["item:melee"] }, { slashing: 8 }), { who: "self" }));
 });
+
+test("round 108: actions after the last Strike", async () => {
+    const { AFTER_STRIKE, afterStrikeOf } = await import("../src/plans/offers.js");
+    assert.equal(afterStrikeOf("Compendium.pf2e.actionspf2e.Item.vZwa0PZLQvm3X5ME").does.kind, "heal-half");
+    assert.deepEqual(afterStrikeOf("Compendium.pf2e.feats-srd.Item.NDbNNMouxnnwBqwm").does.actions, ["grapple", "shove", "trip"]);
+    assert.equal(AFTER_STRIKE.length, 2);
+});

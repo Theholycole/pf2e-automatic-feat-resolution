@@ -19,7 +19,7 @@ import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem, findMaster } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
-import { onOfferMessage, registerOffers } from "./offers.js";
+import { afterStrikeCard, onOfferMessage, registerOffers } from "./offers.js";
 import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -97,6 +97,8 @@ async function cardForFeat(message) {
     // (2026-10-30, "Companions": Constricting Hold on the summoner's sheet is the eidolon's, with its numbers and from its token.)
     const world = { actors: [...game.actors], users: [...game.users] };
     let item = actingItem(posted, world);
+    // (Round 108: a feat that follows the character's last Strike, Drink of my Foes: its own card, scripts/offers.js.)
+    if (await afterStrikeCard(item)) return;
     let plan = compileItem(item);
     // (A feat its companion acts in, Death Dive's mount: the companion's Strike.)
     if (plan?.by === "companion" && item === posted) {

@@ -2,7 +2,7 @@
 // off a character's reaction whispers its owners (and the GM) a card with a button that does the reaction's effect: a check at a DC from the
 // trigger, the same action against the same target, temporary Hit Points or an Effect. The player decides whether to use it.
 
-import { REACTION_OFFERS, effectRulesFor, levelDC, offerFits, offerOf, rollOf, tempHPFrom, withD20 } from "../src/plans/offers.js";
+import { REACTION_OFFERS, afterStrikeOf, effectRulesFor, levelDC, offerFits, offerOf, rollOf, tempHPFrom, withD20 } from "../src/plans/offers.js";
 import { applyFeatEffect } from "./effects.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -28,8 +28,55 @@ function damageTotals(message) {
     return totals;
 }
 
+// Each character's last Strike, on the active GM's client: { target, outcome, damage, at } (round 108).
+const lastStrikes = new Map();
+function noteStrike(message, context) {
+    const actor = message.actor;
+    if (actor?.type !== "character") return;
+    const strike = (context.options ?? []).includes("action:strike") || (context.domains ?? []).some((domain) => /strike/.test(domain));
+    if (context.type === "attack-roll" && strike) lastStrikes.set(actor.uuid, { target: context.target?.token ?? context.target?.actor ?? null, outcome: context.outcome ?? null, damage: null, at: Date.now() });
+    if (context.type === "damage-roll" && strike) {
+        const last = lastStrikes.get(actor.uuid);
+        if (last) last.damage = Number(message.rolls?.[0]?.total) || 0;
+    }
+}
+
+// A feat posted that follows its last Strike: its card, or false when it isn't one.
+export async function afterStrikeCard(item) {
+    const entry = afterStrikeOf(sourceOf(item));
+    const actor = item?.actor;
+    if (!entry || actor?.type !== "character") return false;
+    const last = lastStrikes.get(actor.uuid);
+    const owners = game.users.filter((user) => user.isGM || actor.testUserPermission(user, "OWNER")).map((user) => user.id);
+    const say = (content) => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), whisper: owners, content });
+    if (!last || !entry.needs.includes(last.outcome)) {
+        await say(`<p><strong>${escape(item.name)}</strong>: ${escape(actor.name)}'s last Strike ${last ? "didn't hit" : "wasn't found"}.</p>`);
+        return true;
+    }
+    const targetDoc = last.target ? fromUuidSync(last.target) : null;
+    const target = targetDoc?.actor ?? targetDoc ?? null;
+    const notes = (entry.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
+    const roll = { roll: "after-strike", damage: last.damage, outcome: last.outcome };
+    let buttons;
+    if (entry.does.kind === "heal-half") {
+        if (!last.damage) {
+            await say(`<p><strong>${escape(item.name)}</strong>: roll the Strike's damage first.</p>`);
+            return true;
+        }
+        buttons = `<button type="button" data-action="${MODULE_ID}-offer">Regain ${Math.floor(last.damage / 2)} Hit Points</button>`;
+    } else buttons = entry.does.actions.map((action) => `<button type="button" data-action="${MODULE_ID}-offer" data-choice="${action}">${action[0].toUpperCase()}${action.slice(1)}${target ? ` ${escape(target.name)}` : ""}</button>`).join(" ");
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        whisper: owners,
+        content: `<p><strong>${escape(actor.name)}</strong>: ${escape(item.name)} after your Strike${target ? ` on ${escape(target.name)}` : ""}${last.damage ? ` (${last.damage} damage)` : ""}.</p>${notes}<p>${buttons}</p>`,
+        flags: { [MODULE_ID]: { [FLAG]: { actor: actor.uuid, item: item.uuid, roll, target: targetDoc?.uuid ?? null, after: true } } }
+    });
+    return true;
+}
+
 export async function onOfferMessage(message) {
     const context = message.flags?.pf2e?.context;
+    if (context?.type) noteStrike(message, context);
     if (!context?.type || !["skill-check", "damage-roll", "attack-roll"].includes(context.type)) return;
     const roll = rollOf(context, context.type === "damage-roll" ? damageTotals(message) : null);
     // (The roll itself, for a d20 in its place or its damage again: its message, total and d20.)
@@ -90,22 +137,31 @@ async function postOffer({ actor, item, entry, roll, roller, target, targetDoc }
     });
 }
 
-async function use(message) {
+async function use(message, choice = null) {
     const data = message.flags[MODULE_ID][FLAG];
     const actor = fromUuidSync(data.actor);
     const item = await fromUuid(data.item);
-    const entry = offerOf(sourceOf(item));
+    const entry = data.after ? afterStrikeOf(sourceOf(item)) : offerOf(sourceOf(item));
     if (!actor?.isOwner || !item || !entry) return;
     const roll = data.roll;
     const targetDoc = data.target ? fromUuidSync(data.target) : null;
     const target = targetDoc?.actor ?? targetDoc ?? null;
     const does = entry.does;
+    if (does.kind === "heal-half") {
+        const amount = Math.floor((Number(roll.damage) || 0) / 2);
+        const hp = actor.system?.attributes?.hp;
+        const before = Number(hp?.value) || 0;
+        const next = Math.min(Number(hp?.max) || Infinity, before + amount);
+        await actor.update({ "system.attributes.hp.value": next });
+        return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${escape(actor.name)} regains ${next - before} Hit Points (half of ${roll.damage}).</p>` });
+    }
     if (does.kind === "check") {
         const dc = does.dc === "trigger" ? roll.dc : levelDC(target?.level);
         const statistic = actor.getStatistic?.(does.statistic) ?? actor.skills?.[does.statistic];
         return statistic?.roll({ ...(dc ? { dc: { value: dc } } : {}), extraRollOptions: [`origin:item:slug:${item.slug}`], label: `${item.name}: ${statistic.label}` });
     }
-    if (does.kind === "same-action") {
+    if (does.kind === "choose-action") roll.action = choice;
+    if (does.kind === "same-action" || does.kind === "choose-action") {
         // (The triggering target, targeted for this user, as PF2e's action reads the user's targets.)
         const token = targetDoc?.object ?? null;
         if (token) token.setTarget(true, { releaseOthers: true, groupSelection: false });
@@ -146,23 +202,25 @@ const usedOn = (actor, message) => Boolean(actor?.getFlag?.(MODULE_ID, USED)?.[m
 function wire(message, html) {
     const data = message.flags?.[MODULE_ID]?.[FLAG];
     if (!data) return;
-    const button = html.querySelector?.(`[data-action="${MODULE_ID}-offer"]`);
-    if (!button) return;
+    const buttons = [...(html.querySelectorAll?.(`[data-action="${MODULE_ID}-offer"]`) ?? [])];
+    if (!buttons.length) return;
     const actor = fromUuidSync(data.actor);
     if (usedOn(actor, message)) {
-        button.disabled = true;
-        button.textContent = `${button.textContent} (used)`;
+        for (const button of buttons) {
+            button.disabled = true;
+            button.textContent = `${button.textContent} (used)`;
+        }
         return;
     }
-    button.addEventListener("click", async (event) => {
+    for (const button of buttons) button.addEventListener("click", async (event) => {
         event.preventDefault();
         if (button.disabled) return;
-        button.disabled = true;
+        for (const each of buttons) each.disabled = true;
         try {
-            await use(message);
+            await use(message, button.dataset.choice ?? null);
             if (actor?.isOwner) await actor.setFlag(MODULE_ID, USED, { [message.id]: true });
             ui.chat?.updateMessage?.(message);
-        } catch (error) { console.error(`${MODULE_ID} | reaction offer`, error); button.disabled = false; }
+        } catch (error) { console.error(`${MODULE_ID} | reaction offer`, error); for (const each of buttons) each.disabled = false; }
     });
 }
 
