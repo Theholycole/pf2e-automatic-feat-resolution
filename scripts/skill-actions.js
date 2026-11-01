@@ -249,6 +249,41 @@ function hideFromObservers() {
     });
 }
 
+// Whether a token is undetected to every token this user sees with (never for the GM or its owner).
+function undetectedToUser(document) {
+    if (!document || game.user.isGM || document.isOwner) return false;
+    const states = document.getFlag(MODULE_ID, DETECTION);
+    if (!states) return false;
+    const eyes = eyesOf();
+    return eyes.length > 0 && eyes.every((token) => (states[token.id] ?? "observed") === "undetected");
+}
+
+// The combat tracker: an undetected combatant's row is left out for that user, except on its turn, when a nameless "Someone unseen" row shows it is someone's turn (Cole, 2026-11-01).
+const UNSEEN = "Someone unseen";
+function hideTrackerRows(app, html) {
+    if (game.user.isGM || perObserver()) return;
+    const root = html?.jquery ? html[0] : html;
+    const combat = app?.viewed ?? game.combat;
+    if (!root?.querySelectorAll || !combat) return;
+    for (const row of root.querySelectorAll("[data-combatant-id]")) {
+        const combatant = combat.combatants.get(row.dataset.combatantId);
+        if (!undetectedToUser(combatant?.token)) continue;
+        if (combatant.id !== combat.combatant?.id) { row.remove(); continue; }
+        row.classList.add(`${MODULE_ID}-unseen`);
+        for (const image of row.querySelectorAll("img")) { image.src = "icons/svg/mystery-man.svg"; image.removeAttribute("data-src"); image.alt = UNSEEN; }
+        const name = row.querySelector(".token-name .name, .token-name h4, .token-name strong, .name");
+        if (name) name.textContent = UNSEEN;
+        row.querySelectorAll(".token-effects, .combatant-controls, .token-resource, .resource, .token-initiative").forEach((part) => part.remove());
+        row.title = UNSEEN;
+        for (const type of ["click", "dblclick", "pointerdown", "mouseenter", "contextmenu"]) row.addEventListener(type, (event) => { event.stopImmediatePropagation(); event.preventDefault(); }, true);
+    }
+}
+const renderTracker = () => {
+    if (game.user.isGM) return;
+    ui.combat?.render?.();
+    for (const app of foundry.applications?.instances?.values?.() ?? []) if (app !== ui.combat && app.constructor?.name === "CombatTracker") app.render();
+};
+
 // The tokens the user sees with: those it controls, else every sighted token it owns.
 function eyesOf() {
     const controlled = canvas.tokens.controlled.filter((token) => token.document.isOwner);
@@ -292,12 +327,14 @@ export function registerSkillActions() {
         if (!foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`)) return;
         canvas.perception?.update({ refreshVision: true, refreshOcclusion: true });
         document.object?.renderFlags.set({ refreshState: true });
+        renderTracker();
     });
     Hooks.on("refreshToken", (token) => {
         if (!perObserver()) fadeHidden(token);
     });
     // (Another token taken in hand: what it sees.)
-    Hooks.on("controlToken", () => refreshDetected());
+    Hooks.on("controlToken", () => { refreshDetected(); renderTracker(); });
+    Hooks.on("renderCombatTracker", hideTrackerRows);
     Hooks.on("renderChatMessageHTML", (message, html) => {
         if (!message.flags?.[MODULE_ID]?.[FLAG]) return;
         for (const sense of html.querySelectorAll?.(`[data-action="${MODULE_ID}-sense"]`) ?? []) sense.addEventListener("click", (event) => {
