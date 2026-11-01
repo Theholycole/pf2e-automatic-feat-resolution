@@ -2,7 +2,7 @@
 // Disease, Hide, Sneak or Seek (or Point Out's action), the active GM's client whispers the actor's owners and the GM a card saying what the
 // degree does, with an Apply button: dying or bleeding ended, the save bonus Effect, hidden or undetected.
 
-import { afterAttack, commonCondition, degreeAgainst, firstAidResult, seekState, senseCap, skillActionOf, stealthByObserver, treatmentBonus } from "../src/plans/skill-actions.js";
+import { afterAttack, commonCondition, degreeAgainst, treatmentDC, firstAidResult, seekState, senseCap, skillActionOf, stealthByObserver, treatmentBonus } from "../src/plans/skill-actions.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const FLAG = "skillAction";
@@ -38,21 +38,34 @@ export async function onSkillActionMessage(message) {
     const outcome = context?.outcome ?? null;
     const total = Number(message.rolls?.[0]?.total);
     const die = Number(message.rolls?.[0]?.dice?.find((each) => each.faces === 20)?.total) || null;
-    const targetUuid = context?.target?.token ?? null;
+    // (PF2e 8.6 posts First Aid and the treatments with no target, DC or degree: the roller's targets, recorded as it posts, and the DC and
+    // degree worked out here; round 110 Foundry test.)
+    const targetUuid = context?.target?.token ?? message.getFlag?.(MODULE_ID, "skillTargets")?.[0] ?? null;
     const target = tokenOf(targetUuid)?.actor ?? (context?.target?.actor ? fromUuidSync(context.target.actor) : null);
     const source = message.token?.object ?? actor.getActiveTokens?.(true)[0] ?? null;
+    const degreeFor = (dc) => outcome ?? (Number.isFinite(dc) && Number.isFinite(total) ? degreeAgainst(total, dc, die) : null);
     if (found.slug === "administer-first-aid") {
-        if (!target || !outcome) return;
-        const result = firstAidResult(found.variant, outcome);
+        if (!target) return;
+        const dc = found.variant === "stabilize" ? 15 + (Number(target.getCondition?.("dying")?.value) || 0) : Number(bleeds(target)[0]?.system?.persistent?.dc) || 15;
+        if (found.variant === "stabilize" && !target.hasCondition?.("dying")) return;
+        if (found.variant === "stop-bleeding" && !bleeds(target).length) return;
+        const degree = degreeFor(dc);
+        if (!degree) return;
+        const result = firstAidResult(found.variant, degree);
         if (!result.dying && !result.bleed) return;
         const words = result.dying === "remove" ? `${escape(target.name)} is no longer dying (it stays unconscious at 0 Hit Points).` : result.dying === "+1" ? `${escape(target.name)}'s dying value rises by 1.` : result.bleed === "remove" ? `${escape(target.name)}'s persistent bleed ends.` : `${escape(target.name)} takes its persistent bleed damage.`;
-        return whisper(actor, `<p><strong>Administer First Aid</strong> (${DEGREE_WORDS[outcome]}): ${words}</p>${button()}`, { kind: "first-aid", target: targetUuid, result });
+        return whisper(actor, `<p><strong>Administer First Aid</strong> (${total} against DC ${dc}, ${DEGREE_WORDS[degree]}): ${words}</p>${button()}`, { kind: "first-aid", target: targetUuid, result });
     }
     if (found.slug === "treat-poison" || found.slug === "treat-disease") {
-        if (!target || !outcome) return;
-        const bonus = treatmentBonus(found.slug, outcome);
+        if (!target) return;
+        const dc = treatmentDC(target, found.slug === "treat-poison" ? "poison" : "disease");
+        const degree = degreeFor(dc);
+        const name = found.slug === "treat-poison" ? "Treat Poison" : "Treat Disease";
+        // (No affliction on the patient to read its DC from: the GM picks the degree.)
+        if (!degree) return whisper(actor, `<p><strong>${name}</strong>: ${total}. No ${found.slug === "treat-poison" ? "poison" : "disease"} with a DC was found on ${escape(target.name)}; pick the result.</p><p>${["criticalSuccess", "success", "criticalFailure"].map((each) => `<button type="button" data-action="${MODULE_ID}-skill" data-degree="${each}">${DEGREE_WORDS[each]}</button>`).join(" ")}</p>`, { kind: "treatment", target: targetUuid, slug: found.slug, outcome: null }, { gmOnly: true });
+        const bonus = treatmentBonus(found.slug, degree);
         if (!bonus) return;
-        return whisper(actor, `<p><strong>${found.slug === "treat-poison" ? "Treat Poison" : "Treat Disease"}</strong> (${DEGREE_WORDS[outcome]}): ${escape(target.name)} gets a ${bonus.value > 0 ? "+" : ""}${bonus.value} circumstance ${bonus.value > 0 ? "bonus" : "penalty"} to its next saving throw against the ${bonus.trait}.</p>${button()}`, { kind: "treatment", target: targetUuid, slug: found.slug, outcome });
+        return whisper(actor, `<p><strong>${name}</strong> (${total} against DC ${dc}, ${DEGREE_WORDS[degree]}): ${escape(target.name)} gets a ${bonus.value > 0 ? "+" : ""}${bonus.value} circumstance ${bonus.value > 0 ? "bonus" : "penalty"} to its next saving throw against the ${bonus.trait}.</p>${button()}`, { kind: "treatment", target: targetUuid, slug: found.slug, degree });
     }
     if (perObserver() || !source || !Number.isFinite(total)) return;
     const tokens = canvas?.tokens?.placeables ?? [];
@@ -106,8 +119,9 @@ async function setDetection(actor, becomes) {
     if (becomes !== "observed" && !actor.hasCondition(becomes)) await actor.increaseCondition(becomes);
 }
 
-async function apply(message) {
-    const data = message.flags[MODULE_ID][FLAG];
+async function apply(message, degree = null) {
+    const data = { ...message.flags[MODULE_ID][FLAG] };
+    if (degree) data.outcome = degree;
     const say = (line) => ChatMessage.create({ speaker: message.speaker, content: `<p>${line}</p>` });
     if (data.kind === "first-aid") {
         const patient = tokenOf(data.target)?.actor;
@@ -193,7 +207,17 @@ function hideFromObservers() {
     });
 }
 
+// The roller's targets on its skill action's message, as it posts (PF2e's context has none for First Aid and the treatments).
+function recordSkillTargets(message, _data, _options, userId) {
+    if (userId !== game.user.id) return;
+    const options = message.flags?.pf2e?.context?.options ?? [];
+    if (!skillActionOf(options, message.flavor ?? "")) return;
+    const targets = [...game.user.targets].map((token) => token.document?.uuid).filter(Boolean);
+    if (targets.length) message.updateSource({ [`flags.${MODULE_ID}.skillTargets`]: targets });
+}
+
 export function registerSkillActions() {
+    Hooks.on("preCreateChatMessage", recordSkillTargets);
     Hooks.on("createChatMessage", (message) => {
         if (!game.users.activeGM?.isSelf) return;
         onSkillActionMessage(message).catch((error) => console.error(`${MODULE_ID} | skill action`, error));
@@ -207,16 +231,20 @@ export function registerSkillActions() {
     });
     Hooks.on("renderChatMessageHTML", (message, html) => {
         if (!message.flags?.[MODULE_ID]?.[FLAG]) return;
-        const each = html.querySelector?.(`[data-action="${MODULE_ID}-skill"]`);
-        if (!each) return;
-        if (message.getFlag(MODULE_ID, "applied")) { each.disabled = true; each.textContent = "Applied"; return; }
-        each.addEventListener("click", async (event) => {
+        const buttons = [...(html.querySelectorAll?.(`[data-action="${MODULE_ID}-skill"]`) ?? [])];
+        if (!buttons.length) return;
+        if (message.getFlag(MODULE_ID, "applied")) {
+            for (const each of buttons) each.disabled = true;
+            buttons[0].textContent = `${buttons[0].textContent} (applied)`;
+            return;
+        }
+        for (const each of buttons) each.addEventListener("click", async (event) => {
             event.preventDefault();
-            each.disabled = true;
+            for (const other of buttons) other.disabled = true;
             try {
-                await apply(message);
+                await apply(message, each.dataset.degree ?? null);
                 if (message.isOwner) await message.setFlag(MODULE_ID, "applied", true);
-            } catch (error) { console.error(`${MODULE_ID} | skill action`, error); each.disabled = false; }
+            } catch (error) { console.error(`${MODULE_ID} | skill action`, error); for (const other of buttons) other.disabled = false; }
         });
     });
 }

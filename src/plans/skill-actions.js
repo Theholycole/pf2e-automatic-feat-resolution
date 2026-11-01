@@ -86,3 +86,16 @@ export function seekState(state, degree) {
 
 // After the sneaker attacks an observer: undetected → hidden, hidden → observed.
 export const afterAttack = (state) => (state === "undetected" ? "hidden" : "observed");
+
+// The DC of the poison or disease afflicting the patient (PF2e's affliction items, or an Effect or condition with that trait and a DC), or
+// null.
+export function treatmentDC(actor, trait) {
+    const items = [...(actor?.items ?? [])];
+    for (const item of items) {
+        const traits = item.system?.traits?.value ?? [];
+        if (!traits.includes(trait)) continue;
+        const dc = Number(item.system?.save?.dc ?? item.system?.save?.value ?? item.system?.dc?.value ?? item.system?.dc);
+        if (Number.isFinite(dc) && dc > 0) return dc;
+    }
+    return null;
+}
