@@ -2,7 +2,7 @@
 // Disease, Hide, Sneak or Seek (or Point Out's action), the active GM's client whispers the actor's owners and the GM a card saying what the
 // degree does, with an Apply button: dying or bleeding ended, the save bonus Effect, hidden or undetected.
 
-import { afterAttack, commonCondition, degreeAgainst, treatmentDC, firstAidResult, seekState, senseCap, skillActionOf, stealthByObserver, treatmentBonus } from "../src/plans/skill-actions.js";
+import { afterAttack, commonCondition, degreeAgainst, recountStealth, senseAttribute, specialSenses, treatmentDC, firstAidResult, seekState, senseCap, skillActionOf, stealthByObserver, treatmentBonus } from "../src/plans/skill-actions.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
 const FLAG = "skillAction";
@@ -82,13 +82,17 @@ export async function onSkillActionMessage(message) {
     if (!Number.isFinite(total)) return;
     if (found.slug === "hide" || found.slug === "sneak") {
         const before = statesOf(source);
-        const observers = foesOf(source).map((token) => ({ id: token.id, name: token.name, dc: perceptionDC(token.actor), state: before[token.id] ?? "observed", cap: senseCap(sensesOf(token.actor), distance(source, token) ?? 0) })).filter((row) => row.dc);
+        const observers = foesOf(source).map((token) => {
+            const feet = distance(source, token) ?? 0;
+            const sensesFull = sensesOf(token.actor);
+            return { id: token.id, name: token.name, dc: perceptionDC(token.actor), state: before[token.id] ?? "observed", feet, sensesFull, senses: specialSenses(sensesFull, feet), cap: senseCap(sensesFull, feet) };
+        }).filter((row) => row.dc);
         if (!observers.length) return;
-        const rows = stealthByObserver(found.slug, total, die, observers);
-        const states = Object.fromEntries(rows.map((row) => [row.id, row.state]));
-        const lines = rows.map((row) => `<li>${escape(row.name)} (DC ${row.dc}): ${DEGREE_WORDS[row.degree]}, ${row.state}${row.cap !== "undetected" && row.state === row.cap && ["success", "criticalSuccess"].includes(row.degree) ? " (its senses)" : ""}</li>`).join("");
-        const note = found.slug === "sneak" ? "You need to start hidden or undetected, and end in cover or concealment to stay so: the GM's call." : "You need cover or concealment from each of them: the GM's call.";
-        return whisper(actor, `<p><strong>${found.slug === "hide" ? "Hide" : "Sneak"}</strong>: ${total} against each foe's Perception DC.</p><ul>${lines}</ul><p>${note}</p>${button()}`, { kind: "stealth", token: source.document.uuid, states });
+        const mods = Object.fromEntries(Object.entries(actor.abilities ?? actor.system?.abilities ?? {}).map(([key, value]) => [key, Number(value?.mod) || 0]));
+        const data = { kind: "stealth", slug: found.slug, token: source.document.uuid, total, die, mods, observers, beaten: {} };
+        data.rows = recountStealth(found.slug, total, die, observers, {}, mods);
+        data.states = Object.fromEntries(data.rows.map((row) => [row.id, row.state]));
+        return whisper(actor, stealthCard(actor, data), data);
     }
     if (found.slug === "seek") {
         const creatures = tokens.filter((token) => token.actor && token !== source && (distance(source, token) ?? Infinity) <= 30).map((token) => {
@@ -104,6 +108,34 @@ export async function onSkillActionMessage(message) {
         const changes = rows.filter((row) => row.becomes !== row.state).map((row) => ({ token: row.uuid, observer: source.id, becomes: row.becomes }));
         return whisper(actor, `<p><strong>Seek</strong>: ${total} against the Stealth DC of each creature within 30 feet that's hidden or undetected to ${escape(source.name)}.</p><ul>${lines}</ul><p>The search area is the GM's (a 30-foot cone or a 15-foot burst).</p>${changes.length ? button() : ""}`, { kind: "seek", changes }, { gmOnly: true });
     }
+}
+
+// The Sneak or Hide card: each observer's result, and a button for each special sense that keeps it from being fooled.
+const ATTRIBUTES = { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" };
+function stealthCard(actor, data) {
+    const name = data.slug === "hide" ? "Hide" : "Sneak";
+    const lines = data.rows.map((row) => {
+        const by = (row.senses ?? []).filter((type) => !data.beaten[type]);
+        const capped = row.cap !== "undetected" && row.state === row.cap && ["success", "criticalSuccess"].includes(row.degree);
+        const against = Object.keys(data.beaten).filter((type) => (row.senses ?? []).includes(type));
+        return `<li>${escape(row.name)} (DC ${row.dc}): ${row.total !== data.total ? `${row.total}, ` : ""}${DEGREE_WORDS[row.degree]}, ${row.state}${capped ? ` (its ${by.join(", ")})` : ""}${against.length ? ` (also against its ${against.join(", ")})` : ""}</li>`;
+    }).join("");
+    // (The senses still keeping an observer from what the roll beat.)
+    const open = [...new Set(data.rows.filter((row) => row.cap !== "undetected" && row.state === row.cap && ["success", "criticalSuccess", "failure"].includes(row.degree)).flatMap((row) => (row.senses ?? []).filter((type) => !data.beaten[type])))];
+    const senseButtons = open.map((type) => `<span style="white-space:nowrap"><button type="button" data-action="${MODULE_ID}-sense" data-sense="${escape(type)}" style="width:auto">Also against ${escape(type)}</button> <select data-sense-attribute="${escape(type)}">${Object.entries(ATTRIBUTES).map(([key, label]) => `<option value="${key}"${key === senseAttribute(type) ? " selected" : ""}>${label}</option>`).join("")}</select></span>`).join(" ");
+    const note = data.slug === "sneak" ? "You need to start hidden or undetected, and end in cover or concealment to stay so: the GM's call." : "You need cover or concealment from each of them: the GM's call.";
+    const senses = open.length ? `<p>If you say how you avoid a special sense too (stepping lightly against tremorsense, slowing your heart against lifesense), the roll counts against it, with your lowest applicable modifier:</p><p>${senseButtons}</p>` : "";
+    return `<p><strong>${name}</strong>: ${data.total} against each foe's Perception DC.</p><ul>${lines}</ul><p>${note}</p>${senses}${button()}`;
+}
+
+async function againstSense(message, type, attribute) {
+    if (!message.isOwner) return ui.notifications.warn("The GM recounts it.");
+    const data = foundry.utils.deepClone(message.flags[MODULE_ID][FLAG]);
+    data.beaten = { ...data.beaten, [type]: attribute };
+    data.rows = recountStealth(data.slug, data.total, data.die, data.observers, data.beaten, data.mods);
+    data.states = Object.fromEntries(data.rows.map((row) => [row.id, row.state]));
+    const actor = tokenOf(data.token)?.actor;
+    await message.update({ content: stealthCard(actor, data), [`flags.${MODULE_ID}.${FLAG}`]: data });
 }
 
 // The sneaker's states to its observers, and PF2e's condition where it holds for all of them.
@@ -266,6 +298,13 @@ export function registerSkillActions() {
     Hooks.on("controlToken", () => refreshDetected());
     Hooks.on("renderChatMessageHTML", (message, html) => {
         if (!message.flags?.[MODULE_ID]?.[FLAG]) return;
+        for (const sense of html.querySelectorAll?.(`[data-action="${MODULE_ID}-sense"]`) ?? []) sense.addEventListener("click", (event) => {
+            event.preventDefault();
+            const type = sense.dataset.sense;
+            const attribute = html.querySelector(`[data-sense-attribute="${CSS.escape(type)}"]`)?.value ?? senseAttribute(type);
+            sense.disabled = true;
+            againstSense(message, type, attribute).catch((error) => { console.error(`${MODULE_ID} | stealth against a sense`, error); sense.disabled = false; });
+        });
         const buttons = [...(html.querySelectorAll?.(`[data-action="${MODULE_ID}-skill"]`) ?? [])];
         if (!buttons.length) return;
         if (message.getFlag(MODULE_ID, "applied")) {

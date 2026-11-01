@@ -102,3 +102,28 @@ export function treatmentDC(actor, trait) {
     }
     return null;
 }
+
+// Stealth against special senses (round 111, Cole, from the Player Core sidebar "Using Stealth With Other Senses"): a player can Sneak or Hide
+// against a special sense too, by saying how ("stepping lightly" against tremorsense), sometimes with another attribute ("slowing your
+// heart", Wisdom, against a sense that finds heartbeats); against several senses, the lowest applicable modifier. The attribute each sense
+// takes by default; the card lets the GM change it.
+export const SENSE_ATTRIBUTE = { tremorsense: "dex", echolocation: "dex", scent: "dex", wavesense: "dex", "motion-sense": "dex", "electromagnetic-sense": "dex", lifesense: "wis", bloodsense: "wis", thoughtsense: "wis", spiritsense: "wis", heatsight: "dex" };
+export const senseAttribute = (type) => SENSE_ATTRIBUTE[type] ?? "dex";
+const SPECIAL = (sense) => !VISION.has(sense.type) && ["precise", "imprecise"].includes(sense.acuity);
+
+// The special senses in range of an observer, by type.
+export const specialSenses = (senses = [], feet = 0) => [...new Set(senses.filter((sense) => SPECIAL(sense) && (sense.range === null || sense.range === undefined || !Number.isFinite(Number(sense.range)) || Number(sense.range) >= feet)).map((sense) => sense.type))];
+
+// The roll again for each observer, with the senses beaten ({ type: attribute }) taken off its cap and the lowest applicable modifier in the
+// total (Dexterity for sight and hearing, which still apply). mods: the sneaker's attribute modifiers; rows: the card's observers.
+export function recountStealth(slug, total, die, rows, beaten, mods) {
+    const dex = Number(mods.dex) || 0;
+    return rows.map((row) => {
+        const against = (row.senses ?? []).filter((type) => beaten[type]);
+        const lowest = Math.min(dex, ...against.map((type) => Number(mods[beaten[type]]) || 0));
+        const remaining = (row.sensesFull ?? []).filter((sense) => !beaten[sense.type]);
+        const cap = senseCap(remaining, row.feet ?? 0);
+        const [result] = stealthByObserver(slug, total - dex + lowest, die, [{ ...row, cap }]);
+        return { ...result, cap, total: total - dex + lowest };
+    });
+}

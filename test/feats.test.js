@@ -840,3 +840,16 @@ test("round 110: skill action results and detection per observer", async () => {
     assert.equal(m.seekState("hidden", "success"), "observed");
     assert.equal(m.afterAttack("undetected"), "hidden");
 });
+
+test("round 111: Sneak against special senses", async () => {
+    const m = await import("../src/plans/skill-actions.js");
+    const sensesFull = [{ type: "tremorsense", acuity: "precise", range: 30 }, { type: "lifesense", acuity: "imprecise", range: 30 }];
+    const rows = [{ id: "a", dc: 20, feet: 10, sensesFull, senses: m.specialSenses(sensesFull, 10) }];
+    const mods = { dex: 4, wis: 1 };
+    assert.equal(m.recountStealth("sneak", 25, 10, rows, {}, mods)[0].state, "observed");
+    assert.equal(m.recountStealth("sneak", 25, 10, rows, { tremorsense: "dex" }, mods)[0].state, "hidden");
+    const both = m.recountStealth("sneak", 25, 10, rows, { tremorsense: "dex", lifesense: "wis" }, mods)[0];
+    assert.equal(both.total, 22);
+    assert.equal(both.state, "undetected");
+    assert.equal(m.recountStealth("sneak", 22, 10, rows, { tremorsense: "dex", lifesense: "wis" }, mods)[0].state, "hidden");
+});
