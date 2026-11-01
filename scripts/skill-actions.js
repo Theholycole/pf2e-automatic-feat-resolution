@@ -208,13 +208,32 @@ function hideFromObservers() {
             if (!base || game.user.isGM || this.document.isOwner) return base;
             const states = this.document.getFlag(MODULE_ID, DETECTION);
             if (!states) return base;
-            const controlled = canvas.tokens.controlled.filter((token) => token.document.isOwner);
-            const eyes = controlled.length ? controlled : canvas.tokens.placeables.filter((token) => token.document.isOwner && token.actor && token.document.sight?.enabled);
+            const eyes = eyesOf();
             if (!eyes.length) return base;
             return eyes.some((token) => (states[token.id] ?? "observed") !== "undetected");
         }
     });
 }
+
+// The tokens the user sees with: those it controls, else every sighted token it owns.
+function eyesOf() {
+    const controlled = canvas.tokens.controlled.filter((token) => token.document.isOwner);
+    return controlled.length ? controlled : canvas.tokens.placeables.filter((token) => token.document.isOwner && token.actor && token.document.sight?.enabled);
+}
+
+// A token hidden (not observed) to every token the user sees with is drawn faded for that user: it knows the square, not more (Cole, 2026-11-01).
+const FADED = 0.45;
+function fadeHidden(token) {
+    if (game.user.isGM || token.document.isOwner || !token.mesh) return;
+    const states = token.document.getFlag(MODULE_ID, DETECTION);
+    if (!states) return;
+    const eyes = eyesOf();
+    if (!eyes.length || eyes.some((each) => (states[each.id] ?? "observed") === "observed")) return;
+    token.mesh.alpha = Math.min(token.mesh.alpha, FADED);
+}
+const refreshDetected = () => {
+    for (const token of canvas?.tokens?.placeables ?? []) if (token.document.getFlag(MODULE_ID, DETECTION)) token.renderFlags.set({ refreshState: true });
+};
 
 // The roller's targets on its skill action's message, as it posts (PF2e's context has none for First Aid and the treatments).
 function recordSkillTargets(message, _data, _options, userId) {
@@ -236,8 +255,15 @@ export function registerSkillActions() {
         if (!perObserver()) hideFromObservers();
     });
     Hooks.on("updateToken", (document, changes) => {
-        if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`)) canvas.perception?.update({ refreshVision: true, refreshOcclusion: true });
+        if (!foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`)) return;
+        canvas.perception?.update({ refreshVision: true, refreshOcclusion: true });
+        document.object?.renderFlags.set({ refreshState: true });
     });
+    Hooks.on("refreshToken", (token) => {
+        if (!perObserver()) fadeHidden(token);
+    });
+    // (Another token taken in hand: what it sees.)
+    Hooks.on("controlToken", () => refreshDetected());
     Hooks.on("renderChatMessageHTML", (message, html) => {
         if (!message.flags?.[MODULE_ID]?.[FLAG]) return;
         const buttons = [...(html.querySelectorAll?.(`[data-action="${MODULE_ID}-skill"]`) ?? [])];
