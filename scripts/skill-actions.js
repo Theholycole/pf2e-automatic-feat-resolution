@@ -65,7 +65,7 @@ export async function onSkillActionMessage(message) {
         if (!degree) return whisper(actor, `<p><strong>${name}</strong>: ${total}. No ${found.slug === "treat-poison" ? "poison" : "disease"} with a DC was found on ${escape(target.name)}; pick the result.</p><p>${["criticalSuccess", "success", "criticalFailure"].map((each) => `<button type="button" data-action="${MODULE_ID}-skill" data-degree="${each}">${DEGREE_WORDS[each]}</button>`).join(" ")}</p>`, { kind: "treatment", target: targetUuid, slug: found.slug, outcome: null }, { gmOnly: true });
         const bonus = treatmentBonus(found.slug, degree);
         if (!bonus) return;
-        return whisper(actor, `<p><strong>${name}</strong> (${total} against DC ${dc}, ${DEGREE_WORDS[degree]}): ${escape(target.name)} gets a ${bonus.value > 0 ? "+" : ""}${bonus.value} circumstance ${bonus.value > 0 ? "bonus" : "penalty"} to its next saving throw against the ${bonus.trait}.</p>${button()}`, { kind: "treatment", target: targetUuid, slug: found.slug, degree });
+        return whisper(actor, `<p><strong>${name}</strong> (${total} against DC ${dc}, ${DEGREE_WORDS[degree]}): ${escape(target.name)} gets a ${bonus.value > 0 ? "+" : ""}${bonus.value} circumstance ${bonus.value > 0 ? "bonus" : "penalty"} to its next saving throw against the ${bonus.trait}.</p>${button()}`, { kind: "treatment", target: targetUuid, slug: found.slug, outcome: degree });
     }
     if (perObserver() || !source || !Number.isFinite(total)) return;
     const tokens = canvas?.tokens?.placeables ?? [];
