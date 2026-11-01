@@ -147,6 +147,7 @@ async function againstSense(message, type, attribute) {
     if (!message.isOwner) {
         // (A player owning the sneaker asks the active GM to recount: the GM's whisper isn't the player's to change.)
         const gm = game.users.activeGM;
+        if (!tokenOf(message.flags[MODULE_ID][FLAG]?.token)?.actor?.isOwner) { ui.notifications.warn("Only the sneaker's owner or the GM can do that."); return false; }
         if (!gm?.query) return ui.notifications.warn("The GM recounts it.");
         return gm.query(SENSE_QUERY, { messageId: message.id, type, attribute, userId: game.user.id });
     }
@@ -304,6 +305,7 @@ const renderTracker = () => {
 
 // The tokens the user sees with: those it controls, else every sighted token it owns.
 function eyesOf() {
+    if (!canvas?.tokens?.placeables) return [];
     const controlled = canvas.tokens.controlled.filter((token) => token.document.isOwner);
     return controlled.length ? controlled : canvas.tokens.placeables.filter((token) => token.document.isOwner && token.actor && token.document.sight?.enabled);
 }
