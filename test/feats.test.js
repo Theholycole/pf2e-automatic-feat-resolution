@@ -822,3 +822,21 @@ test("round 109: a feat's action links with another skill", async () => {
     ]);
     assert.deepEqual(actLinks("[[/act shove statistic=deception]] and [[/act trip]]").map((each) => each.label), ["Shove (Deception)"]);
 });
+
+test("round 110: skill action results and detection per observer", async () => {
+    const m = await import("../src/plans/skill-actions.js");
+    assert.deepEqual(m.skillActionOf(["action:administer-first-aid", "action:administer-first-aid:stabilize"]), { slug: "administer-first-aid", variant: "stabilize" });
+    assert.deepEqual(m.firstAidResult("stabilize", "success"), { dying: "remove", bleed: null });
+    assert.deepEqual(m.firstAidResult("stop-bleeding", "criticalFailure"), { dying: null, bleed: "damage" });
+    assert.equal(m.treatmentBonus("treat-poison", "criticalSuccess").rules[0].value, 4);
+    assert.equal(m.treatmentBonus("treat-disease", "failure"), null);
+    const rows = m.stealthByObserver("sneak", 25, 10, [{ id: "a", dc: 20 }, { id: "b", dc: 28 }, { id: "c", dc: 20, cap: m.senseCap([{ type: "tremorsense", acuity: "precise", range: 30 }], 10) }]);
+    assert.deepEqual(rows.map((row) => row.state), ["undetected", "hidden", "observed"]);
+    assert.equal(m.senseCap([{ type: "darkvision", acuity: "precise", range: null }], 10), "undetected");
+    assert.equal(m.senseCap([{ type: "scent", acuity: "imprecise", range: 30 }], 40), "undetected");
+    assert.equal(m.commonCondition({ a: "undetected", b: "undetected" }), "undetected");
+    assert.equal(m.commonCondition({ a: "undetected", b: "observed" }), null);
+    assert.equal(m.seekState("undetected", "success"), "hidden");
+    assert.equal(m.seekState("hidden", "success"), "observed");
+    assert.equal(m.afterAttack("undetected"), "hidden");
+});
