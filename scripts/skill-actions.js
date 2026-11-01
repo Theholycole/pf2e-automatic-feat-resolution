@@ -130,8 +130,26 @@ function stealthCard(actor, data) {
     return `<p><strong>${name}</strong>: ${data.total} against each foe's Perception DC.</p><ul>${lines}</ul><p>${note}</p>${senses}${button()}`;
 }
 
+const SENSE_QUERY = `${MODULE_ID}.againstSense`;
+async function onSenseQuery({ messageId, type, attribute, userId } = {}) {
+    const message = game.messages.get(messageId);
+    const data = message?.flags?.[MODULE_ID]?.[FLAG];
+    if (data?.kind !== "stealth" || data.beaten?.[type] || !(type in sensesOnCard(data))) return false;
+    const user = game.users.get(userId);
+    if (!user || !tokenOf(data.token)?.actor?.testUserPermission(user, "OWNER")) return false;
+    if (!(attribute in ATTRIBUTES)) return false;
+    await againstSense(message, type, attribute);
+    return true;
+}
+const sensesOnCard = (data) => Object.fromEntries(data.observers.flatMap((row) => row.senses ?? []).map((type) => [type, true]));
+
 async function againstSense(message, type, attribute) {
-    if (!message.isOwner) return ui.notifications.warn("The GM recounts it.");
+    if (!message.isOwner) {
+        // (A player owning the sneaker asks the active GM to recount: the GM's whisper isn't the player's to change.)
+        const gm = game.users.activeGM;
+        if (!gm?.query) return ui.notifications.warn("The GM recounts it.");
+        return gm.query(SENSE_QUERY, { messageId: message.id, type, attribute, userId: game.user.id });
+    }
     const data = foundry.utils.deepClone(message.flags[MODULE_ID][FLAG]);
     data.beaten = { ...data.beaten, [type]: attribute };
     data.rows = recountStealth(data.slug, data.total, data.die, data.observers, data.beaten, data.mods);
@@ -314,6 +332,7 @@ function recordSkillTargets(message, _data, _options, userId) {
 }
 
 export function registerSkillActions() {
+    if (CONFIG.queries) CONFIG.queries[SENSE_QUERY] = onSenseQuery;
     Hooks.on("preCreateChatMessage", recordSkillTargets);
     Hooks.on("createChatMessage", (message) => {
         if (!game.users.activeGM?.isSelf) return;
@@ -342,7 +361,7 @@ export function registerSkillActions() {
             const type = sense.dataset.sense;
             const attribute = html.querySelector(`[data-sense-attribute="${CSS.escape(type)}"]`)?.value ?? senseAttribute(type);
             sense.disabled = true;
-            againstSense(message, type, attribute).catch((error) => { console.error(`${MODULE_ID} | stealth against a sense`, error); sense.disabled = false; });
+            againstSense(message, type, attribute).then((done) => { if (done === false) sense.disabled = false; }).catch((error) => { console.error(`${MODULE_ID} | stealth against a sense`, error); sense.disabled = false; });
         });
         const buttons = [...(html.querySelectorAll?.(`[data-action="${MODULE_ID}-skill"]`) ?? [])];
         if (!buttons.length) return;
