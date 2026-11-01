@@ -682,3 +682,11 @@ conditions. Cloudleaper Lizardfolk's falls do no damage; Reflection's trait.
 - Measured after round 88: of the feats still listed as left, 114 carry PF2e's own rules already; the rest are mostly the GM's calls (choices made at the table, a spell or snare picked in the moment, damage that depends on a value spent), which the suite leaves to the card's text.
 - Rounds 89–93 (Foundry: all pass): self-checks at a fixed DC (Resuscitate, Desperate Resuscitation, Unwind Death, Propelled Leap, Assess Terrain, Dance of Intercession), Beseech Fate, rest heals (Native Waters, Nourishing Symbiosis). Heritages can't be posted in PF2e 8.6, so a heritage's hand plan never plays (Fruit Leshy stays the GM's).
 - Rounds 94–96 (Foundry: all pass; Cole's pick "Item cards first, then terrain"): the item module's own cards for feats, when that module is on. Its readers (move.js movePlan, rerolls.js rerollPlan, fortune.js rollTwicePlan, spend.js withSpend) are loaded at ready by relative path and passed to compileFeat as options.itemReaders; the card is posted through its api live.postCard (item module, same branch). About 45 Stride, Step and Leap feats get the move card (a timer Effect keeps its timer, the move card beside it), 31 reroll feats the reroll card (another creature's reroll and redirects left out by name), 4 roll-twice feats the fortune card, Mythic Point costs with them. Terrain: Cobble Dancer and Concealing Currents on PF2e's terrain:X options; scripts/terrain.js now gives a Strike's target its terrain kind (target:terrain:aquatic). A toggle's notes now show in its chat line (Liberate Self).
+
+## Player reaction offers (rounds 106–107, Cole's pick "Player reaction triggers", 2026-10-31)
+
+src/plans/offers.js and scripts/offers.js: when PF2e posts a roll that sets off a character's reaction (a skill check's degree, an attack
+roll's miss, a damage roll), the active GM's client whispers the character's owners a card whose button does the effect. Feed on Pain,
+Furious Outburst, Friends in High Places, Repeat Lesson, Watch and Learn, Redirecting Shot, Pinpoint Assault. A used button is marked on the
+character ("(used)"). Most of the other 85 leftover reactions trigger before a roll lands ("would"), on things PF2e doesn't post, or
+narratively, so they stay as they are.

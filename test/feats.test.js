@@ -771,3 +771,45 @@ test("a short teleport by hand: the teleport plan (round 99, Dart Between)", () 
     assert.equal(dart?.builtin, "teleport");
     assert.deepEqual(dart.teleport, { within: 60, from: "self" });
 });
+
+test("round 106: reaction offers fit their triggering rolls", async () => {
+    const { REACTION_OFFERS, offerFits, rollOf, levelDC, tempHPFrom, effectRulesFor } = await import("../src/plans/offers.js");
+    const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);
+    const check = (skill, outcome, action = null, dc = 20) => rollOf({ type: "skill-check", domains: ["skill-check", skill], options: action ? [`action:${action}`] : [], outcome, dc: { value: dc } });
+    assert.ok(offerFits(byName("Furious Outburst"), check("diplomacy", "failure", "make-an-impression"), { who: "ally" }));
+    assert.ok(!offerFits(byName("Furious Outburst"), check("diplomacy", "success", "make-an-impression"), { who: "ally" }));
+    assert.ok(!offerFits(byName("Furious Outburst"), check("diplomacy", "failure", "request"), { who: "self" }));
+    assert.ok(offerFits(byName("Repeat Lesson"), check("athletics", "criticalFailure", "trip"), { who: "ally", hasTarget: true, inReach: true }));
+    assert.ok(!offerFits(byName("Repeat Lesson"), check("athletics", "failure", "trip"), { who: "self", hasTarget: true, inReach: true }));
+    assert.ok(!offerFits(byName("Repeat Lesson"), check("athletics", "failure", "trip"), { who: "ally", hasTarget: true, inReach: false }));
+    assert.ok(offerFits(byName("Watch and Learn"), check("stealth", "success"), { who: "ally", untrainedIn: () => true }));
+    assert.ok(!offerFits(byName("Watch and Learn"), check("stealth", "success"), { who: "ally", untrainedIn: () => false }));
+    assert.equal(effectRulesFor(byName("Watch and Learn"), check("stealth", "success"))[0].selector, "stealth");
+    const damage = rollOf({ type: "damage-roll" }, { mental: 9, slashing: 4 });
+    assert.ok(offerFits(byName("Feed on Pain"), damage, { who: "self" }));
+    assert.equal(tempHPFrom(byName("Feed on Pain"), damage), 4);
+    assert.ok(!offerFits(byName("Feed on Pain"), rollOf({ type: "damage-roll" }, { fire: 9 }), { who: "self" }));
+    assert.equal(levelDC(3), 18);
+});
+
+test("round 107: Redirecting Shot and Pinpoint Assault offers", async () => {
+    const { REACTION_OFFERS, offerFits, rollOf, withD20 } = await import("../src/plans/offers.js");
+    const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);
+    const miss = rollOf({ type: "attack-roll", domains: ["attack-roll", "ranged-attack-roll"], options: ["item:ranged"], outcome: "failure", dc: { value: 20 } });
+    assert.ok(offerFits(byName("Redirecting Shot"), miss, { who: "ally" }));
+    assert.ok(!offerFits(byName("Redirecting Shot"), miss, { who: "self" }));
+    assert.ok(!offerFits(byName("Redirecting Shot"), rollOf({ type: "attack-roll", domains: ["attack-roll"], options: ["item:melee"], outcome: "failure" }), { who: "ally" }));
+    assert.deepEqual(withD20(15, 5, 12, 20), { total: 22, degree: "success" });
+    assert.deepEqual(withD20(15, 5, 20, 20), { total: 30, degree: "criticalSuccess" });
+    assert.deepEqual(withD20(15, 5, 1, 20), { total: 11, degree: "criticalFailure" });
+    const damage = rollOf({ type: "damage-roll", domains: ["damage", "ranged-strike-damage"], options: ["item:ranged"] }, { piercing: 8 });
+    assert.ok(offerFits(byName("Pinpoint Assault"), damage, { who: "self" }));
+    assert.ok(!offerFits(byName("Pinpoint Assault"), rollOf({ type: "damage-roll", domains: ["damage"], options: ["item:melee"] }, { slashing: 8 }), { who: "self" }));
+});
+
+test("round 108: actions after the last Strike", async () => {
+    const { AFTER_STRIKE, afterStrikeOf } = await import("../src/plans/offers.js");
+    assert.equal(afterStrikeOf("Compendium.pf2e.actionspf2e.Item.vZwa0PZLQvm3X5ME").does.kind, "heal-half");
+    assert.deepEqual(afterStrikeOf("Compendium.pf2e.feats-srd.Item.NDbNNMouxnnwBqwm").does.actions, ["grapple", "shove", "trip"]);
+    assert.equal(AFTER_STRIKE.length, 2);
+});

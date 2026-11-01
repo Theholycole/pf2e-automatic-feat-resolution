@@ -301,5 +301,17 @@ export default [
         uuid: "Compendium.pf2e.actionspf2e.Item.9sXQf1SyppS5B6O1", name: "Automaton Aim",
         toggle: { rules: [{ key: "RollOption", domain: "ranged-attack-roll", option: "ignore-range-penalty:2" }], duration: THIS_TURN },
         notes: ["For your next ranged attack this turn: delete the Effect after it. Used a second time this turn, the third increment's –4 is 0 too: subtract it by hand."]
+    },
+    // (Round 101: the check it triggers on, rolled twice, the better kept: as Liberate Self's.)
+    {
+        uuid: "Compendium.pf2e.actionspf2e.Item.vFaNE7s7vFs9BxJW", name: "Set Free",
+        toggle: { rules: [{ key: "RollTwice", selector: "check", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN },
+        notes: ["Your check to remove or counteract the confused, controlled, fascinated, immobilized, paralyzed or restrained effect: rolled twice, the better kept."]
+    },
+    // (Round 105: its action, posted from the sheet: spiritsense for the minute.)
+    {
+        uuid: pf2e("uEaXm7eCfeQgtD38"), name: "Rivethun Spiritual Attunement",
+        toggle: { rules: [{ key: "Sense", selector: "spiritsense", acuity: "imprecise", range: 60 }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
+        notes: ["Once per day, an action with the concentrate trait."]
     }
 ];
