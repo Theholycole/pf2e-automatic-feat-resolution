@@ -258,6 +258,13 @@ export function characterStrike(item, { compileSave = null, ...options } = {}) {
     // What isn't read: the GM's, on the card.
     // (Not the flavour: a sentence with no game word in it.)
     plan.notes.push(...unread.filter((words) => RULE_WORDS.test(words) && (!/^(?:You|It) (?:make|makes) (?:a|an) /i.test(words) || /\b(?:if|unless|instead|only)\b/i.test(words))));
+    // (2026-11-03, the Foundry test: Brutal Finish's "The Strike deals one additional weapon damage die" is one of the activity's own
+    // steps, so no sentence kept it — the card plays the Strike from the sheet and adds no dice: the GM's note says them.)
+    const said = plan.notes.join(" ");
+    if (plan.extraWeaponDice && !/weapon damage di/i.test(said)) plan.notes.push(`On a hit, the Strike deals ${plan.extraWeaponDice} extra weapon damage ${plan.extraWeaponDice > 1 ? "dice" : "die"}.`);
+    if (plan.failureDice && !/\bFailure\b|on a failure/i.test(said)) plan.notes.push(`On a failure, it deals ${plan.failureDice} weapon damage ${plan.failureDice > 1 ? "dice" : "die"}.`);
+    if (plan.damagePerWeaponDie && !/number of weapon damage dice/i.test(said)) plan.notes.push(`On a hit, a circumstance bonus to damage of ${plan.damagePerWeaponDie > 1 ? "twice " : ""}the number of weapon damage dice.`);
+    if (plan.fatal && !/\bfatal\b/i.test(said)) plan.notes.push(`The Strike gains the fatal d${plan.fatal} trait.`);
     if (plan.requires) plan.notes.unshift(`Requires: ${plan.requires}`);
     if (blocks.frequency) plan.notes.unshift(`Frequency: ${blocks.frequency}`);
     return plan;

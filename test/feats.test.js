@@ -878,3 +878,8 @@ test("a Strike feat's riders: a basic action after the hit, more weapon dice, da
     const sparks = compileFeat(feat("Test Sparks", "<p>Make a melee Strike. On a hit, the Strike deals @Damage[1d4[electricity]] damage to up to two other foes within 10 feet.</p>"), { actor, dcs });
     assert.deepEqual(sparks.onHit.damage, []);
 });
+
+test("a read rider the card doesn't apply is still the GM's note: Brutal Finish's extra die", () => {
+    const brutal = compileFeat(feat("Brutal Finish", "<p>Make a Strike. After the Strike, your turn ends. The Strike deals one additional weapon damage die, or two additional weapon damage dice if you're at least 18th level.</p>", 1), { actor: { type: "character", system: { details: { level: { value: 12 } } } }, dcs: { ...DCS, level: 12 } });
+    assert.ok(brutal.notes.some((note) => /1 extra weapon damage die/.test(note)));
+});
