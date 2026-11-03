@@ -16,7 +16,7 @@ const CONDITIONS = new Set(["blinded", "broken", "clumsy", "concealed", "confuse
 const OTHERS = /\b(?:eidolon|companion|familiar|ally|allies|mount|squadmates?|underling|boss|construct|minion|summon|apparition|spirit|wisp|innovation|clone|duplicate|image)\b/i;
 const USER_STRIKES = /\b(?:[Mm]ake|makes) (?:a|an|one|two|three|up to (?:two|three)|a single|another) (?:[\w'-]+ ){0,4}Strikes?\b|\b(?:then|and|you|You) Strike\b|(?:^|[.:]\s+)Strike\b|\bStrike (?:with your|an?|the|one|each|your)\b/;
 const NUMBERS = { once: 1, one: 1, a: 1, an: 1, twice: 2, two: 2, three: 3, "three times": 3 };
-const HIT = /^(?:If (?:the|your|this|that|either|the first) (?:Strike|attack)(?: is successful| succeeds| hits)|If (?:it|you) (?:hits?|successfully hits?|succeed)|On a hit|On a success|On a successful Strike|If it's a hit|If it deals damage(?: to an? [\w ]+?)?)(?: and (?:deals?|damages?)[^,]*)?,?\s*/i;
+const HIT = /^(?:If (?:the|your|this|that|either|the first) (?:Strike|attack)(?: is successful| succeeds| hits)|If (?:it|you) (?:hits?|successfully hits?|succeed)|On a hit|On a success|On a successful Strike|If it's a hit|If it deals damage(?: to an? [\w ]+?)?|If it's successful)(?: and (?:deals?|damages?)[^,]*)?,?\s*/i;
 const CRITICAL = /^(?:If (?:the Strike|the attack|it|you) (?:is a critical hit|critically hits|critically succeeds?|critically hit)|On a critical hit|If you critically hit|If you critically succeed)\b,?\s*/i;
 
 const sentencesOf = (html) => String(html ?? "").split(/(?<=[.!?])\s+(?=[A-Z@<[])|;\s+(?=(?:if|on a)\b)/i).map((sentence) => sentence.trim()).filter(Boolean);
@@ -69,7 +69,8 @@ function hitResults(sentence, html, item, compileSave) {
     if (!damage.length && !others) {
         const words = plainOf(sentence);
         const written = /\b(?:an? )?(?:additional|extra) (\d+d\d+|\d+) (persistent )?([a-z]+) damage\b/i.exec(words) ?? /\b(\d+d\d+|\d+) (?:additional |extra )?(persistent )?([a-z]+) damage\b/i.exec(words);
-        if (written && !/\bper\b|\bfor each\b|\bequal to\b/i.test(words)) damage.push(`${written[1]}[${written[2] ? "persistent," : ""}${written[3].toLowerCase()}]`);
+        // (Fiendish Brand's "1d6 bleed damage": bleed is persistent damage.)
+        if (written && !/\bper\b|\bfor each\b|\bequal to\b/i.test(words)) damage.push(`${written[1]}[${written[2] || /^bleed$/i.test(written[3]) ? "persistent," : ""}${written[3].toLowerCase()}]`);
     }
     if (damage.length) {
         out.damage = damage;
