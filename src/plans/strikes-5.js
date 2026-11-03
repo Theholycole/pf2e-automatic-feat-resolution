@@ -37,5 +37,8 @@ export default [
     // ("Make a melee or ranged Strike with a –2 circumstance penalty. On a hit, the next ally to target the same creature with a Strike gains a
     // +2 circumstance bonus to their attack roll. On a critical hit, the bonus applies to any allies who act before the start of your next
     // turn": the simulator plays the hit as Set-Up Strike's, off-guard to the next ally's attack.)
-    { uuid: pf2e("nLFP7rT0jhM11nFR"), name: "Lead by Example", strike: { attackBonus: -2, setUp: true, notes: ["On a hit, the next ally to Strike that creature gets +2 circumstance to the attack roll; on a critical hit, every ally who acts before your next turn (PF2e's Effect: Lead by Example)."] } }
+    { uuid: pf2e("nLFP7rT0jhM11nFR"), name: "Lead by Example", strike: { attackBonus: -2, setUp: true, notes: ["On a hit, the next ally to Strike that creature gets +2 circumstance to the attack roll; on a critical hit, every ally who acts before your next turn (PF2e's Effect: Lead by Example)."] } },
+    // ("Make a melee Strike against a creature you have grabbed. … If the Strike hits, the creature must attempt a Fortitude save against your
+    // class DC; this is an incapacitation effect": the readers took it as a save alone, with no Strike; the save after the hit is the reader's.)
+    { uuid: pf2e("2HoDwBAmPIAoKUVF"), name: "Dazing Blow", strike: { melee: true, notes: ["Against a creature you have grabbed; its weapon damage is bludgeoning. If it hits, the target attempts a Fortitude save against your class DC (incapacitation): stunned 1, 2 or 3 on a success, failure or critical failure."] } }
 ];

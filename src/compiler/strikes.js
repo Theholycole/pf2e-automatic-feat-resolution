@@ -95,6 +95,9 @@ function hitResults(sentence, html, item, compileSave) {
         const text = `<p>${sentence.replace(HIT, "")}</p>${at >= 0 && Object.keys(degreeSections(html)).length ? html.slice(at) : ""}`;
         const plan = compileSave(text);
         if (plan?.resolution?.kind === "save") {
+            // (2026-11-03, Dazing Blow's and Stunning Finisher's "@Check[fortitude|…|traits:incapacitation]": the trait on the save, as the
+            // cards and the simulator read it.)
+            if (/traits:[^\]|]*\bincapacitation\b/i.test(sentence) && !(plan.traits ?? []).includes("incapacitation")) plan.traits = [...(plan.traits ?? []), "incapacitation"];
             out.save = plan;
             out.read = true;
         }
