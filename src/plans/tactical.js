@@ -12,11 +12,11 @@ const ranged = { strike: "ranged", anyStrike: false };
 export default [
     // Swashbuckler
     { uuid: pf2e("SlwgsFXscR49tRio"), name: "Halyard Strike", strike: { notes: ["Swing on a rope up to twice your Speed, with a one-handed weapon or unarmed Strike at any point during the swing."] } },
-    { uuid: pf2e("BuaTJxALqxM5EZav"), name: "Perfect Finisher", strike: { notes: ["Roll the attack twice and use the better result."] } },
+    { uuid: pf2e("BuaTJxALqxM5EZav"), name: "Perfect Finisher", strike: { fortune: true, notes: ["Roll the attack twice and use the better result."] } },
     { uuid: pf2e("E25gWBCsDm3DbJdO"), name: "Brandishing Draw", strike: { notes: ["Interact to draw a weapon first; the Strike (or one-action finisher) uses the weapon you drew."] } },
     { uuid: pf2e("HxMkvkxd8QMXcQ67"), name: "Retreating Finisher", strike: { melee: true, notes: ["On a miss (not a critical miss), Step as a free action."] } },
     { uuid: pf2e("a5jZJPZO8RPQjqE7"), name: "Illimitable Finisher", strike: { notes: ["Step first. The finisher gains the bravado trait; if it gives you panache back, you can attempt another finisher as part of this action."] } },
-    { uuid: pf2e("dxujgA0NgiEvA0H8"), name: "Bleeding Finisher", strike: { onHit: { damage: ["3d6[persistent,bleed]"] }, notes: ["A slashing or piercing Strike. On a hit, persistent bleed damage equal to your precise strike finisher damage."] } },
+    { uuid: pf2e("dxujgA0NgiEvA0H8"), name: "Bleeding Finisher", strike: { onHit: { rulesDamage: ["3d6[persistent,bleed]"] }, notes: ["A slashing or piercing Strike. On a hit, persistent bleed damage equal to your precise strike finisher damage."] } },
     { uuid: pf2e("jkBzlMB4TS1sS2Fm"), name: "Stunning Finisher", strike: { melee: true, notes: ["The save on a hit is on its card."] } },
     // Gunslinger
     { uuid: pf2e("ySr510TkpUO3N6Ty"), name: "Trick Shot", strike: { ...ranged, notes: ["Against an easy DC for your level, at an object near the target: on a success, one of the feat's effects instead of a hit on the foe."] } },

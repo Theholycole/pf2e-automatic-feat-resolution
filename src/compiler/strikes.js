@@ -144,7 +144,7 @@ export function characterStrike(item, { compileSave = null, ...options } = {}) {
     const unread = [];
     // (2026-11-01, the feat ratings: Vicious Swing's "you deal an extra die of weapon damage", two from 10th level and three from 18th —
     // extraWeaponDice, as a monster's activity has it; the card's GM keeps the words as a note.)
-    const extraDice = /\b(?:deal|deals|add) an? (?:extra|additional) (?:weapon damage die|die of weapon damage)\b/i.test(plain);
+    const extraDice = /\b(?:deal|deals|dealing|add) an? (?:extra|additional) (?:weapon damage die|die of weapon damage)\b/i.test(plain);
     if (extraDice) {
         const level = Number(options.level) || 1;
         plan.extraWeaponDice = level >= 18 && /\b18th level\b[^.]*\bthree extra dice\b/i.test(plain) ? 3 : level >= 10 && /\b10th level\b[^.]*\btwo extra dice\b/i.test(plain) ? 2 : 1;
