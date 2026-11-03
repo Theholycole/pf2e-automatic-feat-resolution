@@ -17,6 +17,6 @@ export default [
     { uuid: pf2e("9t6Kfk8Yw8WJYY8Z"), name: "Guiding Finish", strike: { melee: true, notes: ["On a hit, Reposition the target up to 10 feet, through your space if you like; on a failure, 5 feet."] } },
     { uuid: pf2e("Ad0XBuETAkMD6doj"), name: "Felling Strike", strike: { notes: ["On a hit that damages a flying target, it falls up to 120 feet, gently (no fall damage). On a critical hit, it can't Fly, Leap or otherwise leave the ground until the end of your next turn."] } },
     { uuid: pf2e("fCDC53WOOYrsyVIR"), name: "Incredible Ricochet", strike: { strike: "ranged", anyStrike: false, notes: ["Against a creature you already attacked this turn: ignore its concealed condition and all cover."] } },
-    { uuid: pf2e("AGydz5DKJ2KHSO4S"), name: "Whirlwind Strike", strike: { melee: true, notes: ["A melee Strike against each enemy within reach, each at the same multiple attack penalty; it rises only after all of them."] } },
+    { uuid: pf2e("AGydz5DKJ2KHSO4S"), name: "Whirlwind Strike", strike: { melee: true, each: true, notes: ["A melee Strike against each enemy within reach, each at the same multiple attack penalty; it rises only after all of them."] } },
     { uuid: pf2e("3y459uK2qfWtS9q4"), name: "Everstand Strike", strike: { notes: ["With the shield wielded in two hands. If it hits and deals damage, you also Raise your Shield."] } }
 ];
