@@ -23,6 +23,7 @@ import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/
 import { afterStrikeCard, onOfferMessage, registerOffers } from "./offers.js";
 import { registerWorkbench } from "./workbench.js";
 import { registerSkillActions } from "./skill-actions.js";
+import { assessmentCard } from "./assessment.js";
 import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -102,6 +103,8 @@ async function cardForFeat(message) {
     let item = actingItem(posted, world);
     // (Round 108: a feat that follows the character's last Strike, Drink of my Foes: its own card, scripts/offers.js.)
     if (await afterStrikeCard(item)) return;
+    // (2026-11-04: Battle Assessment and Combat Reading, the secret check and what it tells; scripts/assessment.js.)
+    if (await assessmentCard(item, message)) return;
     let plan = compileItem(item);
     // (A feat its companion acts in, Death Dive's mount: the companion's Strike.)
     if (plan?.by === "companion" && item === posted) {
