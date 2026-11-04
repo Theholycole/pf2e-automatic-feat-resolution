@@ -10,7 +10,7 @@ export default [
         uuid: pf2e("KNhmeUpZCSW5eHqg"), name: "Scour the Library",
         toggle: { rules: [{ key: "FlatModifier", selector: "attack-roll", type: "circumstance", value: 1 }, { key: "FlatModifier", selector: "ac", type: "circumstance", value: 1 }], duration: NEXT_TURN },
         notes: ["After a successful Recall Knowledge about a creature within 60 feet: only for your next attack roll against it and your AC against its next attack (remove the Effect after those). +2 on a critical success: edit the Effect."]
-    }
+    },
     {
         // (Once, on a save or a skill check: PF2e's RollTwice, the Effect gone after that roll.)
         uuid: pf2e("XLIJXGJ1JdJJZQHG"), name: "Vision of Foresight",
