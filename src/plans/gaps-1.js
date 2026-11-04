@@ -29,7 +29,7 @@ export default [
     // A linked Effect on the creature it touches.
     { uuid: pf2e("9p28s0zg4Vv4r5i2"), name: "Spike Skin", linked: { effect: "Compendium.pf2e.feat-effects.Item.Effect: Spike Skin", recipients: "target", target: "1 willing creature" }, notes: ["Touch: the target. It lasts 10 minutes, or until the target has taken damage from piercing attacks 10 times."] },
     // A Strike that sets up an ally.
-    { uuid: pf2e("f0fpsr8ZSNrWlfAt"), name: "Set-Up Strike", strike: { setUp: true, notes: ["On a hit, the target is off-guard against the next attack one of your allies attempts against it before the start of your next turn."] } },
+    { uuid: pf2e("f0fpsr8ZSNrWlfAt"), name: "Set-Up Strike", strike: { onHit: { conditions: [{ slug: "off-guard", value: null, duration: { mode: "fixed", value: 1, unit: "rounds", expiry: "turn-start", anchor: "source-turn" } }] }, notes: ["The off-guard is against the next attack one of your allies attempts against it only: remove it after that attack."] } },
     // A basic action's success, then its rider (post this after the roll).
     {
         uuid: pf2e("hGjmbTNBUiJqYvsE"), name: "Crushing Grab", activity: true,
