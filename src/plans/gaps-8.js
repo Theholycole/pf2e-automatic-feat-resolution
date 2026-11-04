@@ -10,8 +10,8 @@ export default [
     },
     {
         uuid: pf2e("oQVp2UhXVBcELma5"), name: "Root to Life",
-        affect: { target: "an adjacent dying creature", effects: [{ kind: "end-condition", slug: "dying", stabilize: true }, { kind: "condition", slug: "unconscious", value: null, duration: null }] },
-        notes: ["It's unconscious at 0 Hit Points. With 2 actions, it also attempts DC 10 flat checks to end each persistent damage."]
+        affect: { target: "an adjacent dying creature", effects: [{ kind: "end-condition", slug: "dying", stabilize: true }, { kind: "condition", slug: "unconscious", value: null, duration: null }, { kind: "condition", slug: "wounded", value: 1, duration: null, stack: { by: 1 } }] },
+        notes: ["It's unconscious at 0 Hit Points, and wounded goes up by 1 as dying ends. With 2 actions, it also attempts DC 10 flat checks to end each persistent damage."]
     },
     {
         uuid: pf2e("kPjBGlHMvBqFXNq2"), name: "Cursed Effigy",
