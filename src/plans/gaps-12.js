@@ -16,7 +16,7 @@ export default [
         notes: ["Until the end of your first turn of the encounter."]
     },
     {
-        uuid: pf2e("mMMIHLVSr8fyvVQL"), name: "Mega Bomb",
+        uuid: pf2e("mMMIHLVSr8fyvVQL"), name: "Mega Bomb", activity: true,
         text: "<p>Each creature in a @Template[burst|distance:30] takes @Damage[4d8[fire]] damage with a @Check[reflex|against:alchemist|basic] save.</p>",
         notes: ["Within 60 feet; a 2-action throw, not a Strike. The card rolls a major alchemist's fire: use your own bomb's dice and type. On a failed save, a creature also takes the bomb's primary-target extras (like bottled lightning's off-guard)."]
     }

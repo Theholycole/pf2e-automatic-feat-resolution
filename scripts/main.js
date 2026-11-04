@@ -2,6 +2,7 @@
 // played by the ability module's cards. A feat it doesn't read stays PF2e's.
 
 import { compileFeat } from "../src/compiler/index.js";
+import { handEntry } from "../src/plans/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { registerConditionFeats } from "./conditions.js";
@@ -107,6 +108,10 @@ async function cardForFeat(message) {
         item = actingItem(posted, world, { companion: true });
         if (item !== posted) plan = compileItem(item);
     }
+    // (A hand card whose save is against a DC the character lacks — Collateral Thrash's barbarian class DC on a non-barbarian — doesn't
+    // compile: a GM note, not silence; 2026-11-04 Foundry test.)
+    const against = !plan && !npc ? handEntry(item)?.text?.match(/against:([\w-]+)/)?.[1] : null;
+    if (against) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: no card, as ${item.actor.name} has no ${against.replace(/-/g, " ")} DC for its save. Call for the save by hand.</p>` });
     // (An NPC's action plays only for an ally's Effect: a toggle on its targets, or an Effect it links for its allies, Teams+ underlings'
     // Battle Caller and Team Spirit; round 65 Foundry test.)
     const linksAnEffect = plan?.resolution?.kind === "effect" && (plan.resolution.applications ?? []).some((application) => application.kind === "native-spell-effect");
