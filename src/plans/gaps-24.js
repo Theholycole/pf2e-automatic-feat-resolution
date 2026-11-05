@@ -18,7 +18,7 @@ export default [
     },
     {
         uuid: pf2e("JBfJSrPlfH4Dwp6k"), name: "Collateral Reinforcement",
-        toggle: { who: "target", rules: [{ key: "Immunity", type: "area-damage" }, { key: "Immunity", type: "splash-damage" }], duration: ROUND },
-        notes: ["Target your thralls."]
+        toggle: { who: "target", rules: [{ key: "Immunity", type: "area-damage" }], duration: ROUND },
+        notes: ["Target your thralls. Splash damage is also excluded (PF2e has no splash-damage immunity type): the GM ignores it."]
     }
 ];
