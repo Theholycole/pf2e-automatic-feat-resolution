@@ -88,6 +88,12 @@ export const REACTION_OFFERS = [
         notes: ["Only for Recall Knowledge about a devil or Hellknight, and only against that creature: the bonus is set for any devil, so remove it if you fight another."]
     },
     {
+        uuid: pf2e("G0Iw8ltK3Dfav8B8"), name: "Avowed Insight",
+        on: { roll: "skill-check", by: "self", actions: ["recall-knowledge"], outcomes: ["success", "criticalSuccess"] },
+        does: { kind: "effect", rules: [{ key: "FlatModifier", selector: ["ac", "saving-throw"], type: "circumstance", value: 1 }], duration: { value: 1, unit: "rounds", expiry: "turn-start", sustained: false } },
+        notes: ["Only Recall Knowledge about the creature type your vow names, and only against that creature's attacks and abilities: remove the Effect otherwise."]
+    },
+    {
         uuid: pf2e("Aww98EQXcigRhY3v"), name: "Sickening Bite",
         on: { roll: "attack-roll", by: "self", weapons: ["jaws"], outcomes: ["criticalSuccess"] },
         does: { kind: "condition", slug: "sickened", value: 1 },

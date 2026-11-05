@@ -20,6 +20,6 @@ export default [
     {
         uuid: pf2e("vPA0EGXBaNzGxlxM"), name: "Forewarn",
         toggle: { who: "target", rules: [{ key: "FlatModifier", selector: "ac", type: "untyped", value: "@actor.perception.dc.value - @target.system.attributes.ac.value", slug: "forewarn-dc" }], duration: NOW, endsAfter: ["attacked"] },
-        notes: ["Target the ally being attacked, before the roll: its AC becomes your Perception DC for that attack, and the Effect goes after it. Once per minute."]
+        notes: ["Target the ally being attacked, before the roll: its AC becomes your Perception DC for that attack, and the Effect goes after it. Once per minute. It lowers an ally's AC that is above your DC, so use it only when your DC is higher."]
     }
 ];
