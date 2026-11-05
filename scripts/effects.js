@@ -13,7 +13,8 @@ export async function applyFeatEffect(item, plan, recipients = null) {
     const ours = (each) => each.flags?.[MODULE_ID]?.effect;
     const say = (line, more = "") => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>${more}` });
     // (On another creature, who "target": its numbers the character's, "@actor.level" worked out here, not the target's own; 2026-10-31.)
-    const rules = recipients ? effect.rules.map((rule) => withNumbers(rule, actor.getRollData?.() ?? {})) : effect.rules;
+    // (fillNow: on the character too, its numbers as they are now, e.g. "your Perception DC instead of your AC"; 2026-11-05.)
+    const rules = recipients || effect.fillNow ? effect.rules.map((rule) => withNumbers(rule, actor.getRollData?.() ?? {})) : effect.rules;
     const lines = [];
     let created = null;
     for (const each of recipients ?? [actor]) {
@@ -121,6 +122,8 @@ export function registerEndsAfter() {
     Hooks.on("createChatMessage", async (message) => {
         const context = message.flags?.pf2e?.context;
         if (!["saving-throw", "skill-check", "perception-check", "attack-roll", "check"].includes(context?.type)) return;
+        // (endsAfter ["attacked"]: the target's Effect for one attack against it, e.g. Foresee Danger's; gone after that attack roll.)
+        if (context.type === "attack-roll") await endAttacked(context);
         const actor = message.actor;
         if (!actor?.isOwner) return;
         // (One client: the active GM's, else the actor's first active owner.)
@@ -133,4 +136,13 @@ export function registerEndsAfter() {
         });
         if (spent.length) await actor.deleteEmbeddedDocuments("Item", spent.map((effect) => effect.id)).catch(() => null);
     });
+}
+
+async function endAttacked(context) {
+    const target = context.target?.actor ? fromUuidSync(context.target.actor) : null;
+    if (!target?.isOwner) return;
+    const owner = game.users.activeGM ?? game.users.find((user) => user.active && target.testUserPermission(user, "OWNER"));
+    if (owner?.id !== game.user.id) return;
+    const spent = target.itemTypes.effect.filter((effect) => (effect.flags?.[MODULE_ID]?.effect?.endsAfter ?? []).includes("attacked"));
+    if (spent.length) await target.deleteEmbeddedDocuments("Item", spent.map((effect) => effect.id)).catch(() => null);
 }
