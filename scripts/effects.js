@@ -111,6 +111,8 @@ export async function togglePassiveEffect(item, plan, actors) {
 // plain 1d20, and PF2e only removes it after a kh or kl roll. A check's own domains are among its options here as its type ("check:type:…"
 // isn't always there): "saving-throw" matches a save, "check" any check.)
 const CHECK_TYPES = { "saving-throw": ["saving-throw"], "skill-check": ["skill-check"], "perception-check": ["perception-check"], "attack-roll": ["attack-roll"] };
+// (The module's Effects have no slug: PF2e's roll option comes from the name, sluggified; retest.)
+const slugOf = (effect) => String(effect.slug ?? game.pf2e?.system?.sluggify?.(effect.name) ?? "");
 export function endsAfterMatches(endsAfter, type, options) {
     const kinds = new Set(["check", type, ...(CHECK_TYPES[type] ?? [])]);
     return (endsAfter ?? []).every((wanted) => kinds.has(wanted) || options.has(wanted));
@@ -127,7 +129,7 @@ export function registerEndsAfter() {
         const options = new Set(context.options ?? []);
         const spent = actor.itemTypes.effect.filter((effect) => {
             const endsAfter = effect.flags?.[MODULE_ID]?.effect?.endsAfter;
-            return Array.isArray(endsAfter) && [effect.slug, String(effect.slug ?? "").replace(/^(?:[a-z]+-)?(?:effect|stance)-/, "")].some((slug) => options.has(`self:effect:${slug}`)) && endsAfterMatches(endsAfter, context.type, options);
+            return Array.isArray(endsAfter) && [slugOf(effect), slugOf(effect).replace(/^(?:[a-z]+-)?(?:effect|stance)-/, "")].some((slug) => options.has(`self:effect:${slug}`)) && endsAfterMatches(endsAfter, context.type, options);
         });
         if (spent.length) await actor.deleteEmbeddedDocuments("Item", spent.map((effect) => effect.id)).catch(() => null);
     });

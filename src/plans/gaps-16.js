@@ -7,9 +7,9 @@ const THIS_TURN = { value: 0, unit: "rounds", expiry: "turn-end", sustained: fal
 export default [
     {
         // (A fortune on the next check, the Effect gone after it: with the misfortune on that roll, PF2e cancels the two and rolls once —
-        // endsAfter, as PF2e's removeAfterRoll doesn't fire on that plain 1d20; Foundry test. Hey! Over Here!'s, after the auditory save.)
+        // endsAfter, as PF2e's removeAfterRoll doesn't fire on that plain 1d20, and not with it, as PF2e's own delete then throws; Foundry tests. Hey! Over Here!'s, after the auditory save.)
         uuid: pf2e("17jjQPpnBkHRkzPE"), name: "Turn Away Misfortune",
-        toggle: { rules: [{ key: "RollTwice", selector: "check", keep: "higher", removeAfterRoll: true }], duration: THIS_TURN, endsAfter: ["check"] },
+        toggle: { rules: [{ key: "RollTwice", selector: "check", keep: "higher" }], duration: THIS_TURN, endsAfter: ["check"] },
         notes: ["Only as you're about to attempt a roll a misfortune effect affects: the Effect cancels it on that roll, then goes. No other fortune on that roll."]
     },
     {
