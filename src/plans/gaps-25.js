@@ -1,7 +1,7 @@
 // One-off combat feats, batch 25 (2026-11-05, Cole: "Grind everything"): exemplar ikon actions whose save is against "exemplar" (the class
 // DC; the reader doesn't know that name) — Captivating Charm's fascinated, Skirt the Underworld's blinded, Ringing Challenge's basic
 // damage —, and conditions or temporary Hit Points the module only had as a reminder timer (All This Has Happened Before, Sidestep Through
-// Time, Patronize the Arts).
+// Time, Patronize the Arts, Hidden Paragon, Vomit Stomach) and two circumstance bonuses (Fierce Competitor, Wait For It...).
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const action = (id) => `Compendium.pf2e.actionspf2e.Item.${id}`;
@@ -30,5 +30,9 @@ export default [
     },
     { uuid: pf2e("A2X3EBf8s5XSCYG0"), name: "All This Has Happened Before", affect: { target: "you", effects: [{ slug: "quickened", duration: rounds(1, "turn-end") }] }, notes: ["Also a +4 circumstance bonus to the triggering initiative roll: add it to your initiative. The extra action only to Recall Knowledge or Step."] },
     { uuid: action("gCVox3KLuKFXCUqZ"), name: "Sidestep Through Time", affect: { target: "you", effects: [{ slug: "off-guard", duration: rounds(1) }] }, notes: ["Teleport up to 10 feet first: if that takes you out of the area, you don't attempt the Reflex save."] },
-    { uuid: pf2e("5lGNRo5QarJHrkaA"), name: "Patronize the Arts", affect: { target: "the ally who critically succeeded", effects: [{ kind: "temp-hp", formula: "floor(@actor.level/2)+@actor.abilities.cha.mod", duration: MINUTE }] }, notes: ["This is the Persistence choice. For Eagerness, the ally Feints, Interacts, Leaps, Reloads or Steps as a reaction instead; for Validation, it gains panache. The ally is then immune for 1 day."] }
+    { uuid: pf2e("5lGNRo5QarJHrkaA"), name: "Patronize the Arts", affect: { target: "the ally who critically succeeded", effects: [{ kind: "temp-hp", formula: "floor(@actor.level/2)+@actor.abilities.cha.mod", duration: MINUTE }] }, notes: ["This is the Persistence choice. For Eagerness, the ally Feints, Interacts, Leaps, Reloads or Steps as a reaction instead; for Validation, it gains panache. The ally is then immune for 1 day."] },
+    { uuid: pf2e("Kl1O0WK37KMTumv1"), name: "Hidden Paragon", affect: { target: "you", effects: [{ slug: "invisible", duration: MINUTE }] }, notes: ["Even if you use a hostile action. Revealing Light, See the Unseen and the like don't reveal you; Seek still can."] },
+    { uuid: pf2e("MFcsGkzPYaWxwW4d"), name: "Vomit Stomach", affect: { target: "you", effects: [{ kind: "condition", slug: "sickened", value: 0, duration: null, stack: { by: -2 } }, { slug: "off-guard", duration: rounds(1) }] }, notes: ["Then attempt a save against any ingested poison from the last minute with a +2 circumstance bonus."] },
+    { uuid: pf2e("SEtFRKVV9bt4MJEn"), name: "Fierce Competitor", toggle: { who: "target", rules: [{ key: "FlatModifier", selector: ["acrobatics", "athletics"], type: "circumstance", value: 2 }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } }, notes: ["Target you and the ally you challenge. Only on the competition's one use of Acrobatics or Athletics; it ends when one of you wins. The winner (you) then gets +2 status to Intimidation for 1 hour."] },
+    { uuid: action("5stdIykWux9WHqce"), name: "Wait For It...", toggle: { who: "target", rules: [{ key: "FlatModifier", selector: ["ac", "saving-throw"], type: "circumstance", value: 1 }], duration: { value: 1, unit: "rounds", expiry: "turn-end", sustained: false } }, notes: ["Up to two squadmates in your banner's aura, only while they Delay or Ready: remove it when they stop Delaying or use the Readied action."] }
 ];
