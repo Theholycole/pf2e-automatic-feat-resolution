@@ -41,6 +41,7 @@ import gaps21 from "./gaps-21.js";
 import gaps22 from "./gaps-22.js";
 import gaps23 from "./gaps-23.js";
 import gaps24 from "./gaps-24.js";
+import gaps25 from "./gaps-25.js";
 import strikes3 from "./strikes-3.js";
 import strikes4 from "./strikes-4.js";
 import strikes5 from "./strikes-5.js";
@@ -59,7 +60,7 @@ import attacks from "./attacks.js";
 import affects3 from "./affects-3.js";
 import teleports from "./teleports.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, strikes4, strikes5, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks, teleports, gaps1, gaps2, gaps3, gaps4, gaps5, gaps6, gaps7, gaps8, gaps9, gaps10, gaps11, gaps12, gaps13, gaps14, gaps15, gaps16, gaps17, gaps18, gaps19, gaps20, gaps21, gaps22, gaps23, gaps24];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, strikes4, strikes5, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks, teleports, gaps1, gaps2, gaps3, gaps4, gaps5, gaps6, gaps7, gaps8, gaps9, gaps10, gaps11, gaps12, gaps13, gaps14, gaps15, gaps16, gaps17, gaps18, gaps19, gaps20, gaps21, gaps22, gaps23, gaps24, gaps25];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;

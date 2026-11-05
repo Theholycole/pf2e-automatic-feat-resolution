@@ -1,0 +1,34 @@
+// One-off combat feats, batch 25 (2026-11-05, Cole: "Grind everything"): exemplar ikon actions whose save is against "exemplar" (the class
+// DC; the reader doesn't know that name) — Captivating Charm's fascinated, Skirt the Underworld's blinded, Ringing Challenge's basic
+// damage —, and conditions or temporary Hit Points the module only had as a reminder timer (All This Has Happened Before, Sidestep Through
+// Time, Patronize the Arts).
+
+const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
+const action = (id) => `Compendium.pf2e.actionspf2e.Item.${id}`;
+const rounds = (value, expiry = "turn-start") => ({ mode: "fixed", value, unit: "rounds", expiry, anchor: "effect-start" });
+const MINUTE = { mode: "fixed", value: 1, unit: "minutes", expiry: "turn-start", anchor: "effect-start" };
+const condition = (id, label) => `@UUID[Compendium.pf2e.conditionitems.Item.${id}]{${label}}`;
+const fascinated = condition("AdPVz7rbaVSRxHFg", "Fascinated");
+const blinded = condition("XgEqL1kFApUbl5Z2", "Blinded");
+const deafened = condition("9PR9y0bi4JPKnHPR", "Deafened");
+const rows = (save, failure, criticalFailure = failure) => `<p>The target attempts a ${save} save against your class DC.</p><hr /><p><strong>Critical Success</strong> The target is unaffected.</p><p><strong>Success</strong> The target is unaffected.</p><p><strong>Failure</strong> ${failure}</p><p><strong>Critical Failure</strong> ${criticalFailure}</p>`;
+
+export default [
+    {
+        uuid: action("jTfJzj1yfmPLsxmj"), name: "Captivating Charm", target: "one creature within 30 feet",
+        text: rows("@Check[will|against:class]", `The target is ${fascinated} until the start of your next turn.`),
+        notes: ["Fascinated by you. It ends if you use a hostile action against the target (not against its allies)."]
+    },
+    {
+        uuid: action("exuTl8tvVlewxVGJ"), name: "Skirt the Underworld", target: "each enemy adjacent to you during your Fly",
+        text: rows("@Check[fortitude|against:class|options:inflicts:blinded]", `The target is ${blinded} for 1 minute.`),
+        notes: ["You're Invisible for 1 round (add the condition), +1 round for each creature this blinds, then Fly up to your Speed. On a critical failure the blindness is permanent: edit its duration. Undead and psychopomps are immune."]
+    },
+    {
+        uuid: action("mBqZ2IahMT9Jvo7k"), name: "Ringing Challenge", target: "each creature in a 30-foot cone or 15-foot emanation",
+        text: "<p>Each creature in the area takes @Damage[(max(1,(floor((@actor.level - 2)/2))))d4[spirit]|options:area-damage] damage and @Damage[(max(1,(floor((@actor.level - 2)/2))))d4[sonic]|options:area-damage] damage with a @Check[fortitude|against:class|basic|options:area-effect] save against your class DC.</p><hr /><p><strong>Critical Success</strong> The creature is unaffected.</p><p><strong>Success</strong> The creature takes half damage.</p><p><strong>Failure</strong> The creature takes full damage.</p><p><strong>Critical Failure</strong> The creature takes double damage and is " + deafened + " for 1 minute.</p>"
+    },
+    { uuid: pf2e("A2X3EBf8s5XSCYG0"), name: "All This Has Happened Before", affect: { target: "you", effects: [{ slug: "quickened", duration: rounds(1, "turn-end") }] }, notes: ["Also a +4 circumstance bonus to the triggering initiative roll: add it to your initiative. The extra action only to Recall Knowledge or Step."] },
+    { uuid: action("gCVox3KLuKFXCUqZ"), name: "Sidestep Through Time", affect: { target: "you", effects: [{ slug: "off-guard", duration: rounds(1) }] }, notes: ["Teleport up to 10 feet first: if that takes you out of the area, you don't attempt the Reflex save."] },
+    { uuid: pf2e("5lGNRo5QarJHrkaA"), name: "Patronize the Arts", affect: { target: "the ally who critically succeeded", effects: [{ kind: "temp-hp", formula: "floor(@actor.level/2)+@actor.abilities.cha.mod", duration: MINUTE }] }, notes: ["This is the Persistence choice. For Eagerness, the ally Feints, Interacts, Leaps, Reloads or Steps as a reaction instead; for Validation, it gains panache. The ally is then immune for 1 day."] }
+];
