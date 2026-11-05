@@ -162,7 +162,7 @@ async function use(message, choice = null) {
     if (does.kind === "check") {
         const dc = does.dc === "trigger" ? roll.dc : levelDC(target?.level);
         const statistic = actor.getStatistic?.(does.statistic) ?? actor.skills?.[does.statistic];
-        if (!statistic) return ui.notifications.warn(`${item.name}: ${actor.name} has no ${does.statistic} to roll.`);
+        if (!statistic) return ui.notifications.warn(`${item.name}: ${actor.name} has no ${does.statistic.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ")} to roll.`);
         return statistic.roll({ ...(dc ? { dc: { value: dc } } : {}), extraRollOptions: [`origin:item:slug:${item.slug}`], label: `${item.name}: ${statistic.label}` });
     }
     if (does.kind === "choose-action") roll.action = choice;
