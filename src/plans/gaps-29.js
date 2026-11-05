@@ -1,5 +1,5 @@
 // Batch 29 (2026-11-05): "the triggering attack roll targets your <statistic> DC instead of your AC" (Foresee Danger, Sense the
-// Strike, Night's Warning, Hunter's Defense, You Failed to Account For... This!). The Effect is an untyped modifier to AC of that DC
+// Strike, Night's Warning, Hunter's Defense, You Failed to Account For... This!, and Forewarn's on an ally). The Effect is an untyped modifier to AC of that DC
 // minus your AC as it is when you post it (fillNow), so the attack meets the DC; your conditions still apply as the feats say, since
 // they stay on you (an off-guard PF2e adds only during the attack, as from flanking, still lowers it by 2). It ends after the next attack roll against you (endsAfter "attacked", scripts/effects.js).
 
@@ -16,5 +16,10 @@ export default [
     insteadOfAC("h85DAkAPGjRFwIuf", "Sense the Strike", "@actor.skills.survival.dc.value"),
     insteadOfAC("Pk6qGMlef5SMhhwE", "Night's Warning", "@actor.skills.occultism.dc.value", ["Once per hour, and only where you can see the night sky."]),
     insteadOfAC("KYTSvAEqK7KAyVwi", "Hunter's Defense", "@actor.skills.nature.dc.value", ["Once per hour, against an animal, beast, elemental, fey, fungus or plant."]),
-    insteadOfAC("zBS1qFyIpFuCGhWW", "You Failed to Account For... This!", "@actor.skills.crafting.dc.value")
+    insteadOfAC("zBS1qFyIpFuCGhWW", "You Failed to Account For... This!", "@actor.skills.crafting.dc.value"),
+    {
+        uuid: pf2e("vPA0EGXBaNzGxlxM"), name: "Forewarn",
+        toggle: { who: "target", rules: [{ key: "FlatModifier", selector: "ac", type: "untyped", value: "@actor.perception.dc.value - @target.system.attributes.ac.value", slug: "forewarn-dc" }], duration: NOW, endsAfter: ["attacked"] },
+        notes: ["Target the ally being attacked, before the roll: its AC becomes your Perception DC for that attack, and the Effect goes after it. Once per minute."]
+    }
 ];

@@ -40,7 +40,8 @@ export async function applyFeatEffect(item, plan, recipients = null) {
                 description: { value: `<p>From <strong>${escape(String(item.name ?? "").trim())}</strong>.</p>${notes}` },
                 duration: effect.duration,
                 start: { value: game.time.worldTime, initiative: game.combat?.started ? game.combat.combatant?.initiative ?? null : null },
-                rules: foundry.utils.deepClone(rules),
+                // (@target: the creature it goes on, as it is now — Forewarn's "your Perception DC instead of your ally's AC"; 2026-11-05.)
+                rules: foundry.utils.deepClone(recipients && effect.rules.some((rule) => JSON.stringify(rule).includes("@target")) ? effect.rules.map((rule) => withNumbers(rule, { ...(actor.getRollData?.() ?? {}), target: each })) : rules),
                 traits: { value: effect.stance ? ["stance"] : [], otherTags: [] },
                 tokenIcon: { show: true },
                 level: { value: Number(actor.level) || 1 },
