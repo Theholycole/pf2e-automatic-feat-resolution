@@ -792,6 +792,24 @@ test("round 106: reaction offers fit their triggering rolls", async () => {
     assert.equal(levelDC(3), 18);
 });
 
+test("2026-11-05: passive riders on a save or a check (Resounding Bravery doubled against fear, Hell's Bane)", async () => {
+    const { REACTION_OFFERS, offerFits, rollOf, effectRulesFor, doubled } = await import("../src/plans/offers.js");
+    const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);
+    const save = (statistic, outcome, options = []) => rollOf({ type: "saving-throw", domains: ["saving-throw", statistic], options, outcome });
+    const bravery = byName("Resounding Bravery");
+    assert.ok(offerFits(bravery, save("will", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(bravery, save("will", "success"), { who: "self" }));
+    assert.ok(!offerFits(bravery, save("fortitude", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(bravery, save("will", "criticalSuccess"), { who: "ally" }));
+    assert.equal(effectRulesFor(bravery, save("will", "criticalSuccess"))[0].value, 1);
+    const fear = save("will", "criticalSuccess", ["origin:item:trait:fear"]);
+    assert.ok(doubled(bravery, fear));
+    assert.equal(effectRulesFor(bravery, fear)[0].value, 2);
+    const recall = (outcome) => rollOf({ type: "skill-check", domains: ["skill-check", "religion"], options: ["action:recall-knowledge"], outcome });
+    assert.ok(offerFits(byName("Hell's Bane"), recall("criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(byName("Hell's Bane"), recall("success"), { who: "self" }));
+});
+
 test("round 107: Redirecting Shot and Pinpoint Assault offers", async () => {
     const { REACTION_OFFERS, offerFits, rollOf, withD20 } = await import("../src/plans/offers.js");
     const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);

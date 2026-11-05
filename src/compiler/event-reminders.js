@@ -5,11 +5,15 @@
 // (scripts/reminders.js). Nothing is used for them; the player decides, and the trigger's other words are theirs to judge.
 
 import { ownWords } from "./companion.js";
+import { offerOf } from "../plans/offers.js";
 const plainOf = (html) => String(html ?? "").replace(/@UUID\[[^\]]*\]\{([^}]*)\}/g, "$1").replace(/@UUID\[[^\]]*?\.([^.\]]+)\]/g, "$1").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
 // → { event: "critical-hit" | "hit" | "targeted" | "damaged" | "ally-hit" | "ally-targeted" | "ally-damaged" | "foe-casts", within, trigger,
 // kind }, or null.
 export function eventTrigger(given) {
+    // (A feat with an offer card at its roll, src/plans/offers.js: that card, not a reminder too; Resounding Bravery, 2026-11-05.)
+    const source = given?._stats?.compendiumSource ?? given?.sourceId ?? given?.flags?.core?.sourceId ?? null;
+    if (source && offerOf(source)) return null;
     const item = ownWords(given);
     // (A heritage or background, with no action type: as a passive; round 49, Kardan Bugbear.)
     const type = item?.system?.actionType?.value ?? (["heritage", "background"].includes(item?.type) ? "passive" : undefined);

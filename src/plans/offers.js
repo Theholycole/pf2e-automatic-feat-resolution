@@ -11,11 +11,15 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 //   it must be for, from the roll's "action:<slug>" option); within: "reach" for a roller in your reach.
 //   { roll: "damage-roll", by: "self", damageType?, ranged? } — your damage roll with damage of that type (ranged: a ranged Strike's).
 //   { roll: "attack-roll", by, ranged?, outcomes } — an attack roll's degree (ranged: a ranged attack's).
+//   { roll: "saving-throw", by, saves?, outcomes } — a save's degree (saves: which of fortitude, reflex and will).
+//   Any of them with traits: only a roll against something with one of those traits ("item:trait:<trait>" or "origin:item:trait:<trait>" among its options); notTraits: only one against none of them.
 // does: what the button does.
 //   { kind: "check", statistic, dc: "trigger" (the triggering check's DC) | "target-level" (a standard DC of its target's level) } ;
 //   { kind: "same-action" } — the triggering action, against the triggering target;
 //   { kind: "temp-hp", half: true } — temporary Hit Points from the triggering damage of that type;
-//   { kind: "effect", rules, duration } — an Effect on you; skill: the triggering check's skill fills "{skill}" in the rules;
+//   { kind: "effect", rules, duration, tempHP? } — an Effect on you; skill: the triggering check's skill fills "{skill}" in the rules;
+//   tempHP: a formula of yours ("floor(@actor.level/2)"), temporary Hit Points gained with it; doubledWith: a trait the triggering roll
+//   was against that doubles both (Resounding Bravery's fear);
 //   { kind: "replace-d20" } — a d20 the triggering roll uses instead of its own, its new total and degree against the same DC;
 //   { kind: "reroll-damage" } — the triggering damage rolled again, the higher to keep.
 // untrained: only when you're untrained in the triggering skill.
@@ -63,6 +67,20 @@ export const REACTION_OFFERS = [
         on: { roll: "damage-roll", by: "self", ranged: true },
         does: { kind: "reroll-damage" },
         notes: ["Only against the required enemy of Honed-Shot Precision. Take the higher of the two."]
+    },
+    // (Passives whose rider follows a roll of the character's: the same card, its button the rider; 2026-11-05, Cole's pick "Passive riders as
+    // live hooks".)
+    {
+        uuid: pf2e("dTO1ShJovbzrKUY4"), name: "Resounding Bravery",
+        on: { roll: "saving-throw", by: "self", saves: ["will"], outcomes: ["criticalSuccess"] },
+        does: { kind: "effect", rules: [{ key: "FlatModifier", selector: "saving-throw", type: "status", value: 1 }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false }, tempHP: "floor(@actor.level/2)", doubledWith: "fear" },
+        notes: ["Only against a foe's ability. Doubled against a fear effect (the card doubles it when the save's roll says fear)."]
+    },
+    {
+        uuid: pf2e("0YtidWmL4GTpONkq"), name: "Hell's Bane",
+        on: { roll: "skill-check", by: "self", actions: ["recall-knowledge"], outcomes: ["criticalSuccess"] },
+        does: { kind: "effect", rules: [{ key: "FlatModifier", selector: "damage", type: "status", value: 4, predicate: [{ or: ["target:trait:devil", "target:trait:hellknight"] }] }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
+        notes: ["Only for Recall Knowledge about a devil or Hellknight, and only against that creature: the bonus is set for any devil, so remove it if you fight another."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));
@@ -75,9 +93,12 @@ export function rollOf(context, damageTotals = null) {
     const action = options.find((option) => /^action:[a-z-]+$/.test(option))?.slice(7) ?? null;
     const domains = context.domains ?? [];
     const skill = context.type === "skill-check" ? (domains.find((domain) => SKILLS.has(domain)) ?? null) : null;
+    const save = context.type === "saving-throw" ? (domains.find((domain) => SAVES.has(domain)) ?? context.statistic ?? null) : null;
+    const traits = [...new Set(options.map((option) => /^(?:origin:)?item:trait:([a-z-]+)$/.exec(option)?.[1]).filter(Boolean))];
     const ranged = options.includes("item:ranged") || domains.some((domain) => /^ranged-(?:strike-)?(?:attack-roll|damage)$/.test(domain));
-    return { roll: context.type, skill, action, outcome: context.outcome ?? null, dc: Number(context.dc?.value) || null, damage: damageTotals ?? {}, ranged };
+    return { roll: context.type, skill, ...(save ? { save } : {}), ...(traits.length ? { traits } : {}), action, outcome: context.outcome ?? null, dc: Number(context.dc?.value) || null, damage: damageTotals ?? {}, ranged };
 }
+const SAVES = new Set(["fortitude", "reflex", "will"]);
 const SKILLS = new Set(["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"]);
 
 // Whether the entry's trigger is this roll. who: "self" (the character rolled it) or "ally" (an ally did). untrained: the character's rank in
@@ -89,6 +110,9 @@ export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarg
     if (on.ranged && !roll.ranged) return false;
     if (on.roll === "damage-roll") return !on.damageType || (roll.damage?.[on.damageType] ?? 0) > 0;
     if (on.skills && !on.skills.includes(roll.skill)) return false;
+    if (on.saves && !on.saves.includes(roll.save)) return false;
+    if (on.traits && !on.traits.some((trait) => (roll.traits ?? []).includes(trait))) return false;
+    if (on.notTraits && on.notTraits.some((trait) => (roll.traits ?? []).includes(trait))) return false;
     if (on.actions && !on.actions.includes(roll.action)) return false;
     if (on.outcomes && !on.outcomes.includes(roll.outcome)) return false;
     if (on.target && !hasTarget) return false;
@@ -106,7 +130,9 @@ export const levelDC = (level) => LEVEL_DCS[Math.max(-1, Math.min(25, Number(lev
 export const tempHPFrom = (entry, roll) => Math.floor((roll.damage?.[entry.on.damageType] ?? 0) / (entry.does.half ? 2 : 1));
 
 // The Effect's rules with the triggering skill filled in.
-export const effectRulesFor = (entry, roll) => (entry.does.rules ?? []).map((rule) => JSON.parse(JSON.stringify(rule).replaceAll("{skill}", roll.skill ?? "skill-check")));
+export const doubled = (entry, roll) => Boolean(entry.does.doubledWith && (roll.traits ?? []).includes(entry.does.doubledWith));
+export const effectRulesFor = (entry, roll) => (entry.does.rules ?? []).map((rule) => JSON.parse(JSON.stringify(rule).replaceAll("{skill}", roll.skill ?? "skill-check")))
+    .map((rule) => (doubled(entry, roll) && typeof rule.value === "number" ? { ...rule, value: rule.value * 2 } : rule));
 
 // A d20 in place of the triggering roll's: its new total and degree against the same DC (a natural 20 or 1 one step better or worse).
 export function withD20(total, oldDie, newDie, dc) {
