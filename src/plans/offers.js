@@ -16,7 +16,7 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 //   Any of them with traits: only a roll against something with one of those traits ("item:trait:<trait>" or "origin:item:trait:<trait>" among its options); notTraits: only one against none of them.
 // does: what the button does.
 //   { kind: "check", statistic, dc: "trigger" (the triggering check's DC) | "target-level" (a standard DC of its target's level) } ;
-//   { kind: "same-action" } — the triggering action, against the triggering target;
+//   { kind: "same-action", action? } — the triggering action (or that PF2e action, Windborne Shove's shove), against the triggering target;
 //   { kind: "temp-hp", half: true } — temporary Hit Points from the triggering damage of that type;
 //   { kind: "effect", rules, duration, tempHP? } — an Effect on you; skill: the triggering check's skill fills "{skill}" in the rules;
 //   who "target": the Effect on the triggering roll's target instead (Sly Disarm's off-guard, GrantItem);
@@ -127,6 +127,18 @@ export const REACTION_OFFERS = [
         on: { roll: "saving-throw", by: "other", outcomes: ["success", "criticalSuccess"], within: 30 },
         does: { kind: "reroll", keep: "lower" },
         notes: ["Once per day, a creature you can see. It takes the worse result. The GM presses the button."]
+    },
+    {
+        uuid: pf2e("fjk8VsNDkVv1rjiu"), name: "Windborne Shove",
+        on: { roll: "attack-roll", by: "self", melee: true, outcomes: ["criticalSuccess"], target: true },
+        does: { kind: "same-action", action: "shove" },
+        notes: ["A free action. You can spend a Mythic Point to Shove at mythic proficiency."]
+    },
+    {
+        uuid: pf2e("ztxbGySxIEeWvsAT"), name: "Pact of Infernal Prowess",
+        on: { roll: ["skill-check", "saving-throw", "attack-roll"], by: "self", outcomes: ["criticalFailure"] },
+        does: { kind: "reroll" },
+        notes: ["Once per hour, a free action; a fortune effect. You take the new result."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));
@@ -156,6 +168,7 @@ export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarg
     if (!on || !roll || ![].concat(on.roll).includes(roll.roll)) return false;
     if (!(on.by === who || (on.by === "self-or-ally" && ["self", "ally"].includes(who)))) return false;
     if (on.ranged && !roll.ranged) return false;
+    if (on.melee && roll.ranged) return false;
     if (roll.roll === "damage-roll") return !on.damageType || (roll.damage?.[on.damageType] ?? 0) > 0;
     if (on.skills && !on.skills.includes(roll.skill)) return false;
     if (on.saves && !on.saves.includes(roll.save)) return false;

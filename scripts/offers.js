@@ -122,7 +122,7 @@ function buttonLabel(entry, roll, target) {
         const name = does.statistic.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
         return `Roll ${name}${dc ? ` (DC ${dc})` : ""}`;
     }
-    if (does.kind === "same-action") return `${(roll.action ?? "Action").replace(/-/g, " ").replace(/^./, (letter) => letter.toUpperCase())} ${escape(target?.name ?? "")}`.trim();
+    if (does.kind === "same-action") return `${(does.action ?? roll.action ?? "Action").replace(/-/g, " ").replace(/^./, (letter) => letter.toUpperCase())} ${escape(target?.name ?? "")}`.trim();
     if (does.kind === "temp-hp") return `Gain ${tempHPFrom(entry, roll)} temporary Hit Points`;
     if (does.kind === "replace-d20") return "Roll a d20 for it";
     if (does.kind === "reroll-damage") return "Roll the damage again";
@@ -166,6 +166,7 @@ async function use(message, choice = null) {
         return statistic.roll({ ...(dc ? { dc: { value: dc } } : {}), extraRollOptions: [`origin:item:slug:${item.slug}`], label: `${item.name}: ${statistic.label}` });
     }
     if (does.kind === "choose-action") roll.action = choice;
+    if (does.kind === "same-action" && does.action) roll.action = does.action;
     if (does.kind === "same-action" || does.kind === "choose-action") {
         // (The triggering target, targeted for this user, as PF2e's action reads the user's targets.)
         const token = targetDoc?.object ?? null;
