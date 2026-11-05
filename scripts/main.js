@@ -16,7 +16,7 @@ import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
-import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
+import { applyFeatEffect, byName, registerEndsAfter, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem, findMaster } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
@@ -334,6 +334,7 @@ Hooks.once("ready", () => {
     registerManeuverMap();
     // (Damage back on a creature that hits or grabs you, Inviolable: scripts/retaliation.js; round 57.)
     registerRetaliation();
+    registerEndsAfter();
     Hooks.on("preCreateChatMessage", recordTargets);
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {

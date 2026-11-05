@@ -34,7 +34,7 @@ export async function applyFeatEffect(item, plan, recipients = null) {
             name: `${effect.stance ? "Stance" : "Effect"}: ${effect.name}`,
             type: "effect",
             img: item.img,
-            flags: { [MODULE_ID]: { effect: { item: item.id, source: item.sourceId ?? null, stance: Boolean(effect.stance) } } },
+            flags: { [MODULE_ID]: { effect: { item: item.id, source: item.sourceId ?? null, stance: Boolean(effect.stance), ...(effect.endsAfter ? { endsAfter: effect.endsAfter } : {}) } } },
             system: {
                 description: { value: `<p>From <strong>${escape(String(item.name ?? "").trim())}</strong>.</p>${notes}` },
                 duration: effect.duration,
@@ -104,4 +104,31 @@ export async function togglePassiveEffect(item, plan, actors) {
     if (!lines.length) return null;
     const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
     return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), content: `<p><strong>${escape(item.name)}</strong>: ${lines.join(" ")}</p>${notes}` });
+}
+
+// (2026-11-05, batch 16 Foundry test: an Effect used up by the next check it applies to — endsAfter, the roll options that check has, e.g.
+// ["saving-throw", "item:trait:auditory"] — even where PF2e's removeAfterRoll doesn't fire: a RollTwice cancelled by a misfortune rolls a
+// plain 1d20, and PF2e only removes it after a kh or kl roll. A check's own domains are among its options here as its type ("check:type:…"
+// isn't always there): "saving-throw" matches a save, "check" any check.)
+const CHECK_TYPES = { "saving-throw": ["saving-throw"], "skill-check": ["skill-check"], "perception-check": ["perception-check"], "attack-roll": ["attack-roll"] };
+export function endsAfterMatches(endsAfter, type, options) {
+    const kinds = new Set(["check", type, ...(CHECK_TYPES[type] ?? [])]);
+    return (endsAfter ?? []).every((wanted) => kinds.has(wanted) || options.has(wanted));
+}
+export function registerEndsAfter() {
+    Hooks.on("createChatMessage", async (message) => {
+        const context = message.flags?.pf2e?.context;
+        if (!["saving-throw", "skill-check", "perception-check", "attack-roll", "check"].includes(context?.type)) return;
+        const actor = message.actor;
+        if (!actor?.isOwner) return;
+        // (One client: the active GM's, else the actor's first active owner.)
+        const owner = game.users.activeGM ?? game.users.find((user) => user.active && actor.testUserPermission(user, "OWNER"));
+        if (owner?.id !== game.user.id) return;
+        const options = new Set(context.options ?? []);
+        const spent = actor.itemTypes.effect.filter((effect) => {
+            const endsAfter = effect.flags?.[MODULE_ID]?.effect?.endsAfter;
+            return Array.isArray(endsAfter) && [effect.slug, String(effect.slug ?? "").replace(/^(?:[a-z]+-)?(?:effect|stance)-/, "")].some((slug) => options.has(`self:effect:${slug}`)) && endsAfterMatches(endsAfter, context.type, options);
+        });
+        if (spent.length) await actor.deleteEmbeddedDocuments("Item", spent.map((effect) => effect.id)).catch(() => null);
+    });
 }
