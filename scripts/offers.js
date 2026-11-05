@@ -124,6 +124,7 @@ function buttonLabel(entry, roll, target) {
     if (does.kind === "temp-hp") return `Gain ${tempHPFrom(entry, roll)} temporary Hit Points`;
     if (does.kind === "replace-d20") return "Roll a d20 for it";
     if (does.kind === "reroll-damage") return "Roll the damage again";
+    if (does.kind === "reroll") return "Reroll it";
     return "Use it";
 }
 
@@ -182,6 +183,12 @@ async function use(message, choice = null) {
         const result = withD20(roll.total, roll.die ?? 0, d20.total, roll.dc);
         const words = { criticalSuccess: "a critical hit", success: "a hit", failure: "a miss", criticalFailure: "a critical miss" }[result.degree] ?? "for the GM to compare";
         return d20.toMessage({ speaker: ChatMessage.getSpeaker({ actor }), flavor: `<strong>${escape(item.name)}</strong>: the ally's attack uses this d20 instead of its ${roll.die}: ${result.total}${roll.dc ? ` against ${roll.dc}` : ""}, ${words}.${(entry.notes ?? []).map((note) => `<br>${escape(note)}`).join("")}` });
+    }
+    if (does.kind === "reroll") {
+        const original = game.messages.get(roll.message);
+        if (!original) return ui.notifications.warn(`${item.name}: the roll's message is gone.`);
+        if (!original.actor?.isOwner) return ui.notifications.warn(`${item.name}: ask the GM to press the button, as ${original.actor?.name ?? "the roller"} isn't yours.`);
+        return game.pf2e?.Check?.rerollFromMessage?.(original, {});
     }
     if (does.kind === "reroll-damage") {
         const original = game.messages.get(roll.message)?.rolls?.[0];

@@ -24,7 +24,8 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 //   tempHP: a formula of yours ("floor(@actor.level/2)"), temporary Hit Points gained with it; doubledWith: a trait the triggering roll
 //   was against that doubles both (Resounding Bravery's fear);
 //   { kind: "replace-d20" } — a d20 the triggering roll uses instead of its own, its new total and degree against the same DC;
-//   { kind: "reroll-damage" } — the triggering damage rolled again, the higher to keep.
+//   { kind: "reroll-damage" } — the triggering damage rolled again, the higher to keep;
+//   { kind: "reroll" } — PF2e's reroll of the triggering check, the new result kept (Focus Ally's, the ally's failed save).
 // untrained: only when you're untrained in the triggering skill.
 export const REACTION_OFFERS = [
     {
@@ -96,6 +97,18 @@ export const REACTION_OFFERS = [
         on: { roll: "skill-check", by: "self", skills: ["thievery"], actions: ["disarm"], outcomes: ["success", "criticalSuccess"], target: true },
         does: { kind: "effect", who: "target", rules: [{ key: "GrantItem", uuid: "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg" }], duration: { value: 0, unit: "rounds", expiry: "turn-end", sustained: false } },
         notes: ["Off-guard only against your next attack this turn: remove the Effect after it. The GM applies it when the target isn't yours."]
+    },
+    {
+        uuid: pf2e("VB1UK3KA5uZcxC05"), name: "Internal Dialogue",
+        on: { roll: "skill-check", by: "self", outcomes: ["failure"] },
+        does: { kind: "check", statistic: "incarnation-lore", dc: "trigger" },
+        notes: ["Once per 10 minutes. The Incarnation Lore result replaces the failed check's."]
+    },
+    {
+        uuid: pf2e("zodscjgydZRUSOLO"), name: "Focus Ally",
+        on: { roll: "saving-throw", by: "ally", outcomes: ["failure"], traits: ["incapacitation"], targetWithin: "reach" },
+        does: { kind: "reroll" },
+        notes: ["Only an adjacent ally. It must take the second result. The GM presses the button when the save isn't yours."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));
