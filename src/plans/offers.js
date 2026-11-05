@@ -25,7 +25,7 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 //   was against that doubles both (Resounding Bravery's fear);
 //   { kind: "replace-d20" } — a d20 the triggering roll uses instead of its own, its new total and degree against the same DC;
 //   { kind: "reroll-damage" } — the triggering damage rolled again, the higher to keep;
-//   { kind: "reroll" } — PF2e's reroll of the triggering check, the new result kept (Focus Ally's, the ally's failed save).
+//   { kind: "reroll", keep? } — PF2e's reroll of the triggering check, the new result kept, or keep "lower" (Black Cat Curse).
 // untrained: only when you're untrained in the triggering skill.
 export const REACTION_OFFERS = [
     {
@@ -115,6 +115,18 @@ export const REACTION_OFFERS = [
         on: { roll: "skill-check", by: "self", skills: ["acrobatics", "athletics"], outcomes: ["success", "criticalSuccess"] },
         does: { kind: "reroll" },
         notes: ["Once per minute, and only a check the GM deems challenging. You must use the second result. On a success you gain the check's result and a +1 circumstance bonus to your next attack roll; on a failure you're off-guard until the start of your next turn."]
+    },
+    {
+        uuid: pf2e("dmw79BbtUCJd300O"), name: "Correct the Story",
+        on: { roll: ["attack-roll", "saving-throw"], by: "other", outcomes: ["criticalSuccess"] },
+        does: { kind: "reroll" },
+        notes: ["Spend a Mythic Point. Only an enemy's roll: it must take the new result. The GM presses the button."]
+    },
+    {
+        uuid: pf2e("fX5FybM93HIQRRd1"), name: "Black Cat Curse",
+        on: { roll: "saving-throw", by: "other", outcomes: ["success", "criticalSuccess"], within: 30 },
+        does: { kind: "reroll", keep: "lower" },
+        notes: ["Once per day, a creature you can see. It takes the worse result. The GM presses the button."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));
@@ -138,12 +150,13 @@ const SKILLS = new Set(["acrobatics", "arcana", "athletics", "crafting", "decept
 
 // Whether the entry's trigger is this roll. who: "self" (the character rolled it) or "ally" (an ally did). untrained: the character's rank in
 // the roll's skill is 0. hasTarget: the roll had a target; inReach: the roller is in the character's reach (for targetWithin "reach").
-export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarget = false, inReach = true } = {}) {
+// distance: feet between the character and the roller (for within).
+export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarget = false, inReach = true, distance = Infinity } = {}) {
     const on = entry?.on;
-    if (!on || !roll || on.roll !== roll.roll) return false;
+    if (!on || !roll || ![].concat(on.roll).includes(roll.roll)) return false;
     if (!(on.by === who || (on.by === "self-or-ally" && ["self", "ally"].includes(who)))) return false;
     if (on.ranged && !roll.ranged) return false;
-    if (on.roll === "damage-roll") return !on.damageType || (roll.damage?.[on.damageType] ?? 0) > 0;
+    if (roll.roll === "damage-roll") return !on.damageType || (roll.damage?.[on.damageType] ?? 0) > 0;
     if (on.skills && !on.skills.includes(roll.skill)) return false;
     if (on.saves && !on.saves.includes(roll.save)) return false;
     if (on.weapons && !on.weapons.includes(roll.weapon)) return false;
@@ -153,6 +166,7 @@ export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarg
     if (on.outcomes && !on.outcomes.includes(roll.outcome)) return false;
     if (on.target && !hasTarget) return false;
     if (on.targetWithin === "reach" && !inReach) return false;
+    if (on.within && !(distance <= on.within)) return false;
     if (entry.untrained && !untrainedIn(roll.skill)) return false;
     return true;
 }

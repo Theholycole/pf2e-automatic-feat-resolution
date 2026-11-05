@@ -96,9 +96,10 @@ export async function onOfferMessage(message) {
         const allied = !self && Boolean(token && rollerToken) && token.document.disposition === rollerToken.document.disposition;
         const who = self ? "self" : allied ? "ally" : "other";
         const untrainedIn = (skill) => Number(actor.skills?.[skill]?.rank ?? 0) === 0;
-        const inReach = !token || !rollerToken ? false : (edgeDistance(token, rollerToken) ?? Infinity) <= reachOf(actor);
+        const distance = !token || !rollerToken ? Infinity : (edgeDistance(token, rollerToken) ?? Infinity);
+        const inReach = distance <= reachOf(actor);
         for (const { item, entry } of offersOf(actor)) {
-            if (!offerFits(entry, roll, { who, untrainedIn, hasTarget: Boolean(target), inReach })) continue;
+            if (!offerFits(entry, roll, { who, untrainedIn, hasTarget: Boolean(target), inReach, distance })) continue;
             await postOffer({ actor, item, entry, roll, roller, target, targetDoc });
         }
     }
@@ -190,7 +191,7 @@ async function use(message, choice = null) {
         const original = game.messages.get(roll.message);
         if (!original) return ui.notifications.warn(`${item.name}: the roll's message is gone.`);
         if (!original.actor?.isOwner) return ui.notifications.warn(`${item.name}: ask the GM to press the button, as ${original.actor?.name ?? "the roller"} isn't yours.`);
-        return game.pf2e?.Check?.rerollFromMessage?.(original, {});
+        return game.pf2e?.Check?.rerollFromMessage?.(original, does.keep ? { keep: does.keep } : {});
     }
     if (does.kind === "reroll-damage") {
         const original = game.messages.get(roll.message)?.rolls?.[0];
