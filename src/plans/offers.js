@@ -109,6 +109,12 @@ export const REACTION_OFFERS = [
         on: { roll: "saving-throw", by: "ally", outcomes: ["failure"], traits: ["incapacitation"], targetWithin: "reach" },
         does: { kind: "reroll" },
         notes: ["Only an adjacent ally. It must take the second result. The GM presses the button when the save isn't yours."]
+    },
+    {
+        uuid: pf2e("DMjfZvWD20SGuIO4"), name: "Show-Off",
+        on: { roll: "skill-check", by: "self", skills: ["acrobatics", "athletics"], outcomes: ["success", "criticalSuccess"] },
+        does: { kind: "reroll" },
+        notes: ["Once per minute, and only a check the GM deems challenging. You must use the second result. On a success you gain the check's result and a +1 circumstance bonus to your next attack roll; on a failure you're off-guard until the start of your next turn."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));

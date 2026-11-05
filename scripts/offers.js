@@ -118,7 +118,8 @@ function buttonLabel(entry, roll, target) {
     const does = entry.does;
     if (does.kind === "check") {
         const dc = does.dc === "trigger" ? roll.dc : levelDC(target?.level);
-        return `Roll ${does.statistic[0].toUpperCase()}${does.statistic.slice(1)}${dc ? ` (DC ${dc})` : ""}`;
+        const name = does.statistic.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+        return `Roll ${name}${dc ? ` (DC ${dc})` : ""}`;
     }
     if (does.kind === "same-action") return `${(roll.action ?? "Action").replace(/-/g, " ").replace(/^./, (letter) => letter.toUpperCase())} ${escape(target?.name ?? "")}`.trim();
     if (does.kind === "temp-hp") return `Gain ${tempHPFrom(entry, roll)} temporary Hit Points`;
@@ -160,7 +161,8 @@ async function use(message, choice = null) {
     if (does.kind === "check") {
         const dc = does.dc === "trigger" ? roll.dc : levelDC(target?.level);
         const statistic = actor.getStatistic?.(does.statistic) ?? actor.skills?.[does.statistic];
-        return statistic?.roll({ ...(dc ? { dc: { value: dc } } : {}), extraRollOptions: [`origin:item:slug:${item.slug}`], label: `${item.name}: ${statistic.label}` });
+        if (!statistic) return ui.notifications.warn(`${item.name}: ${actor.name} has no ${does.statistic} to roll.`);
+        return statistic.roll({ ...(dc ? { dc: { value: dc } } : {}), extraRollOptions: [`origin:item:slug:${item.slug}`], label: `${item.name}: ${statistic.label}` });
     }
     if (does.kind === "choose-action") roll.action = choice;
     if (does.kind === "same-action" || does.kind === "choose-action") {
