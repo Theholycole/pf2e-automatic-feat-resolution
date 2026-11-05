@@ -33,6 +33,7 @@ import gaps13 from "./gaps-13.js";
 import gaps14 from "./gaps-14.js";
 import gaps15 from "./gaps-15.js";
 import gaps16 from "./gaps-16.js";
+import gaps17 from "./gaps-17.js";
 import strikes3 from "./strikes-3.js";
 import strikes4 from "./strikes-4.js";
 import strikes5 from "./strikes-5.js";
@@ -51,7 +52,7 @@ import attacks from "./attacks.js";
 import affects3 from "./affects-3.js";
 import teleports from "./teleports.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, strikes4, strikes5, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks, teleports, gaps1, gaps2, gaps3, gaps4, gaps5, gaps6, gaps7, gaps8, gaps9, gaps10, gaps11, gaps12, gaps13, gaps14, gaps15, gaps16];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, strikes4, strikes5, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks, teleports, gaps1, gaps2, gaps3, gaps4, gaps5, gaps6, gaps7, gaps8, gaps9, gaps10, gaps11, gaps12, gaps13, gaps14, gaps15, gaps16, gaps17];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
@@ -101,7 +102,7 @@ export function handLinked(item, entry) {
     };
 }
 
-const actionsOf = (item) => (item.system?.actionType?.value === "free" ? "free" : String(Number(item.system?.actions?.value) || 1));
+const actionsOf = (item) => (["free", "reaction"].includes(item.system?.actionType?.value) ? item.system.actionType.value : String(Number(item.system?.actions?.value) || 1));
 const sourceFor = (item) => ({ name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type ?? "feat" });
 
 // An act entry → the basic action's plan as the feat's (its card rolls the character's own check), or null without that action's plan.
