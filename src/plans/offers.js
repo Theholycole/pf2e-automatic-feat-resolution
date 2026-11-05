@@ -25,7 +25,8 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 //   was against that doubles both (Resounding Bravery's fear);
 //   { kind: "replace-d20" } — a d20 the triggering roll uses instead of its own, its new total and degree against the same DC;
 //   { kind: "reroll-damage" } — the triggering damage rolled again, the higher to keep;
-//   { kind: "reroll", keep? } — PF2e's reroll of the triggering check, the new result kept, or keep "lower" (Black Cat Curse).
+//   { kind: "reroll", keep? } — PF2e's reroll of the triggering check, the new result kept, or keep "lower" (Black Cat Curse) or "higher"
+//   (Cat's Luck). With a list of rolls, skills and saves filter only their own kind of roll (Lucky Break).
 // untrained: only when you're untrained in the triggering skill.
 export const REACTION_OFFERS = [
     {
@@ -139,6 +140,18 @@ export const REACTION_OFFERS = [
         on: { roll: ["skill-check", "saving-throw", "attack-roll"], by: "self", outcomes: ["criticalFailure"] },
         does: { kind: "reroll" },
         notes: ["Once per hour, a free action; a fortune effect. You take the new result."]
+    },
+    {
+        uuid: pf2e("7qBuzHY8kEG8SdEP"), name: "Cat's Luck",
+        on: { roll: "saving-throw", by: "self", saves: ["reflex"], outcomes: ["failure", "criticalFailure"] },
+        does: { kind: "reroll", keep: "higher" },
+        notes: ["Once per day, a free action; a fortune effect. You use the better result."]
+    },
+    {
+        uuid: pf2e("lF5B49zbDG61sxXa"), name: "Lucky Break",
+        on: { roll: ["saving-throw", "skill-check"], by: "self", saves: ["fortitude", "will"], skills: ["acrobatics", "athletics"], outcomes: ["failure", "criticalFailure"] },
+        does: { kind: "reroll", keep: "higher" },
+        notes: ["Cat's Luck, on these rolls too: still once per day in all. You use the better result."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));
@@ -170,8 +183,8 @@ export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarg
     if (on.ranged && !roll.ranged) return false;
     if (on.melee && roll.ranged) return false;
     if (roll.roll === "damage-roll") return !on.damageType || (roll.damage?.[on.damageType] ?? 0) > 0;
-    if (on.skills && !on.skills.includes(roll.skill)) return false;
-    if (on.saves && !on.saves.includes(roll.save)) return false;
+    if (on.skills && roll.roll === "skill-check" && !on.skills.includes(roll.skill)) return false;
+    if (on.saves && roll.roll === "saving-throw" && !on.saves.includes(roll.save)) return false;
     if (on.weapons && !on.weapons.includes(roll.weapon)) return false;
     if (on.traits && !on.traits.some((trait) => (roll.traits ?? []).includes(trait))) return false;
     if (on.notTraits && on.notTraits.some((trait) => (roll.traits ?? []).includes(trait))) return false;
