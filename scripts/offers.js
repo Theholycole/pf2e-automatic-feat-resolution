@@ -190,8 +190,16 @@ async function use(message, choice = null) {
         const higher = Math.max(Number(original.total) || 0, Number(again.total) || 0);
         return again.toMessage({ speaker: ChatMessage.getSpeaker({ actor }), flavor: `<strong>${escape(item.name)}</strong>: the damage again, ${again.total} (it was ${original.total}): keep ${higher}.` });
     }
+    // (On the target, Sickening Bite's and Sly Disarm's: only from a client that can change it, the GM's if not the player's.)
+    if ((does.kind === "condition" || does.who === "target") && !target) return ui.notifications.warn(`${item.name}: the roll had no target.`);
+    if ((does.kind === "condition" || does.who === "target") && !target.isOwner) return ui.notifications.warn(`${item.name}: ask the GM to press the button, as ${target.name} isn't yours.`);
+    if (does.kind === "condition") {
+        await target.increaseCondition?.(does.slug, { value: does.value ?? 1 });
+        return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${escape(target.name)} is ${escape(does.slug)}${does.value ? ` ${does.value}` : ""}.</p>` });
+    }
     if (does.kind === "effect") {
         const rules = effectRulesFor(entry, roll);
+        if (does.who === "target") return applyFeatEffect(item, { builtin: "feat-effect", who: "target", effect: { name: item.name, rules, duration: does.duration, stance: false }, notes: entry.notes ?? [] }, [target]);
         // (Temporary Hit Points with it, Resounding Bravery's: the character's formula, kept when it has more.)
         if (does.tempHP) {
             const amount = Math.max(0, Math.floor(Number(Roll.safeEval(Roll.replaceFormulaData(does.tempHP, actor.getRollData?.() ?? {}, { missing: "0" }))) || 0)) * (doubled(entry, roll) ? 2 : 1);

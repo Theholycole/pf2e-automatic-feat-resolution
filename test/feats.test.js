@@ -808,6 +808,13 @@ test("2026-11-05: passive riders on a save or a check (Resounding Bravery double
     const recall = (outcome) => rollOf({ type: "skill-check", domains: ["skill-check", "religion"], options: ["action:recall-knowledge"], outcome });
     assert.ok(offerFits(byName("Hell's Bane"), recall("criticalSuccess"), { who: "self" }));
     assert.ok(!offerFits(byName("Hell's Bane"), recall("success"), { who: "self" }));
+    const bite = (slug, outcome) => rollOf({ type: "attack-roll", domains: ["attack-roll"], options: [`item:slug:${slug}`], outcome });
+    assert.ok(offerFits(byName("Sickening Bite"), bite("jaws", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(byName("Sickening Bite"), bite("longsword", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(byName("Sickening Bite"), bite("jaws", "success"), { who: "self" }));
+    const disarm = rollOf({ type: "skill-check", domains: ["skill-check", "thievery"], options: ["action:disarm"], outcome: "success" });
+    assert.ok(offerFits(byName("Sly Disarm"), disarm, { who: "self", hasTarget: true }));
+    assert.ok(!offerFits(byName("Sly Disarm"), disarm, { who: "self", hasTarget: false }));
 });
 
 test("round 107: Redirecting Shot and Pinpoint Assault offers", async () => {

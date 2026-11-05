@@ -11,6 +11,7 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 //   it must be for, from the roll's "action:<slug>" option); within: "reach" for a roller in your reach.
 //   { roll: "damage-roll", by: "self", damageType?, ranged? } — your damage roll with damage of that type (ranged: a ranged Strike's).
 //   { roll: "attack-roll", by, ranged?, outcomes } — an attack roll's degree (ranged: a ranged attack's).
+//   weapons: only an attack with one of those weapons (its "item:slug:<slug>").
 //   { roll: "saving-throw", by, saves?, outcomes } — a save's degree (saves: which of fortitude, reflex and will).
 //   Any of them with traits: only a roll against something with one of those traits ("item:trait:<trait>" or "origin:item:trait:<trait>" among its options); notTraits: only one against none of them.
 // does: what the button does.
@@ -18,6 +19,8 @@ const teams = (module, pack, id) => `Compendium.${module}.${pack}.Item.${id}`;
 //   { kind: "same-action" } — the triggering action, against the triggering target;
 //   { kind: "temp-hp", half: true } — temporary Hit Points from the triggering damage of that type;
 //   { kind: "effect", rules, duration, tempHP? } — an Effect on you; skill: the triggering check's skill fills "{skill}" in the rules;
+//   who "target": the Effect on the triggering roll's target instead (Sly Disarm's off-guard, GrantItem);
+//   { kind: "condition", slug, value } — a condition on the triggering roll's target (Sickening Bite's sickened);
 //   tempHP: a formula of yours ("floor(@actor.level/2)"), temporary Hit Points gained with it; doubledWith: a trait the triggering roll
 //   was against that doubles both (Resounding Bravery's fear);
 //   { kind: "replace-d20" } — a d20 the triggering roll uses instead of its own, its new total and degree against the same DC;
@@ -81,6 +84,18 @@ export const REACTION_OFFERS = [
         on: { roll: "skill-check", by: "self", actions: ["recall-knowledge"], outcomes: ["criticalSuccess"] },
         does: { kind: "effect", rules: [{ key: "FlatModifier", selector: "damage", type: "status", value: 4, predicate: [{ or: ["target:trait:devil", "target:trait:hellknight"] }] }], duration: { value: 1, unit: "minutes", expiry: "turn-start", sustained: false } },
         notes: ["Only for Recall Knowledge about a devil or Hellknight, and only against that creature: the bonus is set for any devil, so remove it if you fight another."]
+    },
+    {
+        uuid: pf2e("Aww98EQXcigRhY3v"), name: "Sickening Bite",
+        on: { roll: "attack-roll", by: "self", weapons: ["jaws"], outcomes: ["criticalSuccess"] },
+        does: { kind: "condition", slug: "sickened", value: 1 },
+        notes: ["A disease effect, on a living creature. If you're satiated you can end it to do the same on a regular hit (apply Sickened 1 by hand). The GM applies it when the target isn't yours."]
+    },
+    {
+        uuid: pf2e("C9QVzHuUznMfFQ7C"), name: "Sly Disarm",
+        on: { roll: "skill-check", by: "self", skills: ["thievery"], actions: ["disarm"], outcomes: ["success", "criticalSuccess"], target: true },
+        does: { kind: "effect", who: "target", rules: [{ key: "GrantItem", uuid: "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg" }], duration: { value: 0, unit: "rounds", expiry: "turn-end", sustained: false } },
+        notes: ["Off-guard only against your next attack this turn: remove the Effect after it. The GM applies it when the target isn't yours."]
     }
 ];
 const BY_UUID = new Map(REACTION_OFFERS.map((entry) => [entry.uuid, entry]));
@@ -94,9 +109,10 @@ export function rollOf(context, damageTotals = null) {
     const domains = context.domains ?? [];
     const skill = context.type === "skill-check" ? (domains.find((domain) => SKILLS.has(domain)) ?? null) : null;
     const save = context.type === "saving-throw" ? (domains.find((domain) => SAVES.has(domain)) ?? context.statistic ?? null) : null;
+    const weapon = options.find((option) => /^item:slug:[a-z0-9-]+$/.test(option))?.slice(10) ?? null;
     const traits = [...new Set(options.map((option) => /^(?:origin:)?item:trait:([a-z-]+)$/.exec(option)?.[1]).filter(Boolean))];
     const ranged = options.includes("item:ranged") || domains.some((domain) => /^ranged-(?:strike-)?(?:attack-roll|damage)$/.test(domain));
-    return { roll: context.type, skill, ...(save ? { save } : {}), ...(traits.length ? { traits } : {}), action, outcome: context.outcome ?? null, dc: Number(context.dc?.value) || null, damage: damageTotals ?? {}, ranged };
+    return { roll: context.type, skill, ...(save ? { save } : {}), ...(traits.length ? { traits } : {}), ...(weapon ? { weapon } : {}), action, outcome: context.outcome ?? null, dc: Number(context.dc?.value) || null, damage: damageTotals ?? {}, ranged };
 }
 const SAVES = new Set(["fortitude", "reflex", "will"]);
 const SKILLS = new Set(["acrobatics", "arcana", "athletics", "crafting", "deception", "diplomacy", "intimidation", "medicine", "nature", "occultism", "performance", "religion", "society", "stealth", "survival", "thievery"]);
@@ -111,6 +127,7 @@ export function offerFits(entry, roll, { who, untrainedIn = () => false, hasTarg
     if (on.roll === "damage-roll") return !on.damageType || (roll.damage?.[on.damageType] ?? 0) > 0;
     if (on.skills && !on.skills.includes(roll.skill)) return false;
     if (on.saves && !on.saves.includes(roll.save)) return false;
+    if (on.weapons && !on.weapons.includes(roll.weapon)) return false;
     if (on.traits && !on.traits.some((trait) => (roll.traits ?? []).includes(trait))) return false;
     if (on.notTraits && on.notTraits.some((trait) => (roll.traits ?? []).includes(trait))) return false;
     if (on.actions && !on.actions.includes(roll.action)) return false;
