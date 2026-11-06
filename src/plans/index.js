@@ -17,7 +17,38 @@ import checks from "./checks.js";
 import damage from "./damage.js";
 import saves3 from "./saves-3.js";
 import damage2 from "./damage-2.js";
+import gaps1 from "./gaps-1.js";
+import gaps2 from "./gaps-2.js";
+import gaps3 from "./gaps-3.js";
+import gaps4 from "./gaps-4.js";
+import gaps5 from "./gaps-5.js";
+import gaps6 from "./gaps-6.js";
+import gaps7 from "./gaps-7.js";
+import gaps8 from "./gaps-8.js";
+import gaps9 from "./gaps-9.js";
+import gaps10 from "./gaps-10.js";
+import gaps11 from "./gaps-11.js";
+import gaps12 from "./gaps-12.js";
+import gaps13 from "./gaps-13.js";
+import gaps14 from "./gaps-14.js";
+import gaps15 from "./gaps-15.js";
+import gaps16 from "./gaps-16.js";
+import gaps17 from "./gaps-17.js";
+import gaps18 from "./gaps-18.js";
+import gaps19 from "./gaps-19.js";
+import gaps20 from "./gaps-20.js";
+import gaps21 from "./gaps-21.js";
+import gaps22 from "./gaps-22.js";
+import gaps23 from "./gaps-23.js";
+import gaps24 from "./gaps-24.js";
+import gaps25 from "./gaps-25.js";
+import gaps26 from "./gaps-26.js";
+import gaps27 from "./gaps-27.js";
+import gaps28 from "./gaps-28.js";
+import gaps29 from "./gaps-29.js";
 import strikes3 from "./strikes-3.js";
+import strikes4 from "./strikes-4.js";
+import strikes5 from "./strikes-5.js";
 import affects from "./affects.js";
 import eidolons from "./eidolons.js";
 import saves4 from "./saves-4.js";
@@ -33,7 +64,7 @@ import attacks from "./attacks.js";
 import affects3 from "./affects-3.js";
 import teleports from "./teleports.js";
 
-export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks, teleports];
+export const PLAN_BATCHES = [fighter, martial, tactical, strikes2, maneuvers, saves, saves2, checks, damage, saves3, damage2, strikes3, strikes4, strikes5, affects, eidolons, saves4, saves5, heals, checks2, affects2, passiveEffects, toggles, linkedEffects, selfChecks, affects3, attacks, teleports, gaps1, gaps2, gaps3, gaps4, gaps5, gaps6, gaps7, gaps8, gaps9, gaps10, gaps11, gaps12, gaps13, gaps14, gaps15, gaps16, gaps17, gaps18, gaps19, gaps20, gaps21, gaps22, gaps23, gaps24, gaps25, gaps26, gaps27, gaps28, gaps29];
 const BY_UUID = new Map(PLAN_BATCHES.flat().map((entry) => [entry.uuid, entry]));
 
 export const handEntry = (item) => BY_UUID.get(sourceOf(item)) ?? null;
@@ -83,7 +114,7 @@ export function handLinked(item, entry) {
     };
 }
 
-const actionsOf = (item) => (item.system?.actionType?.value === "free" ? "free" : String(Number(item.system?.actions?.value) || 1));
+const actionsOf = (item) => (["free", "reaction"].includes(item.system?.actionType?.value) ? item.system.actionType.value : String(Number(item.system?.actions?.value) || 1));
 const sourceFor = (item) => ({ name: item.name, slug: item.system?.slug ?? null, uuid: item.uuid ?? null, type: item.type ?? "feat" });
 
 // An act entry → the basic action's plan as the feat's (its card rolls the character's own check), or null without that action's plan.

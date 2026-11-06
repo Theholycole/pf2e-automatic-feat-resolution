@@ -792,6 +792,31 @@ test("round 106: reaction offers fit their triggering rolls", async () => {
     assert.equal(levelDC(3), 18);
 });
 
+test("2026-11-05: passive riders on a save or a check (Resounding Bravery doubled against fear, Hell's Bane)", async () => {
+    const { REACTION_OFFERS, offerFits, rollOf, effectRulesFor, doubled } = await import("../src/plans/offers.js");
+    const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);
+    const save = (statistic, outcome, options = []) => rollOf({ type: "saving-throw", domains: ["saving-throw", statistic], options, outcome });
+    const bravery = byName("Resounding Bravery");
+    assert.ok(offerFits(bravery, save("will", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(bravery, save("will", "success"), { who: "self" }));
+    assert.ok(!offerFits(bravery, save("fortitude", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(bravery, save("will", "criticalSuccess"), { who: "ally" }));
+    assert.equal(effectRulesFor(bravery, save("will", "criticalSuccess"))[0].value, 1);
+    const fear = save("will", "criticalSuccess", ["origin:item:trait:fear"]);
+    assert.ok(doubled(bravery, fear));
+    assert.equal(effectRulesFor(bravery, fear)[0].value, 2);
+    const recall = (outcome) => rollOf({ type: "skill-check", domains: ["skill-check", "religion"], options: ["action:recall-knowledge"], outcome });
+    assert.ok(offerFits(byName("Hell's Bane"), recall("criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(byName("Hell's Bane"), recall("success"), { who: "self" }));
+    const bite = (slug, outcome) => rollOf({ type: "attack-roll", domains: ["attack-roll"], options: [`item:slug:${slug}`], outcome });
+    assert.ok(offerFits(byName("Sickening Bite"), bite("jaws", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(byName("Sickening Bite"), bite("longsword", "criticalSuccess"), { who: "self" }));
+    assert.ok(!offerFits(byName("Sickening Bite"), bite("jaws", "success"), { who: "self" }));
+    const disarm = rollOf({ type: "skill-check", domains: ["skill-check", "thievery"], options: ["action:disarm"], outcome: "success" });
+    assert.ok(offerFits(byName("Sly Disarm"), disarm, { who: "self", hasTarget: true }));
+    assert.ok(!offerFits(byName("Sly Disarm"), disarm, { who: "self", hasTarget: false }));
+});
+
 test("round 107: Redirecting Shot and Pinpoint Assault offers", async () => {
     const { REACTION_OFFERS, offerFits, rollOf, withD20 } = await import("../src/plans/offers.js");
     const byName = (name) => REACTION_OFFERS.find((entry) => entry.name === name);
@@ -852,4 +877,34 @@ test("round 111: Sneak against special senses", async () => {
     assert.equal(both.total, 22);
     assert.equal(both.state, "undetected");
     assert.equal(m.recountStealth("sneak", 22, 10, rows, { tremorsense: "dex", lifesense: "wis" }, mods)[0].state, "hidden");
+});
+
+// (2026-11-03, the Strike riders.)
+test("a Strike feat's riders: a basic action after the hit, more weapon dice, damage per die, fatal, a turn that ends, a critical's part", () => {
+    const actor = { type: "character", system: { details: { level: { value: 18 } } } };
+    const dcs = { ...DCS, level: 18 };
+    const slam = compileFeat(feat("Slam Down", "<p>Make a melee Strike. If it hits and deals damage, you can attempt an Athletics check to [[/act trip]] the creature you hit.</p>"), { actor, dcs });
+    assert.equal(slam.onHit.follow, "trip");
+    const knock = compileFeat(feat("Knockback Strike", "<p>Make a melee Strike. If you hit, attempt an Athletics check to Shove the target.</p>"), { actor, dcs });
+    assert.equal(knock.onHit.follow, "shove");
+    const grievous = compileFeat(feat("Grievous Blow", "<p>Make a melee Strike. If this Strike hits, it deals two additional weapon damage dice. If you are at least 18th level, increase the additional damage to three weapon damage dice.</p>"), { actor, dcs });
+    assert.equal(grievous.extraWeaponDice, 3);
+    const strangle = compileFeat(feat("Strangle", "<p>Make an unarmed melee Strike. On a success, you gain a circumstance bonus to damage equal to the number of weapon damage dice.</p>", 1), { actor, dcs });
+    assert.equal(strangle.damagePerWeaponDie, 1);
+    const wolf = compileFeat(feat("Wolf Drag", "<p>Make a wolf jaw Strike. Your wolf jaw gains the fatal d12 trait for this Strike.</p>"), { actor, dcs });
+    assert.equal(wolf.fatal, 12);
+    const brutal = compileFeat(feat("Brutal Finish", "<p>Make a Strike with a melee weapon you're wielding in two hands. After the Strike, your turn ends. The Strike deals one additional weapon damage die, or two additional weapon damage dice if you're at least 18th level. The Strike also gains the following failure effect.</p><p><strong>Failure</strong> You deal damage equal to one weapon damage die of the required weapon. Increase this to two dice if you're at least 18th level.</p>", 1), { actor, dcs });
+    assert.deepEqual([brutal.endsTurn, brutal.extraWeaponDice, brutal.failureDice], [true, 2, 2]);
+    const suplex = compileFeat(feat("Suplex", "<p>Make a melee Strike against the creature you have grabbed. On a success, the target lands @UUID[Compendium.pf2e.conditionitems.Item.Prone]{Prone}, and on a critical success, the target lands prone and takes an additional @Damage[2d6[bludgeoning]] damage.</p>"), { actor, dcs });
+    assert.deepEqual([suplex.onHit.conditions.map((entry) => entry.slug), suplex.onHit.damage, suplex.onHit.criticalDamage], [["prone"], [], ["2d6[bludgeoning]"]]);
+    // A check of its own first: its success isn't the hit's; damage to other foes isn't the target's.
+    const hedgehog = compileFeat(feat("Leaping Hedgehog Strike", "<p>Leap toward an enemy. Attempt an Acrobatics check to Tumble Through that enemy's space. On a success, the target is also knocked @UUID[Compendium.pf2e.conditionitems.Item.Prone]{Prone}. You then Strike that same enemy.</p>"), { actor, dcs });
+    assert.deepEqual(hedgehog.onHit.conditions, []);
+    const sparks = compileFeat(feat("Test Sparks", "<p>Make a melee Strike. On a hit, the Strike deals @Damage[1d4[electricity]] damage to up to two other foes within 10 feet.</p>"), { actor, dcs });
+    assert.deepEqual(sparks.onHit.damage, []);
+});
+
+test("a read rider the card doesn't apply is still the GM's note: Brutal Finish's extra die", () => {
+    const brutal = compileFeat(feat("Brutal Finish", "<p>Make a Strike. After the Strike, your turn ends. The Strike deals one additional weapon damage die, or two additional weapon damage dice if you're at least 18th level.</p>", 1), { actor: { type: "character", system: { details: { level: { value: 12 } } } }, dcs: { ...DCS, level: 12 } });
+    assert.ok(brutal.notes.some((note) => /1 extra weapon damage die/.test(note)));
 });

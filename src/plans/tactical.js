@@ -12,11 +12,11 @@ const ranged = { strike: "ranged", anyStrike: false };
 export default [
     // Swashbuckler
     { uuid: pf2e("SlwgsFXscR49tRio"), name: "Halyard Strike", strike: { notes: ["Swing on a rope up to twice your Speed, with a one-handed weapon or unarmed Strike at any point during the swing."] } },
-    { uuid: pf2e("BuaTJxALqxM5EZav"), name: "Perfect Finisher", strike: { notes: ["Roll the attack twice and use the better result."] } },
+    { uuid: pf2e("BuaTJxALqxM5EZav"), name: "Perfect Finisher", strike: { fortune: true, notes: ["Roll the attack twice and use the better result."] } },
     { uuid: pf2e("E25gWBCsDm3DbJdO"), name: "Brandishing Draw", strike: { notes: ["Interact to draw a weapon first; the Strike (or one-action finisher) uses the weapon you drew."] } },
     { uuid: pf2e("HxMkvkxd8QMXcQ67"), name: "Retreating Finisher", strike: { melee: true, notes: ["On a miss (not a critical miss), Step as a free action."] } },
     { uuid: pf2e("a5jZJPZO8RPQjqE7"), name: "Illimitable Finisher", strike: { notes: ["Step first. The finisher gains the bravado trait; if it gives you panache back, you can attempt another finisher as part of this action."] } },
-    { uuid: pf2e("dxujgA0NgiEvA0H8"), name: "Bleeding Finisher", strike: { notes: ["A slashing or piercing Strike. On a hit, persistent bleed damage equal to your precise strike finisher damage."] } },
+    { uuid: pf2e("dxujgA0NgiEvA0H8"), name: "Bleeding Finisher", strike: { onHit: { rulesDamage: ["3d6[persistent,bleed]"] }, notes: ["A slashing or piercing Strike. On a hit, persistent bleed damage equal to your precise strike finisher damage."] } },
     { uuid: pf2e("jkBzlMB4TS1sS2Fm"), name: "Stunning Finisher", strike: { melee: true, notes: ["The save on a hit is on its card."] } },
     // Gunslinger
     { uuid: pf2e("ySr510TkpUO3N6Ty"), name: "Trick Shot", strike: { ...ranged, notes: ["Against an easy DC for your level, at an object near the target: on a success, one of the feat's effects instead of a hit on the foe."] } },
@@ -40,7 +40,7 @@ export default [
     { uuid: pf2e("Wk1qjeuofFyLFdTQ"), name: "Belly Flop", strike: { melee: true, onHit: { conditions: [{ slug: "immobilized", value: null, duration: null }] }, notes: ["You drop prone first, without the prone attack penalty. The immobilization ends if you Stand or move; its Escape DC can add your armor's item bonus."] } },
     { uuid: pf2e("k4TsVHoGtBJNJw8a"), name: "Momentum Strike", strike: { melee: true, notes: ["If it hits and deals damage, move an enemy your size or smaller up to 5 feet (10 on a critical hit) within your reach; into another creature, see the feat."] } },
     { uuid: pf2e("41zc9MdLoTy02kim"), name: "Weakening Assault", strike: { strikes: [null, null], onHit: { conditions: [{ slug: "enfeebled", value: 1, duration: untilYourNextTurn }] }, notes: ["Against your taunted enemy. If both Strikes hit, enfeebled 3 instead."] } },
-    { uuid: pf2e("Um5owecqPW17dtl2"), name: "Taunting Strike", strike: { notes: ["Hit or miss, you Taunt the target (the Taunt gains the visual trait)."] } },
+    { uuid: pf2e("Um5owecqPW17dtl2"), name: "Taunting Strike", strike: { taunt: true, notes: ["Hit or miss, you Taunt the target (the Taunt gains the visual trait)."] } },
     { uuid: pf2e("YHeKwgJq1zkdcV0p"), name: "Proud Nail", strike: { melee: true, notes: ["Against your taunted, off-guard enemy: one extra weapon die on a hit (two at 10th level, three at 18th)."] } },
     { uuid: pf2e("SiGvSOPQmZ0nyXVO"), name: "Lock Down", strike: { melee: true, notes: ["If it hits and deals damage, the enemy can't move beyond this weapon's reach until your next turn, until you move, or until you attack with it again."] } },
     { uuid: pf2e("NMRBes7gGfGldOrn"), name: "Ring Their Bell", strike: { melee: true, notes: ["A fist (or gauntlet) Strike against your taunted enemy, even without a free hand. The save comes only if it deals damage."] } },

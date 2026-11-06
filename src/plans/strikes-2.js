@@ -10,7 +10,7 @@ const named = (strike) => ({ strike, anyStrike: false });
 export default [
     // Fighter
     { uuid: pf2e("kcWdo5zzldDTqCBP"), name: "Spear Dancer", strike: { melee: true, notes: ["With a spear or polearm: Step and then Strike, or Strike and then Step."] } },
-    { uuid: pf2e("h5DzKmKDADGhvmF9"), name: "Certain Strike", strike: { melee: true, notes: ["On a miss (not a critical miss), it still deals a hit's damage without any damage dice."] } },
+    { uuid: pf2e("h5DzKmKDADGhvmF9"), name: "Certain Strike", strike: { failureFlat: true, melee: true, notes: ["On a miss (not a critical miss), it still deals a hit's damage without any damage dice."] } },
     { uuid: pf2e("UiQbjeqBUFjUtgUR"), name: "Assisting Shot", strike: { ...ranged, notes: ["On a hit, the next other creature to attack the target before your next turn gets +1 circumstance (+2 on a critical hit); PF2e's Effect: Assisting Shot."] } },
     { uuid: pf2e("1sD5Gu8jQL09Yz2j"), name: "Sever Space", strike: { melee: true, notes: ["80-foot reach with a slashing weapon. Afterwards, hit or miss, you teleport next to the target, or try to pull it next to you (it can negate with a Will save against your class DC)."] } },
     { uuid: pf2e("JHcvySfCM9uYNb9N"), name: "Revealing Stab", strike: { melee: true, notes: ["A piercing weapon: no flat check against concealed, DC 5 against hidden. If it hits and deals damage, you can leave the weapon lodged in it, revealing it (see the feat)."] } },
@@ -23,7 +23,7 @@ export default [
     { uuid: pf2e("cISZPoI675He4aNh"), name: "Sawtooth Grapple", strike: { melee: true, strikes: ["melee", "melee"], onHit: { follow: "grapple" }, notes: ["One Strike with each weapon at the same creature. The Grapple only if you dealt sneak attack damage; no multiple attack penalty on it if both Strikes dealt damage."] } },
     { uuid: pf2e("ZdL8pPPV0QCkBML1"), name: "Subtle Shank", strike: { melee: true, offGuard: true, notes: ["Draw the concealed weapon, Strike (the target is off-guard), then Conceal it again with Stealth."] } },
     // Ranger
-    { uuid: pf2e("COe0bYyVCyC78rzP"), name: "Second Sting", strike: { melee: true, notes: ["Against your hunted prey. On a miss (not a critical miss), deal the other weapon's hit damage without any damage dice."] } },
+    { uuid: pf2e("COe0bYyVCyC78rzP"), name: "Second Sting", strike: { failureFlat: true, melee: true, notes: ["Against your hunted prey. On a miss (not a critical miss), deal the other weapon's hit damage without any damage dice."] } },
     { uuid: pf2e("qav9ec9cR4lFcz3C"), name: "Disrupt Prey", strike: { melee: true, notes: ["Against your hunted prey; a critical hit disrupts the triggering action."] } },
     { uuid: pf2e("enPAJ1oSDutts7ic"), name: "Deadly Aim", strike: { ...ranged, attackBonus: -2, notes: ["Against your hunted prey: –2 to hit, +4 circumstance to damage (+6 at 11th, +8 at 15th)."] } },
     { uuid: pf2e("s2GbcUIXG1ZBurSd"), name: "Hamstringing Strike", strike: { attackBonus: -2, notes: ["Against your hunted prey: on a hit a –5-foot status penalty to its Speed, –10 on a critical hit (PF2e's Effect: Hamstringing Strike); not on a creature immune to bleed."] } },

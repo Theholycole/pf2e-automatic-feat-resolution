@@ -2,6 +2,7 @@
 // played by the ability module's cards. A feat it doesn't read stays PF2e's.
 
 import { compileFeat } from "../src/compiler/index.js";
+import { handEntry } from "../src/plans/index.js";
 import { characterDCs } from "./character.js";
 import { setUpRules } from "./rules.js";
 import { registerConditionFeats } from "./conditions.js";
@@ -15,13 +16,14 @@ import { registerNonlethal, toggleNonlethal } from "./nonlethal.js";
 import { registerSenses, wrapDetectionModes } from "./senses.js";
 import { registerTruesight, truesightSoon } from "./truesight.js";
 import { guardOwnModes, registerSenseZones } from "./sense-zones.js";
-import { applyFeatEffect, byName, togglePassiveEffect } from "./effects.js";
+import { applyFeatEffect, byName, registerEndsAfter, togglePassiveEffect } from "./effects.js";
 import { areaOf, inArea } from "../src/compiler/area-targets.js";
 import { actingItem, findMaster } from "../src/compiler/companion.js";
 import { fallEases, temperatureProtections, weatherIgnores } from "../src/plans/environment.js";
 import { afterStrikeCard, onOfferMessage, registerOffers } from "./offers.js";
 import { registerWorkbench } from "./workbench.js";
 import { registerSkillActions } from "./skill-actions.js";
+import { assessmentCard } from "./assessment.js";
 import { onConditionGained, onConditionLost, onFalling, onFell, onFoeAction, onForeignSpell, onJoinEncounter, onOwnUse, onSaveAsked, onTokenMoved, onRollMessage, onTurnChange, registerReminderSetting, tokenCenter } from "./reminders.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -101,12 +103,18 @@ async function cardForFeat(message) {
     let item = actingItem(posted, world);
     // (Round 108: a feat that follows the character's last Strike, Drink of my Foes: its own card, scripts/offers.js.)
     if (await afterStrikeCard(item)) return;
+    // (2026-11-04: Battle Assessment and Combat Reading, the secret check and what it tells; scripts/assessment.js.)
+    if (await assessmentCard(item, message)) return;
     let plan = compileItem(item);
     // (A feat its companion acts in, Death Dive's mount: the companion's Strike.)
     if (plan?.by === "companion" && item === posted) {
         item = actingItem(posted, world, { companion: true });
         if (item !== posted) plan = compileItem(item);
     }
+    // (A hand card whose save is against a DC the character lacks — Collateral Thrash's barbarian class DC on a non-barbarian — doesn't
+    // compile: a GM note, not silence; 2026-11-04 Foundry test.)
+    const against = !plan && !npc ? handEntry(item)?.text?.match(/against:([\w-]+)/)?.[1] : null;
+    if (against) return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), whisper: ChatMessage.getWhisperRecipients("GM").map((user) => user.id), content: `<p><strong>${item.name}</strong>: no card, as ${item.actor.name} has no ${against.replace(/-/g, " ")} DC for its save. Call for the save by hand.</p>` });
     // (An NPC's action plays only for an ally's Effect: a toggle on its targets, or an Effect it links for its allies, Teams+ underlings'
     // Battle Caller and Team Spirit; round 65 Foundry test.)
     const linksAnEffect = plan?.resolution?.kind === "effect" && (plan.resolution.applications ?? []).some((application) => application.kind === "native-spell-effect");
@@ -326,6 +334,7 @@ Hooks.once("ready", () => {
     registerManeuverMap();
     // (Damage back on a creature that hits or grabs you, Inviolable: scripts/retaliation.js; round 57.)
     registerRetaliation();
+    registerEndsAfter();
     Hooks.on("preCreateChatMessage", recordTargets);
     // (Slice 6: reminders at a character's turn.)
     Hooks.on("combatTurnChange", (combat, prior, current) => {

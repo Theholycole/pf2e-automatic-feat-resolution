@@ -2,7 +2,7 @@
 // off a character's reaction whispers its owners (and the GM) a card with a button that does the reaction's effect: a check at a DC from the
 // trigger, the same action against the same target, temporary Hit Points or an Effect. The player decides whether to use it.
 
-import { REACTION_OFFERS, afterStrikeOf, effectRulesFor, levelDC, offerFits, offerOf, rollOf, tempHPFrom, withD20 } from "../src/plans/offers.js";
+import { REACTION_OFFERS, afterStrikeOf, doubled, effectRulesFor, levelDC, offerFits, offerOf, rollOf, tempHPFrom, withD20 } from "../src/plans/offers.js";
 import { applyFeatEffect } from "./effects.js";
 
 const MODULE_ID = "pf2e-automatic-feat-resolution";
@@ -77,7 +77,7 @@ export async function afterStrikeCard(item) {
 export async function onOfferMessage(message) {
     const context = message.flags?.pf2e?.context;
     if (context?.type) noteStrike(message, context);
-    if (!context?.type || !["skill-check", "damage-roll", "attack-roll"].includes(context.type)) return;
+    if (!context?.type || !["skill-check", "damage-roll", "attack-roll", "saving-throw"].includes(context.type)) return;
     const roll = rollOf(context, context.type === "damage-roll" ? damageTotals(message) : null);
     // (The roll itself, for a d20 in its place or its damage again: its message, total and d20.)
     const first = message.rolls?.[0];
@@ -96,9 +96,10 @@ export async function onOfferMessage(message) {
         const allied = !self && Boolean(token && rollerToken) && token.document.disposition === rollerToken.document.disposition;
         const who = self ? "self" : allied ? "ally" : "other";
         const untrainedIn = (skill) => Number(actor.skills?.[skill]?.rank ?? 0) === 0;
-        const inReach = !token || !rollerToken ? false : (edgeDistance(token, rollerToken) ?? Infinity) <= reachOf(actor);
+        const distance = !token || !rollerToken ? Infinity : (edgeDistance(token, rollerToken) ?? Infinity);
+        const inReach = distance <= reachOf(actor);
         for (const { item, entry } of offersOf(actor)) {
-            if (!offerFits(entry, roll, { who, untrainedIn, hasTarget: Boolean(target), inReach })) continue;
+            if (!offerFits(entry, roll, { who, untrainedIn, hasTarget: Boolean(target), inReach, distance })) continue;
             await postOffer({ actor, item, entry, roll, roller, target, targetDoc });
         }
     }
@@ -109,6 +110,7 @@ function triggerWords(entry, roll, roller, actor, target) {
     if (roll.roll === "damage-roll") return entry.on.damageType ? `${whose} damage roll has ${roll.damage[entry.on.damageType]} ${entry.on.damageType} damage.` : `${whose} ${roll.ranged ? "ranged " : ""}damage roll is ${roll.total}.`;
     if (roll.roll === "attack-roll") return `${whose} ${roll.ranged ? "ranged " : ""}attack${target ? ` on ${escape(target.name)}` : ""} ${roll.outcome === "criticalFailure" ? "critically misses" : roll.outcome === "failure" ? "misses" : roll.outcome === "criticalSuccess" ? "critically hits" : "hits"} (${roll.total}${roll.dc ? ` against ${roll.dc}` : ""}).`;
     const degree = { criticalSuccess: "critically succeeds", success: "succeeds", failure: "fails", criticalFailure: "critically fails" }[roll.outcome] ?? roll.outcome;
+    if (roll.roll === "saving-throw") return `${whose} ${roll.save ? roll.save[0].toUpperCase() + roll.save.slice(1) + " " : ""}save ${degree}.`;
     const skill = roll.skill ? roll.skill[0].toUpperCase() + roll.skill.slice(1) : "skill";
     return `${whose} ${skill} check${roll.action ? ` (${roll.action.replace(/-/g, " ")})` : ""}${target ? ` against ${escape(target.name)}` : ""} ${degree}.`;
 }
@@ -117,12 +119,14 @@ function buttonLabel(entry, roll, target) {
     const does = entry.does;
     if (does.kind === "check") {
         const dc = does.dc === "trigger" ? roll.dc : levelDC(target?.level);
-        return `Roll ${does.statistic[0].toUpperCase()}${does.statistic.slice(1)}${dc ? ` (DC ${dc})` : ""}`;
+        const name = does.statistic.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+        return `Roll ${name}${dc ? ` (DC ${dc})` : ""}`;
     }
-    if (does.kind === "same-action") return `${(roll.action ?? "Action").replace(/-/g, " ").replace(/^./, (letter) => letter.toUpperCase())} ${escape(target?.name ?? "")}`.trim();
+    if (does.kind === "same-action") return `${(does.action ?? roll.action ?? "Action").replace(/-/g, " ").replace(/^./, (letter) => letter.toUpperCase())} ${escape(target?.name ?? "")}`.trim();
     if (does.kind === "temp-hp") return `Gain ${tempHPFrom(entry, roll)} temporary Hit Points`;
     if (does.kind === "replace-d20") return "Roll a d20 for it";
     if (does.kind === "reroll-damage") return "Roll the damage again";
+    if (does.kind === "reroll") return "Reroll it";
     return "Use it";
 }
 
@@ -132,7 +136,7 @@ async function postOffer({ actor, item, entry, roll, roller, target, targetDoc }
     await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor }),
         whisper: owners,
-        content: `<p><strong>${escape(actor.name)}</strong>: ${triggerWords(entry, roll, roller, actor, target)} You can use @UUID[${item.uuid}]{${escape(item.name)}} (reaction).</p>${notes}<p><button type="button" data-action="${MODULE_ID}-offer">${buttonLabel(entry, roll, target)}</button></p>`,
+        content: `<p><strong>${escape(actor.name)}</strong>: ${triggerWords(entry, roll, roller, actor, target)} You can use @UUID[${item.uuid}]{${escape(item.name)}}${item.system?.actionType?.value === "passive" ? "" : " (reaction)"}.</p>${notes}<p><button type="button" data-action="${MODULE_ID}-offer">${buttonLabel(entry, roll, target)}</button></p>`,
         flags: { [MODULE_ID]: { [FLAG]: { actor: actor.uuid, item: item.uuid, roll, target: targetDoc?.uuid ?? target?.uuid ?? null } } }
     });
 }
@@ -158,9 +162,11 @@ async function use(message, choice = null) {
     if (does.kind === "check") {
         const dc = does.dc === "trigger" ? roll.dc : levelDC(target?.level);
         const statistic = actor.getStatistic?.(does.statistic) ?? actor.skills?.[does.statistic];
-        return statistic?.roll({ ...(dc ? { dc: { value: dc } } : {}), extraRollOptions: [`origin:item:slug:${item.slug}`], label: `${item.name}: ${statistic.label}` });
+        if (!statistic) return ui.notifications.warn(`${item.name}: ${actor.name} has no ${does.statistic.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ")} to roll.`);
+        return statistic.roll({ ...(dc ? { dc: { value: dc } } : {}), extraRollOptions: [`origin:item:slug:${item.slug}`], label: `${item.name}: ${statistic.label}` });
     }
     if (does.kind === "choose-action") roll.action = choice;
+    if (does.kind === "same-action" && does.action) roll.action = does.action;
     if (does.kind === "same-action" || does.kind === "choose-action") {
         // (The triggering target, targeted for this user, as PF2e's action reads the user's targets.)
         const token = targetDoc?.object ?? null;
@@ -182,6 +188,12 @@ async function use(message, choice = null) {
         const words = { criticalSuccess: "a critical hit", success: "a hit", failure: "a miss", criticalFailure: "a critical miss" }[result.degree] ?? "for the GM to compare";
         return d20.toMessage({ speaker: ChatMessage.getSpeaker({ actor }), flavor: `<strong>${escape(item.name)}</strong>: the ally's attack uses this d20 instead of its ${roll.die}: ${result.total}${roll.dc ? ` against ${roll.dc}` : ""}, ${words}.${(entry.notes ?? []).map((note) => `<br>${escape(note)}`).join("")}` });
     }
+    if (does.kind === "reroll") {
+        const original = game.messages.get(roll.message);
+        if (!original) return ui.notifications.warn(`${item.name}: the roll's message is gone.`);
+        if (!original.actor?.isOwner) return ui.notifications.warn(`${item.name}: ask the GM to press the button, as ${original.actor?.name ?? "the roller"} isn't yours.`);
+        return game.pf2e?.Check?.rerollFromMessage?.(original, does.keep ? { keep: does.keep } : {});
+    }
     if (does.kind === "reroll-damage") {
         const original = game.messages.get(roll.message)?.rolls?.[0];
         if (!original) return ui.notifications.warn(`${item.name}: the damage roll's message is gone.`);
@@ -189,8 +201,22 @@ async function use(message, choice = null) {
         const higher = Math.max(Number(original.total) || 0, Number(again.total) || 0);
         return again.toMessage({ speaker: ChatMessage.getSpeaker({ actor }), flavor: `<strong>${escape(item.name)}</strong>: the damage again, ${again.total} (it was ${original.total}): keep ${higher}.` });
     }
+    // (On the target, Sickening Bite's and Sly Disarm's: only from a client that can change it, the GM's if not the player's.)
+    if ((does.kind === "condition" || does.who === "target") && !target) return ui.notifications.warn(`${item.name}: the roll had no target.`);
+    if ((does.kind === "condition" || does.who === "target") && !target.isOwner) return ui.notifications.warn(`${item.name}: ask the GM to press the button, as ${target.name} isn't yours.`);
+    if (does.kind === "condition") {
+        await target.increaseCondition?.(does.slug, { value: does.value ?? 1 });
+        return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${escape(target.name)} is ${escape(does.slug)}${does.value ? ` ${does.value}` : ""}.</p>` });
+    }
     if (does.kind === "effect") {
         const rules = effectRulesFor(entry, roll);
+        if (does.who === "target") return applyFeatEffect(item, { builtin: "feat-effect", who: "target", effect: { name: item.name, rules, duration: does.duration, stance: false }, notes: entry.notes ?? [] }, [target]);
+        // (Temporary Hit Points with it, Resounding Bravery's: the character's formula, kept when it has more.)
+        if (does.tempHP) {
+            const amount = Math.max(0, Math.floor(Number(Roll.safeEval(Roll.replaceFormulaData(does.tempHP, actor.getRollData?.() ?? {}, { missing: "0" }))) || 0)) * (doubled(entry, roll) ? 2 : 1);
+            const current = Number(actor.system?.attributes?.hp?.temp) || 0;
+            if (amount > current) await actor.update({ "system.attributes.hp.temp": amount });
+        }
         return applyFeatEffect(item, { builtin: "feat-effect", effect: { name: `${item.name}${roll.skill ? ` (${roll.skill})` : ""}`, rules, duration: does.duration, stance: false }, notes: entry.notes ?? [] });
     }
 }

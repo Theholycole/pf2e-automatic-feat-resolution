@@ -16,7 +16,7 @@ const CONDITIONS = new Set(["blinded", "broken", "clumsy", "concealed", "confuse
 const OTHERS = /\b(?:eidolon|companion|familiar|ally|allies|mount|squadmates?|underling|boss|construct|minion|summon|apparition|spirit|wisp|innovation|clone|duplicate|image)\b/i;
 const USER_STRIKES = /\b(?:[Mm]ake|makes) (?:a|an|one|two|three|up to (?:two|three)|a single|another) (?:[\w'-]+ ){0,4}Strikes?\b|\b(?:then|and|you|You) Strike\b|(?:^|[.:]\s+)Strike\b|\bStrike (?:with your|an?|the|one|each|your)\b/;
 const NUMBERS = { once: 1, one: 1, a: 1, an: 1, twice: 2, two: 2, three: 3, "three times": 3 };
-const HIT = /^(?:If (?:the|your|this|that|either|the first) (?:Strike|attack)(?: is successful| succeeds| hits)|If (?:it|you) (?:hits?|successfully hits?|succeed)|On a hit|On a successful Strike|If it's a hit)(?: and (?:deals?|damages?)[^,]*)?,?\s*/i;
+const HIT = /^(?:If (?:the|your|this|that|either|the first) (?:Strike|attack)(?: is successful| succeeds| hits)|If (?:it|you) (?:hits?|successfully hits?|succeed)|On a hit|On a success|On a successful Strike|If it's a hit|If it deals damage(?: to an? [\w ]+?)?|If it's successful)(?: and (?:deals?|damages?)[^,]*)?,?\s*/i;
 const CRITICAL = /^(?:If (?:the Strike|the attack|it|you) (?:is a critical hit|critically hits|critically succeeds?|critically hit)|On a critical hit|If you critically hit|If you critically succeed)\b,?\s*/i;
 
 const sentencesOf = (html) => String(html ?? "").split(/(?<=[.!?])\s+(?=[A-Z@<[])|;\s+(?=(?:if|on a)\b)/i).map((sentence) => sentence.trim()).filter(Boolean);
@@ -49,21 +49,38 @@ function stridesOf(plain) {
 
 // A hit's results from one sentence: damage tags, conditions, a push; a save the creature hit attempts, with the degree sections it has.
 function hitResults(sentence, html, item, compileSave) {
-    const out = { conditions: [], damage: [], push: null, save: null, read: false };
-    const conditions = readConditions(sentence).filter((effect) => effect.recipient !== "self" && CONDITIONS.has(effect.slug));
+    const out = { conditions: [], damage: [], push: null, save: null, critical: null, follow: null, read: false };
+    // (2026-11-01, the feat ratings: "If you hit and deal damage, the target is Frightened 1, or Frightened 2 on a critical hit" — the hit's own
+    // words kept off the conditions' reading, which takes "you" for its user; a critical hit's in the same sentence as the critical's.)
+    const body = sentence.replace(HIT, "");
+    const criticalPart = /,?\s*or (.+?) on a critical hit\.?\s*$/i.exec(body);
+    const conditionsOf = (text) => readConditions(text).filter((effect) => effect.recipient !== "self" && CONDITIONS.has(effect.slug));
+    const conditions = conditionsOf(criticalPart ? body.slice(0, criticalPart.index) : body);
+    const critical = criticalPart ? conditionsOf(criticalPart[1]) : [];
+    if (critical.length && conditions.length) out.critical = critical.map(({ slug, value, duration }) => ({ slug, value: value ?? null, duration: duration ?? null }));
     if (conditions.length) {
         out.conditions = conditions.map(({ slug, value, duration }) => ({ slug, value: value ?? null, duration: duration ?? null }));
         out.read = true;
     }
-    const damage = inlineTags(sentence, "Damage").map(readDamage).filter((formula) => !/@/.test(formula));
+    // (Stasian Smash's "… as well as 1d4 electricity damage to up to two other foes": not the target's.)
+    const others = /\bother (?:foes|creatures|enemies|targets)\b/i.test(sentence);
+    const damage = others ? [] : inlineTags(sentence, "Damage").map(readDamage).filter((formula) => !/@/.test(formula));
     // Written out ("you deal an additional 10d10 precision damage", "takes 4d6 extra precision damage", "1d6 persistent bleed damage").
-    if (!damage.length) {
+    if (!damage.length && !others) {
         const words = plainOf(sentence);
         const written = /\b(?:an? )?(?:additional|extra) (\d+d\d+|\d+) (persistent )?([a-z]+) damage\b/i.exec(words) ?? /\b(\d+d\d+|\d+) (?:additional |extra )?(persistent )?([a-z]+) damage\b/i.exec(words);
-        if (written && !/\bper\b|\bfor each\b|\bequal to\b/i.test(words)) damage.push(`${written[1]}[${written[2] ? "persistent," : ""}${written[3].toLowerCase()}]`);
+        // (Fiendish Brand's "1d6 bleed damage": bleed is persistent damage.)
+        if (written && !/\bper\b|\bfor each\b|\bequal to\b/i.test(words)) damage.push(`${written[1]}[${written[2] || /^bleed$/i.test(written[3]) ? "persistent," : ""}${written[3].toLowerCase()}]`);
     }
     if (damage.length) {
         out.damage = damage;
+        out.read = true;
+    }
+    // (2026-11-03, Cole's pick: the Strike riders. "If it hits and deals damage, you can attempt an Athletics check to Trip the creature you
+    // hit", "you can immediately attempt to Grapple the target": the basic action after the hit — the ability module's card for it.)
+    const follow = /\b(?:you )?(?:can )?(?:immediately |also |then )?attempt (?:an? Athletics check )?to (?:\[\[\/act (trip|grapple|shove|disarm|reposition)\b[^\]]*\]\](?:\{[^}]*\})?|(Trip|Grapple|Shove|Disarm|Reposition)\b)/i.exec(plainOf(sentence).replace(/\[\[/g, "[[")) ?? /\b(?:you )?(?:can )?(?:immediately |also |then )?attempt (?:an? Athletics check )?to \[\[\/act (trip|grapple|shove|disarm|reposition)\b/i.exec(sentence);
+    if (follow) {
+        out.follow = (follow[1] ?? follow[2]).toLowerCase();
         out.read = true;
     }
     const push = readPush(sentence);
@@ -78,6 +95,9 @@ function hitResults(sentence, html, item, compileSave) {
         const text = `<p>${sentence.replace(HIT, "")}</p>${at >= 0 && Object.keys(degreeSections(html)).length ? html.slice(at) : ""}`;
         const plan = compileSave(text);
         if (plan?.resolution?.kind === "save") {
+            // (2026-11-03, Dazing Blow's and Stunning Finisher's "@Check[fortitude|…|traits:incapacitation]": the trait on the save, as the
+            // cards and the simulator read it.)
+            if (/traits:[^\]|]*\bincapacitation\b/i.test(sentence) && !(plan.traits ?? []).includes("incapacitation")) plan.traits = [...(plan.traits ?? []), "incapacitation"];
             out.save = plan;
             out.read = true;
         }
@@ -86,7 +106,7 @@ function hitResults(sentence, html, item, compileSave) {
 }
 
 // item: the feat (its text with the character's numbers in, src/compiler/pc-dcs.js). compileSave(html): a save plan from a piece of its text.
-export function characterStrike(item, { compileSave = null } = {}) {
+export function characterStrike(item, { compileSave = null, ...options } = {}) {
     const html = String(item?.system?.description?.value ?? "");
     if (!/\bStrikes?\b/.test(html)) return null;
     const { blocks, body } = partsOf(html);
@@ -125,7 +145,69 @@ export function characterStrike(item, { compileSave = null } = {}) {
     if (penalty) plan.attackBonus = -Number(penalty[1]);
     let read = Boolean(counts || bonus || penalty || count > 1 || plan.strides);
     const unread = [];
-    for (const sentence of sentences) {
+    // (2026-11-01, the feat ratings: Vicious Swing's "you deal an extra die of weapon damage", two from 10th level and three from 18th —
+    // extraWeaponDice, as a monster's activity has it; the card's GM keeps the words as a note.)
+    const extraDice = /\b(?:deal|deals|dealing|add) an? (?:extra|additional) (?:weapon damage die|die of weapon damage)\b/i.test(plain);
+    if (extraDice) {
+        const level = Number(options.level) || 1;
+        plan.extraWeaponDice = level >= 18 && /\b18th level\b[^.]*\bthree extra dice\b/i.test(plain) ? 3 : level >= 10 && /\b10th level\b[^.]*\btwo extra dice\b/i.test(plain) ? 2 : 1;
+        read = true;
+    }
+    // (2026-11-03, the Strike riders: "it deals two additional weapon damage dice … three if you're 14th level or higher" (Tiger Slash),
+    // "two additional weapon damage dice … If you are at least 18th level, increase the additional damage to three" (Grievous Blow).)
+    const moreDice = !extraDice ? /\b(?:deals?|deal) (one|two|three|an?) (?:additional|extra) weapon damage (?:dice|die)\b/i.exec(plain) : null;
+    if (moreDice) {
+        const level = Number(options.level) || 1;
+        let dice = NUMBERS[moreDice[1].toLowerCase()] ?? 1;
+        const upgrade = /\((three|four) extra dice if you're (\d+)th level or higher\)|\bat least (\d+)th level, increase the additional damage to (three|four)\b|\bor (two|three) additional weapon damage dice if you're at least (\d+)th level\b/i.exec(plain);
+        if (upgrade) {
+            const at = Number(upgrade[2] ?? upgrade[3] ?? upgrade[6]);
+            if (level >= at) dice = { two: 2, three: 3, four: 4 }[(upgrade[1] ?? upgrade[4] ?? upgrade[5]).toLowerCase()];
+        }
+        plan.extraWeaponDice = dice;
+        read = true;
+    }
+    // (Brutal Finish's "After the Strike, your turn ends" — a cost the simulator must see — and its failure's "You deal damage equal to one
+    // weapon damage die … two dice if you're at least 18th level".)
+    if (/\bAfter (?:the|this|that) Strike, your turn ends\b/i.test(plain)) {
+        plan.endsTurn = true;
+        plan.notes.push("After the Strike, your turn ends.");
+    }
+    const failureDie = /<strong>\s*Failure\s*<\/strong>\s*You deal damage equal to (one|two) weapon damage dic?e\b([^<]*)/i.exec(html);
+    if (failureDie) {
+        const level = Number(options.level) || 1;
+        const more = /Increase this to (two|three) dice if you're at least (\d+)th level/i.exec(failureDie[2]);
+        plan.failureDice = more && level >= Number(more[2]) ? NUMBERS[more[1].toLowerCase()] : NUMBERS[failureDie[1].toLowerCase()];
+        read = true;
+    }
+    // ("against an undead foe", "Strike a fiend": only at a creature with that trait; "a foe that can cast divine spells": a target the
+    // simulator can't tell, kept as targetUnread.)
+    const kind = /\b(?:Strike|attack) (?:against )?an? (undead|fiend|dragon|demon|devil|aberration|construct|elemental|giant|ooze|plant|beast|animal|spirit|celestial) (?:foe|creature|enemy|target)\b/i.exec(plain);
+    if (kind) plan.targetTraits = [kind[1].toLowerCase()];
+    const unreadTarget = /\bStrike (?:a|an) (?:foe|creature|enemy|target) that (?:can|has|is)\b[^.]*/i.exec(plain);
+    if (unreadTarget) plan.targetUnread = unreadTarget[0];
+    // ("a circumstance bonus to damage equal to the number of weapon damage dice", "… equal to twice the number of weapon damage dice":
+    // damagePerWeaponDie, the simulator's and the GM's.)
+    const perDie = /\bbonus to (?:the )?damage (?:roll )?equal to (twice )?the number of weapon damage dice\b/i.exec(plain);
+    if (perDie && !/\bpenalty to damage equal to\b/i.test(plain)) {
+        plan.damagePerWeaponDie = perDie[1] ? 2 : 1;
+        read = true;
+    }
+    // ("Your wolf jaw gains the fatal d12 trait for this Strike", "this Strike gains the deadly d10 trait".)
+    const fatal = /\bgains? the fatal d(\d+) trait\b/i.exec(plain);
+    if (fatal) {
+        plan.fatal = Number(fatal[1]);
+        read = true;
+    }
+    // (Exacting Strike's "Failure This attack doesn't count toward your multiple attack penalty": the engine's exacting.)
+    if (/<strong>\s*Failure\s*<\/strong>[^<]*doesn't count toward your multiple attack penalty/i.test(html)) {
+        plan.exacting = true;
+        plan.notes.push("On a failure, this attack doesn't count toward your multiple attack penalty.");
+        read = true;
+    }
+    // (A check of its own before the Strike — Leaping Hedgehog Strike's Tumble Through —: its "On a success" is that check's, not the hit's.)
+    const otherCheck = /\b[Aa]ttempt an? [A-Z]?\w+ check\b|@Check\[(?!fortitude|reflex|will)/.test(plain + html);
+    for (let sentence of sentences) {
         const words = plainOf(sentence);
         if (CRITICAL.test(words)) {
             const results = hitResults(sentence.replace(CRITICAL, ""), html, item, compileSave);
@@ -136,13 +218,24 @@ export function characterStrike(item, { compileSave = null } = {}) {
                 read = true;
                 continue;
             }
-        } else if (HIT.test(words)) {
+        } else if (HIT.test(words) && !(/^On a success\b/i.test(words) && otherCheck)) {
+            // (Suplex's "on a success, the target lands Prone, and on a critical success, the target lands prone and takes an additional
+            // 2d6 bludgeoning damage": the critical's part read as a critical hit's.)
+            const split = /,? and on a critical (?:success|hit),\s*/i.exec(sentence);
+            if (split) {
+                const crit = hitResults(sentence.slice(split.index + split[0].length), html, item, null);
+                if (crit.damage.length) plan.onHit.criticalDamage = [...(plan.onHit.criticalDamage ?? []), ...crit.damage];
+                if (crit.conditions.length) plan.onHit.critical = crit.conditions;
+                sentence = sentence.slice(0, split.index) + ".";
+            }
             const results = hitResults(sentence, html, item, compileSave);
             if (results.read) {
                 plan.onHit.conditions.push(...results.conditions);
+                if (results.critical) plan.onHit.critical = results.critical;
                 plan.onHit.damage.push(...results.damage);
                 if (results.push) plan.onHit.push = results.push;
                 if (results.save) plan.onHit.save = results.save;
+                if (results.follow) plan.onHit.follow = results.follow;
                 // "(10 feet on a critical hit)": the critical push in the same sentence.
                 const criticalPush = /\((\d+) feet on a critical hit\)/i.exec(words);
                 if (criticalPush) plan.onHit.criticalPush = Number(criticalPush[1]);
@@ -168,6 +261,13 @@ export function characterStrike(item, { compileSave = null } = {}) {
     // What isn't read: the GM's, on the card.
     // (Not the flavour: a sentence with no game word in it.)
     plan.notes.push(...unread.filter((words) => RULE_WORDS.test(words) && (!/^(?:You|It) (?:make|makes) (?:a|an) /i.test(words) || /\b(?:if|unless|instead|only)\b/i.test(words))));
+    // (2026-11-03, the Foundry test: Brutal Finish's "The Strike deals one additional weapon damage die" is one of the activity's own
+    // steps, so no sentence kept it — the card plays the Strike from the sheet and adds no dice: the GM's note says them.)
+    const said = plan.notes.join(" ");
+    if (plan.extraWeaponDice && !/weapon damage di/i.test(said)) plan.notes.push(`On a hit, the Strike deals ${plan.extraWeaponDice} extra weapon damage ${plan.extraWeaponDice > 1 ? "dice" : "die"}.`);
+    if (plan.failureDice && !/\bFailure\b|on a failure/i.test(said)) plan.notes.push(`On a failure, it deals ${plan.failureDice} weapon damage ${plan.failureDice > 1 ? "dice" : "die"}.`);
+    if (plan.damagePerWeaponDie && !/number of weapon damage dice/i.test(said)) plan.notes.push(`On a hit, a circumstance bonus to damage of ${plan.damagePerWeaponDie > 1 ? "twice " : ""}the number of weapon damage dice.`);
+    if (plan.fatal && !/\bfatal\b/i.test(said)) plan.notes.push(`The Strike gains the fatal d${plan.fatal} trait.`);
     if (plan.requires) plan.notes.unshift(`Requires: ${plan.requires}`);
     if (blocks.frequency) plan.notes.unshift(`Frequency: ${blocks.frequency}`);
     return plan;

@@ -13,7 +13,8 @@ export async function applyFeatEffect(item, plan, recipients = null) {
     const ours = (each) => each.flags?.[MODULE_ID]?.effect;
     const say = (line, more = "") => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>${more}` });
     // (On another creature, who "target": its numbers the character's, "@actor.level" worked out here, not the target's own; 2026-10-31.)
-    const rules = recipients ? effect.rules.map((rule) => withNumbers(rule, actor.getRollData?.() ?? {})) : effect.rules;
+    // (fillNow: on the character too, its numbers as they are now, e.g. "your Perception DC instead of your AC"; 2026-11-05.)
+    const rules = recipients || effect.fillNow ? effect.rules.map((rule) => withNumbers(rule, actor.getRollData?.() ?? {})) : effect.rules;
     const lines = [];
     let created = null;
     for (const each of recipients ?? [actor]) {
@@ -34,12 +35,13 @@ export async function applyFeatEffect(item, plan, recipients = null) {
             name: `${effect.stance ? "Stance" : "Effect"}: ${effect.name}`,
             type: "effect",
             img: item.img,
-            flags: { [MODULE_ID]: { effect: { item: item.id, source: item.sourceId ?? null, stance: Boolean(effect.stance) } } },
+            flags: { [MODULE_ID]: { effect: { item: item.id, source: item.sourceId ?? null, stance: Boolean(effect.stance), ...(effect.endsAfter ? { endsAfter: effect.endsAfter } : {}) } } },
             system: {
                 description: { value: `<p>From <strong>${escape(String(item.name ?? "").trim())}</strong>.</p>${notes}` },
                 duration: effect.duration,
                 start: { value: game.time.worldTime, initiative: game.combat?.started ? game.combat.combatant?.initiative ?? null : null },
-                rules: foundry.utils.deepClone(rules),
+                // (@target: the creature it goes on, as it is now — Forewarn's "your Perception DC instead of your ally's AC"; 2026-11-05.)
+                rules: foundry.utils.deepClone(recipients && effect.rules.some((rule) => JSON.stringify(rule).includes("@target")) ? effect.rules.map((rule) => withNumbers(rule, { ...(actor.getRollData?.() ?? {}), target: each })) : rules),
                 traits: { value: effect.stance ? ["stance"] : [], otherTags: [] },
                 tokenIcon: { show: true },
                 level: { value: Number(actor.level) || 1 },
@@ -104,4 +106,44 @@ export async function togglePassiveEffect(item, plan, actors) {
     if (!lines.length) return null;
     const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
     return ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: item.actor }), content: `<p><strong>${escape(item.name)}</strong>: ${lines.join(" ")}</p>${notes}` });
+}
+
+// (2026-11-05, batch 16 Foundry test: an Effect used up by the next check it applies to — endsAfter, the roll options that check has, e.g.
+// ["saving-throw", "item:trait:auditory"] — even where PF2e's removeAfterRoll doesn't fire: a RollTwice cancelled by a misfortune rolls a
+// plain 1d20, and PF2e only removes it after a kh or kl roll. A check's own domains are among its options here as its type ("check:type:…"
+// isn't always there): "saving-throw" matches a save, "check" any check.)
+const CHECK_TYPES = { "saving-throw": ["saving-throw"], "skill-check": ["skill-check"], "perception-check": ["perception-check"], "attack-roll": ["attack-roll"] };
+// (The module's Effects have no slug: PF2e's roll option comes from the name, sluggified; retest.)
+const slugOf = (effect) => String(effect.slug ?? game.pf2e?.system?.sluggify?.(effect.name) ?? "");
+export function endsAfterMatches(endsAfter, type, options) {
+    const kinds = new Set(["check", type, ...(CHECK_TYPES[type] ?? [])]);
+    return (endsAfter ?? []).every((wanted) => kinds.has(wanted) || options.has(wanted));
+}
+export function registerEndsAfter() {
+    Hooks.on("createChatMessage", async (message) => {
+        const context = message.flags?.pf2e?.context;
+        if (!["saving-throw", "skill-check", "perception-check", "attack-roll", "check"].includes(context?.type)) return;
+        // (endsAfter ["attacked"]: the target's Effect for one attack against it, e.g. Foresee Danger's; gone after that attack roll.)
+        if (context.type === "attack-roll") await endAttacked(context);
+        const actor = message.actor;
+        if (!actor?.isOwner) return;
+        // (One client: the active GM's, else the actor's first active owner.)
+        const owner = game.users.activeGM ?? game.users.find((user) => user.active && actor.testUserPermission(user, "OWNER"));
+        if (owner?.id !== game.user.id) return;
+        const options = new Set(context.options ?? []);
+        const spent = actor.itemTypes.effect.filter((effect) => {
+            const endsAfter = effect.flags?.[MODULE_ID]?.effect?.endsAfter;
+            return Array.isArray(endsAfter) && [slugOf(effect), slugOf(effect).replace(/^(?:[a-z]+-)?(?:effect|stance)-/, "")].some((slug) => options.has(`self:effect:${slug}`)) && endsAfterMatches(endsAfter, context.type, options);
+        });
+        if (spent.length) await actor.deleteEmbeddedDocuments("Item", spent.map((effect) => effect.id)).catch(() => null);
+    });
+}
+
+async function endAttacked(context) {
+    const target = context.target?.actor ? fromUuidSync(context.target.actor) : null;
+    if (!target?.isOwner) return;
+    const owner = game.users.activeGM ?? game.users.find((user) => user.active && target.testUserPermission(user, "OWNER"));
+    if (owner?.id !== game.user.id) return;
+    const spent = target.itemTypes.effect.filter((effect) => (effect.flags?.[MODULE_ID]?.effect?.endsAfter ?? []).includes("attacked"));
+    if (spent.length) await target.deleteEmbeddedDocuments("Item", spent.map((effect) => effect.id)).catch(() => null);
 }
