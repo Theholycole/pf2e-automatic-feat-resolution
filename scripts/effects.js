@@ -9,7 +9,9 @@ const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (character) => ({
 export async function applyFeatEffect(item, plan, recipients = null) {
     const actor = item?.actor;
     const effect = plan?.effect;
-    if (!actor || !(effect?.rules?.length || plan.timer)) return null;
+    // (A toggle with no rules — batch 30's markers, Feeling Your Oats, War Rider Stance —: its Effect still goes on, its notes the GM's;
+    // 2026-11-07 Foundry test, they posted nothing.)
+    if (!actor || !(effect?.rules?.length || plan.timer || plan.toggle)) return null;
     const ours = (each) => each.flags?.[MODULE_ID]?.effect;
     const say = (line, more = "") => ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<p><strong>${escape(item.name)}</strong>: ${line}</p>${more}` });
     // (On another creature, who "target": its numbers the character's, "@actor.level" worked out here, not the target's own; 2026-10-31.)
