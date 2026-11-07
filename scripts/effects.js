@@ -29,7 +29,7 @@ export async function applyFeatEffect(item, plan, recipients = null) {
         // (A toggled passive's Effect, on: posting it again turns it off.)
         // (Its chat line, on and off, as PF2e-linked toggles have; 2026-10-30 Foundry test.)
         if (plan.toggle && old.some(same)) {
-            lines.push(`Effect: ${escape(effect.name)} ends on ${escape(each.name)}.`);
+            lines.push(`${effect.stance ? "Stance" : "Effect"}: ${escape(effect.name)} ends on ${escape(each.name)}.`);
             continue;
         }
         const notes = (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("");
@@ -52,7 +52,7 @@ export async function applyFeatEffect(item, plan, recipients = null) {
                 ...(recipients && !plan.ownTurn ? { context: { origin: { actor: actor.uuid, token: null, item: item.uuid ?? null }, target: null, roll: null } } : {})
             }
         }]);
-        if (plan.toggle && created) lines.push(`Effect: ${escape(effect.name)} on ${escape(each.name)}.`);
+        if (plan.toggle && created) lines.push(`${effect.stance ? "Stance" : "Effect"}: ${escape(effect.name)} on ${escape(each.name)}.`);
     }
     // (A toggle's notes in its chat line as it goes on, Liberate Self's "roll it twice by hand", not only in the Effect; round 96 Foundry test.)
     if (lines.length) await say(lines.join(" "), plan.toggle && created ? (plan.notes ?? []).map((note) => `<p>${escape(note)}</p>`).join("") : "");
