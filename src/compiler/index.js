@@ -82,13 +82,16 @@ export function compileFeat(item, options = {}) {
     const acted = hand?.act ? handAct(item, hand, abilityOptions.basicActions) : null;
     if (acted) return acted;
     if (hand?.strike) return handStrike(item, hand, characterStrike(filled, { level: dcs.level, compileSave: (html) => compileAbility(withText(filled, html), abilityOptions) }));
-    const plan = read(filled, { ...abilityOptions, level: dcs.level }) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? otherHeal(filled) ?? selfEffect(filled, dcs)
+    let plan = read(filled, { ...abilityOptions, level: dcs.level }) ?? selfHeal(filled, dcs) ?? linkedEffect(filled) ?? otherHeal(filled) ?? selfEffect(filled, dcs)
         // (A feat that is a spell, "the effects of a 2nd-rank Web": cast through the spell module; 2026-10-30, "Spell-like feats".)
         ?? spellLike(filled, dcs)
         // (A Focus or Mythic Point back, "You regain 1 Focus Point": added to the pool; 2026-10-30, the loop.)
         ?? regainPoint(filled);
     // (A text entry's notes: what its rewritten text leaves out.)
     // (A text entry's notes: what its rewritten text leaves out; its target, who the card is for when the rewrite can't say it.)
+    // (2026-11-08, Connect the Dots' "@Check[perception|defense:will]": a Perception check against a target's DC, read as the ability module's
+    // skill check — its card rolls no "perception" kind; the Foundry test of batch 32.)
+    if (plan?.resolution?.check?.roll === "perception") plan = { ...plan, resolution: { ...plan.resolution, check: { ...plan.resolution.check, roll: "skill", statistic: "perception" } } };
     if (plan && hand?.text) return { ...plan, ...(hand.by ? { by: hand.by } : {}), ...(hand.castWith ? { castWith: hand.castWith } : {}), ...(hand.notes?.length ? { notes: [...(plan.notes ?? []), ...hand.notes] } : {}), ...(hand.target ? { targeting: { ...(plan.targeting ?? {}), target: hand.target } } : {}) };
     // (The ability module's "cast-spell" for a spell the feat only lets you pay for, Soul-Form's "you can spend 1 Mythic Point to also gain
     // the effects of Enlarge": not cast every time; as spellLike.)

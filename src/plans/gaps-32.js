@@ -3,7 +3,6 @@
 
 const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const condition = (id, label) => `@UUID[Compendium.pf2e.conditionitems.Item.${id}]{${label}}`;
-const frightened2 = condition("TBSHQspnbcqxsmjL", "Frightened 2");
 const offGuard = condition("AJh5ex99aV6VTggg", "Off-Guard");
 const NOW = { value: 0, unit: "rounds", expiry: "turn-end", sustained: false };
 const ROUND = { value: 1, unit: "rounds", expiry: "turn-start", sustained: false };
@@ -27,7 +26,7 @@ export default [
     { uuid: pf2e("lGCFVYjL9Lp5m9Ex"), name: "Cast Down", toggle: { rules: [], duration: NOW }, notes: ["If your next action is a harm or heal that damages one creature, the target falls Prone if it takes damage. On a critical failure it also takes a −10-foot status penalty to its Speed for 1 minute (put PF2e's Effect: Cast Down on it)."] },
     marker("iHGhQK8A4xsfaV8t", "Imperious Aura", NOW, ["As your turn begins, use a stance impulse that affects your kinetic aura (free): post its card now."]),
     // Positioning and fear.
-    { uuid: pf2e("MhPL9hPE9Mwg20zk"), name: "March of Law", target: "each enemy adjacent to you that saw your movement", text: `<p>Stride toward the creature that attempted a hostile action against you since your last turn, with a +10-foot status bonus to your Speeds. If you end adjacent to it, each enemy adjacent to you that saw you move becomes ${frightened2}.</p>`, notes: ["Once per round."] },
+    { uuid: pf2e("MhPL9hPE9Mwg20zk"), name: "March of Law", affect: { target: "each enemy adjacent to you that saw your movement", effects: [{ kind: "condition", slug: "frightened", value: 2, duration: null }] }, notes: ["First Stride toward the creature that attempted a hostile action against you since your last turn, with a +10-foot status bonus to your Speeds. Only if you end adjacent to it: target each enemy adjacent to you that saw you move. Once per round."] },
     { uuid: pf2e("Ic5C2y26H2mbUiUF"), name: "Shadowplay", target: "the opponent your melee Strike just damaged", text: `<p>Attempt to Tumble Through its space with a +2 circumstance bonus: an @Check[acrobatics|defense:reflex|mod:2] check against its Reflex DC.</p><hr /><p><strong>Success</strong> Your shadow rises and flanks it until the start of your next turn: it's ${offGuard} to you.</p>`, notes: ["Your last action must have been a melee Strike that damaged it."] },
     { uuid: pf2e("azF1RvMTwCPaJr1F"), name: "The Bigger They Are", target: "a creature at least one size larger than you", text: "<p>Attempt to Tumble Through its space: an @Check[acrobatics|defense:reflex] check against its Reflex DC.</p><hr /><p><strong>Critical Success</strong> You move through its space (difficult terrain). It gains weakness to your precision damage equal to half your level until the end of your turn.</p><p><strong>Success</strong> As a critical success, but the weakness applies only against your next Strike.</p><p><strong>Failure</strong> You don't get through.</p>", notes: ["Add the weakness by hand to the precision damage: half your level. Bravado: on a success or a failure, you gain panache."] },
     { uuid: pf2e("iySa8O4NaTdLPKQl"), name: "Four Winds", affect: { target: "up to four willing creatures within 30 feet", effects: [] }, notes: ["Each Strides up to half its Speed (full Speed from 10th level), or Flies up to half its fly Speed. Move their tokens."] },
