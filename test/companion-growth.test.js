@@ -11,7 +11,7 @@ test("companion growth: every feat once, a known stage", () => {
         seen.add(each.uuid);
         assert.ok(STAGES[each.stage], each.name);
     }
-    assert.equal(GROWTH_FEATS.length, 31);
+    assert.equal(GROWTH_FEATS.length, 37);
 });
 
 test("companion growth: the choices", () => {

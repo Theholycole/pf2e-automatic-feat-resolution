@@ -54,7 +54,14 @@ export const GROWTH_FEATS = [
     entry(pf2e("58LYCoLrCzG2Ll8b"), "Incredible Construct Companion", "construct-incredible"),
     entry(pf2e("xhFsHEsMTAvzwJhr"), "Incredible Reanimated Companion", "construct-incredible"),
     entry(pf2e("R5hdEbfKdIVAQs24"), "Paragon Companion", "construct-paragon"),
-    entry(pf2e("UxurtbOOvCkngsKN"), "Paragon Reanimated Companion", "construct-paragon")
+    entry(pf2e("UxurtbOOvCkngsKN"), "Paragon Reanimated Companion", "construct-paragon"),
+    // (2026-11-07, batch 31: the archetype and class feats that grow a companion in their own words.)
+    entry(pf2e("x2a3Qb5pWj6Bgu6a"), "Battle-Tested Companion", "mature"),
+    entry(pf2e("axvGLVoAvuD9jU78"), "Loyal Warhorse", "mature"),
+    entry(pf2e("07jxXvRZ8nD3JLF4"), "Imposing Destrier", "nimble-or-savage"),
+    entry(pf2e("UgmLKNTU59Z3ETFc"), "Let My Creature Live!", "construct-advanced"),
+    entry(pf2e("YrdQA4HbxiZkaG7I"), "Behold My Creation!", "construct-incredible"),
+    entry(pf2e("N7el79c9KY4JXmUb"), "A Miracle of Science!", "construct-paragon")
 ];
 
 const BY_UUID = new Map(GROWTH_FEATS.map((each) => [each.uuid, each]));

@@ -8,6 +8,7 @@ const pf2e = (id) => `Compendium.pf2e.feats-srd.Item.${id}`;
 const classFeature = (id) => `Compendium.pf2e.classfeatures.Item.${id}`;
 const hasItem = (master, uuid) => (master?.items ?? []).some((item) => sourceOf(item) === uuid);
 const hasSlug = (master, slug) => (master?.items ?? []).some((item) => item.slug === slug || item.system?.slug === slug);
+const note = (selector, text, more = {}) => ({ key: "Note", selector, title: "{item|name}", text: `<p>${text}</p>`, ...more });
 const sense = (selector, acuity = null, range = null) => ({ key: "Sense", selector, ...(acuity ? { acuity } : {}), ...(range ? { range } : {}) });
 
 export const COMPANION_RULES = [
@@ -57,6 +58,16 @@ export const COMPANION_RULES = [
         { key: "Strike", category: "unarmed", group: "brawling", slug: "gust", label: "Gust", img: "systems/pf2e/icons/unarmed-attacks/wing.webp", damage: { base: { damageType: "bludgeoning", dice: 1, die: "d4" } }, range: { increment: 30 }, traits: ["air", "propulsive", "unarmed"] },
         { key: "Note", selector: "strike-attack-roll", predicate: ["item:slug:gust"], outcome: ["criticalSuccess"], title: "Billowing Wings", text: "The target is pushed back 5 feet (forced movement)." }] },
     // (Round 71: 2d4 for a specialized companion is the player's to add.)
+    // (2026-11-07, batch 31: the eidolon's and companion's own, a Note where the feat needs a choice or a moment PF2e can't see.)
+    { uuid: pf2e("0PCDkVnRxVqxsp9j"), name: "Energy Heart", rules: [note("strike-damage", "Energy Heart: one of your unarmed attacks deals your chosen energy type (acid, cold, electricity or fire), and you resist that type by half your master's level (at least 1); add the resistance on your sheet.")] },
+    { uuid: pf2e("lVXk0fhZqjqKilhB"), name: "Energy Resistance", rules: [note("saving-throw", "Your Energy Heart resistance equals your master's level.")] },
+    { uuid: pf2e("bcExqs4CsG2Kc5Bs"), name: "Miniaturize", rules: [note("strike-attack-roll", "Shrink Down can make you Tiny, with reach 0 feet.")] },
+    { uuid: pf2e("mwBb8MlAmpbYH9T4"), name: "It's Alive!", rules: [note("saving-throw", "When you take electricity damage, gain temporary Hit Points equal to half of it or your master's level, whichever is lower, for 1 minute.")] },
+    { uuid: pf2e("EE5hE8Ibf49jCome"), name: "Nidarrmar Steed", rules: [note("will", "Penalties to your Speed are 10 feet less. If you'd become fleeing or controlled, your master can make you slowed 1 for that duration instead.")] },
+    { uuid: pf2e("MwozkE6aj42WZ7Z1"), name: "Stealthy Companion", rules: [note("stealth", "You have Camouflage: you can Hide and Sneak in natural terrain without cover. A specialized ambusher's Stealth is master (legendary if it was master).")] },
+    { uuid: pf2e("eCzIiTjI4mQFYe9D"), name: "Steed Form", rules: [note("acrobatics", "While your summoner rides you, it keeps its full actions, and your move actions gain the tandem trait.")] },
+    { uuid: pf2e("Jv24QkykqdPB7brL"), name: "Unbreakable Bond", rules: [note("all", "Dying, you automatically stabilize on your recovery check, and you die only at dying 5. Once a day, at dying 5 while your master lives, you stay at dying 4 instead.", { predicate: ["self:condition:dying"] })] },
+    { uuid: pf2e("lffwKBOaUgWUC9KJ"), name: "Specialized Spirit Companion", rules: [note("strike-damage", "Spirit-blessed: your Strikes affect incorporeal creatures as if they were corporeal (or you gain one more specialization if already spirit-blessed).")] },
     { uuid: pf2e("6B7ksTtpbfp114sA"), name: "Nature's Precision", rules: [{ key: "DamageDice", selector: "strike-damage", diceNumber: 1, dieSize: "d4", category: "precision", predicate: ["target:condition:off-guard", "item:category:unarmed", { or: ["item:trait:agile", "item:trait:finesse"] }] }] }
 ];
 
