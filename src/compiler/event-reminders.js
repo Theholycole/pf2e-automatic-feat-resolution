@@ -40,6 +40,7 @@ export function eventTrigger(given) {
     const traits = /\bcreature with the ((?:[a-z-]+,? (?:or |and )?)*[a-z-]+) traits?\b/i.exec(trigger)?.[1];
     const by = traits ? traits.toLowerCase().split(/,? (?:or |and )?|,/).map((word) => word.trim()).filter(Boolean) : null;
     const read = (event) => ({ event, within, trigger, kind, ...(by ? { by } : {}) });
+    const readAt = read;
     // (The character's own Strike: "You critically hit a foe with a melee weapon Strike", "Your Strike critically hits …", "You succeed at a
     // melee Strike", "You miss with a firearm or crossbow Strike": its attack roll's degree; the loop, 2026-10-30.)
     // (Only with the weapons it names, "a firearm or crossbow Strike": weapons, matched to the Strike's roll options; 2026-10-30 Foundry test,
@@ -144,6 +145,13 @@ export function eventTrigger(given) {
         return { ...read("ally-moves"), within: within ?? (/\breach\b/i.test(trigger) ? 10 : 5) };
     }
     if (ally) {
+        // (2026-11-21, Cole's playtest: a champion's reaction whispered for an enemy far away. "An enemy damages your ally, and both are within
+        // 15 feet of you" — the enemy in range too: foeWithin; "An enemy within 15 feet damages your ally" — the enemy's range alone.)
+        const both = Number(/\bboth (?:are |of them are )?within (\d+) feet\b/i.exec(trigger)?.[1]) || null;
+        const foeOnly = Number(/^An? (?:enemy|foe|creature|opponent) within (\d+) feet\b/i.exec(trigger)?.[1]) || null;
+        const allyNear = /\ball(?:y|ies) within \d+ feet\b/i.test(trigger);
+        const ranged = (entry) => (both ? { ...entry, within: both, foeWithin: both } : foeOnly ? { ...entry, within: allyNear ? entry.within : null, foeWithin: foeOnly } : entry);
+        const read = (event) => ranged(readAt(event));
         if (/\b(?:is|are) (?:critically )?hit\b|\bhits (?:an|your|the) ally\b/i.test(trigger)) return read("ally-hit");
         if (/\b(?:takes?|would take) damage\b|\bis damaged\b|\bwould damage\b|\bdamages (?:an|your|the) ally\b/i.test(trigger)) return read("ally-damaged");
         if (/\b(?:is|are) targeted\b|\btargets (?:an|your|the|one of your) all/i.test(trigger)) return read("ally-targeted");

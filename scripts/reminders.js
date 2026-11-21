@@ -136,6 +136,7 @@ export async function onRollMessage(message) {
     }
     if (!events.length || !target) return;
     const source = message.speaker?.alias ?? message.actor?.name ?? "A creature";
+    const attackerToken = message.token?.object ?? (message.speaker?.token ? canvas?.tokens?.get?.(message.speaker.token) : null) ?? message.actor?.getActiveTokens?.(true)?.[0] ?? null;
     const ofItems = (actor) => [...actor.itemTypes.feat, ...actor.itemTypes.action, ...(actor.itemTypes.heritage ?? []), ...(actor.itemTypes.background ?? [])].map((item) => ({ item, read: eventTrigger(item) })).filter(({ read }) => read);
     // (A trigger only for some attackers, "A creature with the animal … trait": by the attacker's traits.)
     const attackerTraits = message.actor?.system?.traits?.value ?? [];
@@ -149,7 +150,11 @@ export async function onRollMessage(message) {
         const actor = token.actor;
         if (actor?.type !== "character" || actor === target || !targetToken || token.document.disposition !== targetToken.document.disposition) continue;
         const distance = distanceBetween(token, targetToken);
-        const due = ofItems(actor).filter(({ read }) => events.includes(read.event.replace(/^ally-/, "")) && read.event.startsWith("ally-") && (!read.within || (distance !== null && distance <= read.within))).filter(byFits);
+        // (The enemy in range too when the trigger says so, "both are within 15 feet of you": Retributive Strike's, Glimpse of Redemption's —
+        // 2026-11-21, Cole's playtest. An attacker with no token here can't be measured: left to the player.)
+        const foeDistance = attackerToken ? distanceBetween(token, attackerToken) : null;
+        const foeNear = (read) => !read.foeWithin || foeDistance === null || foeDistance <= read.foeWithin;
+        const due = ofItems(actor).filter(({ read }) => events.includes(read.event.replace(/^ally-/, "")) && read.event.startsWith("ally-") && (!read.within || (distance !== null && distance <= read.within)) && foeNear(read)).filter(byFits);
         if (due.length) await whisper(actor, `<strong>${escape(actor.name)}</strong>: ${escape(source)}'s ${context.type === "damage-roll" ? "damage" : "attack"} is aimed at your ally ${escape(target.name)}.`, due);
     }
 }
